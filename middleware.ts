@@ -15,6 +15,7 @@ export async function middleware(req: NextRequest) {
 
   const isApi = pathname.startsWith("/api");
   const isAuthApi = pathname.startsWith("/api/auth");
+  const isPublicApi = pathname === "/api/keepalive";
   const isPublicPage = PUBLIC_PAGES.has(pathname);
 
   const token = await getToken({ req });
@@ -23,7 +24,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL(routes.dashboard, req.url));
   }
 
-  if (isApi && !isAuthApi) {
+  if (isApi && !isAuthApi && !isPublicApi) {
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
