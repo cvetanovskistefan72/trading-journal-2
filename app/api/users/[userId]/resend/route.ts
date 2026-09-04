@@ -1,8 +1,8 @@
-import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { sendPasswordResetEmail } from "@/lib/email";
+import { generateResetToken } from "@/lib/tokens";
 
 type Params = Promise<{ userId: string }>;
 
@@ -19,15 +19,15 @@ export async function POST(_req: Request, context: { params: Params }) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  const token = crypto.randomUUID();
+  const { raw, hashed } = generateResetToken();
   const expiry = new Date(Date.now() + INVITE_TTL_MS);
 
   await prisma.user.update({
     where: { id: userId },
-    data: { resetToken: token, resetTokenExpiry: expiry },
+    data: { resetToken: hashed, resetTokenExpiry: expiry },
   });
 
-  await sendPasswordResetEmail(user.email, token);
+  await sendPasswordResetEmail(user.email, raw);
 
   return NextResponse.json({ success: true });
 }

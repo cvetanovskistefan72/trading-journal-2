@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { routes } from "@/config/routes";
+import { rateLimit } from "@/lib/rate-limit";
 
 declare module "next-auth" {
   interface User {
@@ -35,20 +36,28 @@ export const authOptions: NextAuthOptions = {
         email: {},
         password: {},
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
+        // 10 login attempts per IP+email per 15 min. Blunts brute force.
+        const ip =
+          (req?.headers?.["x-forwarded-for"] as string)?.split(",")[0].trim() ??
+          "unknown";
+        const email = credentials.email.trim().toLowerCase();
+        const limit = rateLimit(
+          `login:${ip}:${email}`,
+          10,
+          15 * 60 * 1000
+        );
+        if (!limit.ok) return null;
 
-        if (!user) return null;
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (!user || !user.password) return null;
 
         const isValid = await bcrypt.compare(
           credentials.password,
           user.password
         );
-
         if (!isValid) return null;
 
         return {

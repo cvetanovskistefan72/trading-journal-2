@@ -19,9 +19,13 @@ export async function POST(req: Request) {
     );
   }
 
-  if (typeof newPassword !== "string" || newPassword.length < 6) {
+  if (
+    typeof newPassword !== "string" ||
+    newPassword.length < 8 ||
+    newPassword.length > 72
+  ) {
     return NextResponse.json(
-      { error: "New password must be at least 6 characters" },
+      { error: "New password must be 8–72 characters" },
       { status: 400 }
     );
   }

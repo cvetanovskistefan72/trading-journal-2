@@ -56,8 +56,8 @@ export default function ChangePasswordPage() {
       toast.error("Fill in all fields");
       return;
     }
-    if (form.newPassword.length < 6) {
-      toast.error("New password must be at least 6 characters");
+    if (form.newPassword.length < 8) {
+      toast.error("New password must be at least 8 characters");
       return;
     }
     if (form.newPassword !== form.confirmPassword) {

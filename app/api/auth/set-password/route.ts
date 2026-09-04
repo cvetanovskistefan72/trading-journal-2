@@ -1,8 +1,14 @@
 import bcrypt from "bcrypt";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { hashToken } from "@/lib/tokens";
+import { clientIp, rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 export async function GET(req: Request) {
+  // 20 lookups per IP per 15 min — token validity probing.
+  const limit = rateLimit(`setpw-get:${clientIp(req)}`, 20, 15 * 60 * 1000);
+  if (!limit.ok) return tooManyRequests(limit.resetAt);
+
   const { searchParams } = new URL(req.url);
   const token = searchParams.get("token");
 
@@ -12,7 +18,7 @@ export async function GET(req: Request) {
 
   const user = await prisma.user.findFirst({
     where: {
-      resetToken: token,
+      resetToken: hashToken(token),
       resetTokenExpiry: { gte: new Date() },
     },
     select: { id: true, email: true },
@@ -29,6 +35,9 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const limit = rateLimit(`setpw-post:${clientIp(req)}`, 10, 15 * 60 * 1000);
+  if (!limit.ok) return tooManyRequests(limit.resetAt);
+
   const { token, password } = await req.json();
 
   if (!token || !password) {
@@ -38,16 +47,16 @@ export async function POST(req: Request) {
     );
   }
 
-  if (typeof password !== "string" || password.length < 6) {
+  if (typeof password !== "string" || password.length < 8 || password.length > 72) {
     return NextResponse.json(
-      { error: "Password must be at least 6 characters" },
+      { error: "Password must be 8–72 characters" },
       { status: 400 }
     );
   }
 
   const user = await prisma.user.findFirst({
     where: {
-      resetToken: token,
+      resetToken: hashToken(token),
       resetTokenExpiry: { gte: new Date() },
     },
   });
