@@ -7,6 +7,7 @@ import { LineChart, Menu } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { HIDDEN_ON, navItemsForRole } from "@/config/navigation";
 import { SidebarContent } from "@/components/sidebar-content";
 
@@ -40,7 +41,8 @@ export function MobileTopBar() {
       </Sheet>
 
       <LineChart className="h-5 w-5 text-primary" />
-      <span className="font-semibold tracking-tight">Trading Journal</span>
+      <span className="flex-1 font-semibold tracking-tight">Trading Journal</span>
+      <ThemeToggle />
     </div>
   );
 }
