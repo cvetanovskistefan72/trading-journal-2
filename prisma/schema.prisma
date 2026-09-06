@@ -22,4 +22,5 @@ model User {
   updatedAt        DateTime  @default(now()) @updatedAt
   resetToken       String?
   resetTokenExpiry DateTime?
+  disabled         Boolean   @default(false)
 }

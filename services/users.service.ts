@@ -7,6 +7,7 @@ export type UserRow = {
   createdAt: string;
   isActive: boolean;
   canResend: boolean;
+  disabled: boolean;
 };
 
 export async function getUsers(): Promise<UserRow[]> {
@@ -19,8 +20,8 @@ export async function createUser(email: string, name: string) {
   return data;
 }
 
-export async function deleteUser(id: string) {
-  const { data } = await axiosInstance.delete(`/api/users/${id}`);
+export async function toggleUser(id: string) {
+  const { data } = await axiosInstance.patch(`/api/users/${id}`);
   return data;
 }
 

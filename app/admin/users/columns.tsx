@@ -2,7 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { RefreshCw, Trash2 } from "lucide-react";
+import { RefreshCw, ShieldOff, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { resendUserEmail, type UserRow } from "@/services/users.service";
+import { resendUserEmail, toggleUser, type UserRow } from "@/services/users.service";
 
 function ResendEmailButton({ row }: { row: UserRow }) {
   const queryClient = useQueryClient();
@@ -45,10 +45,7 @@ function ResendEmailButton({ row }: { row: UserRow }) {
           >
             <RefreshCw
               size={16}
-              className={cn(
-                "transition-all",
-                mutation.isPending && "animate-spin"
-              )}
+              className={cn("transition-all", mutation.isPending && "animate-spin")}
             />
           </Button>
         </TooltipTrigger>
@@ -58,15 +55,58 @@ function ResendEmailButton({ row }: { row: UserRow }) {
   );
 }
 
+function ToggleUserButton({ row }: { row: UserRow }) {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: () => toggleUser(row.id),
+    onSuccess: () => {
+      toast.success(row.disabled ? "User enabled" : "User disabled");
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: () => {
+      toast.error("Failed to update user");
+    },
+  });
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            size="icon"
+            variant="ghost"
+            disabled={mutation.isPending}
+            onClick={() => mutation.mutate()}
+            className={row.disabled ? "text-muted-foreground" : "text-destructive hover:text-destructive"}
+          >
+            {row.disabled ? <ShieldCheck size={16} /> : <ShieldOff size={16} />}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{row.disabled ? "Enable user" : "Disable user"}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 export const columns: ColumnDef<UserRow>[] = [
   {
     accessorKey: "name",
     header: "Name",
-    cell: ({ row }) => row.original.name ?? "—",
+    cell: ({ row }) => (
+      <span className={cn(row.original.disabled && "text-muted-foreground line-through")}>
+        {row.original.name ?? "—"}
+      </span>
+    ),
   },
   {
     accessorKey: "email",
     header: "Email",
+    cell: ({ row }) => (
+      <span className={cn(row.original.disabled && "text-muted-foreground line-through")}>
+        {row.original.email}
+      </span>
+    ),
   },
   {
     accessorKey: "createdAt",
@@ -74,18 +114,24 @@ export const columns: ColumnDef<UserRow>[] = [
     cell: ({ row }) => new Date(row.original.createdAt).toLocaleDateString(),
   },
   {
+    id: "status",
+    header: "Status",
+    cell: ({ row }) =>
+      row.original.disabled ? (
+        <span className="text-xs text-muted-foreground">Disabled</span>
+      ) : row.original.isActive ? (
+        <span className="text-xs text-emerald-500">Active</span>
+      ) : (
+        <span className="text-xs text-amber-500">Pending</span>
+      ),
+  },
+  {
     id: "actions",
     header: "",
-    cell: ({ row, table }) => (
+    cell: ({ row }) => (
       <div className="flex items-center justify-end gap-1">
         {row.original.canResend && <ResendEmailButton row={row.original} />}
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={() => table.options.meta?.onDelete?.(row.original)}
-        >
-          <Trash2 size={16} />
-        </Button>
+        <ToggleUserButton row={row.original} />
       </div>
     ),
   },

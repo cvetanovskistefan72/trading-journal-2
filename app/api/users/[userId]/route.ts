@@ -4,20 +4,22 @@ import { requireAdmin } from "@/lib/requireAdmin";
 
 type Params = Promise<{ userId: string }>;
 
-export async function DELETE(_req: NextRequest, context: { params: Params }) {
+export async function PATCH(_req: NextRequest, context: { params: Params }) {
   const { userId } = await context.params;
 
   const admin = await requireAdmin();
   if (admin instanceof NextResponse) return admin;
 
-  try {
-    await prisma.user.delete({ where: { id: userId } });
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Failed to delete user:", error);
-    return NextResponse.json(
-      { error: "Failed to delete user" },
-      { status: 500 }
-    );
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { disabled: !user.disabled },
+    select: { id: true, disabled: true },
+  });
+
+  return NextResponse.json(updated);
 }
