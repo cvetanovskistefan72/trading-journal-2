@@ -1,6 +1,10 @@
+export type QuestionType = "single" | "multi";
+
 export type StrategyQuestion = {
   id: string;
   text: string;
+  type: QuestionType;
+  options: string[];
 };
 
 export type Strategy = {

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { StrategyDialog } from "@/components/strategy-dialog";
+import { StrategyDetailSheet } from "@/components/strategy-detail-sheet";
 import {
   getStrategies,
   createStrategy,
@@ -22,6 +23,7 @@ export default function StrategiesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Strategy | null>(null);
   const [deleting, setDeleting] = useState<Strategy | null>(null);
+  const [viewing, setViewing] = useState<Strategy | null>(null);
 
   const { data: strategies = [], isLoading } = useQuery({
     queryKey: ["strategies"],
@@ -56,6 +58,7 @@ export default function StrategiesPage() {
       toast.success("Strategy deleted");
       queryClient.invalidateQueries({ queryKey: ["strategies"] });
       setDeleting(null);
+      setViewing(null);
     },
     onError: () => toast.error("Failed to delete strategy"),
   });
@@ -68,6 +71,17 @@ export default function StrategiesPage() {
     }
   }
 
+  function handleEdit(strategy: Strategy) {
+    setViewing(null);
+    setEditing(strategy);
+    setDialogOpen(true);
+  }
+
+  function handleDelete(strategy: Strategy) {
+    setViewing(null);
+    setDeleting(strategy);
+  }
+
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   return (
@@ -78,7 +92,7 @@ export default function StrategiesPage() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Strategies</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Manage your trading setups, confluences and pre-trade checklists.
+              Manage your trading setups, confluences and post-trade questions.
             </p>
           </div>
           <Button onClick={() => { setEditing(null); setDialogOpen(true); }}>
@@ -106,13 +120,20 @@ export default function StrategiesPage() {
               <StrategyCard
                 key={strategy.id}
                 strategy={strategy}
-                onEdit={() => { setEditing(strategy); setDialogOpen(true); }}
-                onDelete={() => setDeleting(strategy)}
+                onClick={() => setViewing(strategy)}
+                onEdit={() => handleEdit(strategy)}
+                onDelete={() => handleDelete(strategy)}
               />
             ))}
           </div>
         )}
       </div>
+
+      {/* Detail sheet */}
+      <StrategyDetailSheet
+        strategy={viewing}
+        onClose={() => setViewing(null)}
+      />
 
       {/* Create / Edit dialog */}
       <StrategyDialog
@@ -138,20 +159,23 @@ export default function StrategiesPage() {
 
 function StrategyCard({
   strategy,
+  onClick,
   onEdit,
   onDelete,
 }: {
   strategy: Strategy;
+  onClick: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }) {
-  const visibleConfluences = strategy.confluences.slice(0, 5);
+  const visibleConfluences = strategy.confluences.slice(0, 4);
   const extraConfluences = strategy.confluences.length - visibleConfluences.length;
-  const visibleQuestions = strategy.questions.slice(0, 3);
-  const extraQuestions = strategy.questions.length - visibleQuestions.length;
 
   return (
-    <div className="relative flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-shadow hover:shadow-md hover:shadow-black/20">
+    <div
+      className="relative flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-all hover:shadow-md hover:shadow-black/20 hover:border-border/80 cursor-pointer"
+      onClick={onClick}
+    >
       {/* Header */}
       <div className="flex items-start justify-between gap-2 px-5 pt-4 pb-3">
         <div className="min-w-0">
@@ -162,7 +186,7 @@ function StrategyCard({
             <p className="text-xs text-muted-foreground/40 mt-1">No description</p>
           )}
         </div>
-        <div className="flex shrink-0 gap-0.5">
+        <div className="flex shrink-0 gap-0.5" onClick={(e) => e.stopPropagation()}>
           <Button size="icon" variant="ghost" onClick={onEdit} className="h-7 w-7">
             <Pencil className="h-3.5 w-3.5" />
           </Button>
@@ -175,56 +199,26 @@ function StrategyCard({
       {/* Divider */}
       <div className="mx-5 border-t border-border/50" />
 
-      {/* Body */}
-      <div className="flex flex-col gap-4 px-5 py-4 flex-1">
-        {strategy.confluences.length === 0 && strategy.questions.length === 0 ? (
-          <p className="text-xs text-muted-foreground/50 italic">No confluences or questions yet.</p>
+      {/* Confluences preview */}
+      <div className="px-5 py-4 flex-1">
+        {strategy.confluences.length > 0 ? (
+          <div className="flex flex-wrap gap-1.5">
+            {visibleConfluences.map((c) => (
+              <span
+                key={c}
+                className="rounded-md border border-border bg-muted/50 px-2 py-0.5 text-xs font-medium truncate max-w-36"
+              >
+                {c}
+              </span>
+            ))}
+            {extraConfluences > 0 && (
+              <span className="rounded-md border border-dashed border-border px-2 py-0.5 text-xs text-muted-foreground">
+                +{extraConfluences}
+              </span>
+            )}
+          </div>
         ) : (
-          <>
-            {strategy.confluences.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
-                  Confluences
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {visibleConfluences.map((c) => (
-                    <span
-                      key={c}
-                      className="rounded-md border border-border bg-muted/50 px-2 py-0.5 text-xs font-medium truncate max-w-36"
-                    >
-                      {c}
-                    </span>
-                  ))}
-                  {extraConfluences > 0 && (
-                    <span className="rounded-md border border-dashed border-border px-2 py-0.5 text-xs text-muted-foreground">
-                      +{extraConfluences}
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {strategy.questions.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
-                  Pre-trade checklist
-                </p>
-                <ol className="space-y-1">
-                  {visibleQuestions.map((q, i) => (
-                    <li key={q.id} className="flex items-start gap-2 text-xs">
-                      <span className="shrink-0 mt-0.5 flex h-4 w-4 items-center justify-center rounded border border-border text-[10px] text-muted-foreground font-mono">
-                        {i + 1}
-                      </span>
-                      <span className="truncate text-foreground/80">{q.text}</span>
-                    </li>
-                  ))}
-                  {extraQuestions > 0 && (
-                    <li className="text-xs text-muted-foreground pl-6">+{extraQuestions} more</li>
-                  )}
-                </ol>
-              </div>
-            )}
-          </>
+          <p className="text-xs text-muted-foreground/40 italic">No confluences</p>
         )}
       </div>
 
@@ -234,8 +228,9 @@ function StrategyCard({
           <span className="font-medium text-foreground">{strategy.confluences.length}</span> confluences
         </span>
         <span className="text-[11px] text-muted-foreground">
-          <span className="font-medium text-foreground">{strategy.questions.length}</span> questions
+          <span className="font-medium text-foreground">{strategy.questions.length}</span> post-trade q.
         </span>
+        <span className="ml-auto text-[11px] text-muted-foreground/50">Click to view →</span>
       </div>
     </div>
   );
