@@ -13,15 +13,30 @@ enum Role {
 }
 
 model User {
-  id               String    @id @default(cuid())
-  email            String    @unique
+  id               String     @id @default(cuid())
+  email            String     @unique
   password         String
   name             String?
-  role             Role      @default(USER)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @default(now()) @updatedAt
+  role             Role       @default(USER)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @default(now()) @updatedAt
   resetToken       String?
   resetTokenExpiry DateTime?
-  disabled         Boolean   @default(false)
-  testFlag         Boolean   @default(false)
+  disabled         Boolean    @default(false)
+  testFlag         Boolean    @default(false)
+  strategies       Strategy[]
+}
+
+model Strategy {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  description  String?
+  confluences  String[]
+  questions    Json     @default("[]")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+
+  @@index([userId])
 }
