@@ -151,7 +151,7 @@ function StrategyCard({
   const extraQuestions = strategy.questions.length - visibleQuestions.length;
 
   return (
-    <div className="group relative flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-shadow hover:shadow-md hover:shadow-black/20">
+    <div className="relative flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-shadow hover:shadow-md hover:shadow-black/20">
       {/* Header */}
       <div className="flex items-start justify-between gap-2 px-5 pt-4 pb-3">
         <div className="min-w-0">
@@ -162,7 +162,7 @@ function StrategyCard({
             <p className="text-xs text-muted-foreground/40 mt-1">No description</p>
           )}
         </div>
-        <div className="flex shrink-0 gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex shrink-0 gap-0.5">
           <Button size="icon" variant="ghost" onClick={onEdit} className="h-7 w-7">
             <Pencil className="h-3.5 w-3.5" />
           </Button>
