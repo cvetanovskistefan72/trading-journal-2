@@ -5,6 +5,9 @@ export const routes = {
   setPassword: "/set-password",
   changePassword: "/change-password",
   dashboard: "/dashboard",
+  analyticsDay: "/analytics/day",
+  analyticsStrategies: "/analytics/strategies",
+  journal: "/journal",
   adminUsers: "/admin/users",
   adminUsersCreate: "/admin/users/create",
 } as const;

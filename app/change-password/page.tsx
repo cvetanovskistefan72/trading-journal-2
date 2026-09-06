@@ -71,8 +71,8 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <main className="flex-1">
-      <div className="mx-auto max-w-md px-6 py-10">
+    <main className="flex-1 flex items-center justify-center p-8">
+      <div className="w-full max-w-md">
         <form onSubmit={handleSubmit(onSubmit)}>
           <Card>
             <CardHeader>

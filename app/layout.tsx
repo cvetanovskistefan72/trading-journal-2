@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/providers";
 import { Toaster } from "sonner";
-import { Navbar } from "@/components/navbar";
+import { Sidebar } from "@/components/sidebar";
 
 const fontSans = Geist({
   subsets: ["latin"],
@@ -33,10 +33,12 @@ export default function RootLayout({
       className={`${fontSans.variable} ${fontMono.variable} antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen flex flex-col bg-background text-foreground">
+      <body className="min-h-screen flex bg-background text-foreground">
         <Providers>
-          <Navbar />
-          {children}
+          <Sidebar />
+          <div className="flex flex-1 flex-col min-h-screen">
+            {children}
+          </div>
           <Toaster richColors />
         </Providers>
       </body>

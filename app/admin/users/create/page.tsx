@@ -63,7 +63,7 @@ export default function CreateUserPage() {
 
   return (
     <main className="flex-1">
-      <div className="mx-auto max-w-md px-6 py-10">
+      <div className="px-8 py-8 max-w-lg">
         <form onSubmit={handleSubmit(onSubmit)}>
           <Card>
             <CardHeader>
