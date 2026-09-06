@@ -50,8 +50,10 @@ function QuestionEditor({
   const optionInputRef = useRef<HTMLInputElement>(null);
 
   function addOption() {
-    const val = optionInput.trim();
-    if (!val || question.options.includes(val)) return;
+    const raw = optionInput.trim();
+    if (!raw) return;
+    const val = raw.charAt(0).toUpperCase() + raw.slice(1);
+    if (question.options.includes(val)) return;
     onChange({ ...question, options: [...question.options, val] });
     setOptionInput("");
     optionInputRef.current?.focus();
