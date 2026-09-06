@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/providers";
 import { Toaster } from "sonner";
 import { Sidebar } from "@/components/sidebar";
+import { MobileTopBar } from "@/components/mobile-top-bar";
 
 const fontSans = Geist({
   subsets: ["latin"],
@@ -37,6 +38,7 @@ export default function RootLayout({
         <Providers>
           <Sidebar />
           <div className="flex flex-1 flex-col min-h-screen">
+            <MobileTopBar />
             {children}
           </div>
           <Toaster richColors />

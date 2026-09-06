@@ -46,7 +46,7 @@ export default function UsersPage() {
 
   return (
     <main className="flex-1">
-      <div className="px-8 py-8 space-y-6">
+      <div className="px-4 py-6 sm:px-8 sm:py-8 space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
