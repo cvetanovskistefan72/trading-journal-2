@@ -13,7 +13,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { resendUserEmail, toggleUser, type UserRow } from "@/services/users.service";
+import { resendUserEmail, toggleUser } from "@/services/users.service";
+import type { UserRow } from "@/types/user";
 
 function ResendEmailButton({ row }: { row: UserRow }) {
   const queryClient = useQueryClient();

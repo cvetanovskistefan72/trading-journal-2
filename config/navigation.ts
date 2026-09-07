@@ -27,7 +27,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Analytics",
     icon: BarChart2,
     children: [
-      { label: "Day View", href: routes.analyticsDay, icon: CalendarDays },
+      { label: "Calendar", href: routes.analyticsDay, icon: CalendarDays },
       { label: "Strategies", href: routes.analyticsStrategies, icon: TrendingUp },
     ],
   },

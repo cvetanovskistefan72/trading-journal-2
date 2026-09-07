@@ -47,3 +47,22 @@ export type CreateTradeInput = {
   answers: TradeAnswer[];
   notes?: string;
 };
+
+export type TradesParams = {
+  page?: number;
+  dateFrom?: string;
+  dateTo?: string;
+  sortBy?: "date" | "grade" | "pnl";
+  sortDir?: "asc" | "desc";
+  search?: string;
+  strategyId?: string;
+  archived?: boolean;
+};
+
+export type TradesResponse = {
+  trades: Trade[];
+  total: number;
+  page: number;
+  totalPages: number;
+  limit: number;
+};

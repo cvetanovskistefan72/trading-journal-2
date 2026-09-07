@@ -10,17 +10,17 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { TradeDialog } from "@/components/trade-dialog";
-import { TradeFilters } from "@/components/trade-filters";
+import { TradeDialog } from "@/components/journal/TradeDialog";
+import { TradeFilters } from "@/components/journal/TradeFilters";
 import { getTrades, createTrade, updateTrade, deleteTrade, archiveTrade, restoreTrade } from "@/services/trades.service";
 import { buildRandomTrade } from "@/lib/random-trade";
-import type { TradesParams } from "@/services/trades.service";
+import type { TradesParams } from "@/types/trade";
 import { getStrategies } from "@/services/strategies.service";
 import type { Trade, CreateTradeInput } from "@/types/trade";
 
 const RESULT_STYLES: Record<string, string> = {
   win: "bg-green-500/10 text-green-500",
-  loss: "bg-red-500/10 text-red-500",
+  loss: "bg-red-400/10 text-red-400",
   breakeven: "bg-yellow-500/10 text-yellow-500",
 };
 
@@ -296,7 +296,7 @@ export default function JournalPage() {
                           </span>
                         </td>
                         <td className={cn("px-4 py-3 text-right font-medium tabular-nums",
-                          trade.pnl > 0 ? "text-green-500" : trade.pnl < 0 ? "text-red-500" : "text-muted-foreground"
+                          trade.pnl > 0 ? "text-green-500" : trade.pnl < 0 ? "text-red-400" : "text-muted-foreground"
                         )}>
                           {trade.pnl >= 0 ? "+" : ""}${trade.pnl.toFixed(2)}
                         </td>

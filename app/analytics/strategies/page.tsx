@@ -8,8 +8,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { StrategyDialog } from "@/components/strategy-dialog";
-import { StrategyDetailSheet } from "@/components/strategy-detail-sheet";
+import { StrategyDialog } from "@/components/strategy/StrategyDialog";
+import { StrategyDetailSheet } from "@/components/strategy/StrategyDetailSheet";
 import {
   getStrategies,
   createStrategy,

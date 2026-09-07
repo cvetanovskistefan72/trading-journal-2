@@ -1,14 +1,5 @@
 import axiosInstance from "@/lib/axios";
-
-export type UserRow = {
-  id: string;
-  email: string;
-  name: string | null;
-  createdAt: string;
-  isActive: boolean;
-  canResend: boolean;
-  disabled: boolean;
-};
+import type { UserRow } from "@/types/user";
 
 export async function getUsers(): Promise<UserRow[]> {
   const { data } = await axiosInstance.get<UserRow[]>("/api/users");

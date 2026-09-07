@@ -1,24 +1,5 @@
 import axiosInstance from "@/lib/axios";
-import type { Trade, CreateTradeInput } from "@/types/trade";
-
-export type TradesParams = {
-  page?: number;
-  dateFrom?: string;
-  dateTo?: string;
-  sortBy?: "date" | "grade" | "pnl";
-  sortDir?: "asc" | "desc";
-  search?: string;
-  strategyId?: string;
-  archived?: boolean;
-};
-
-export type TradesResponse = {
-  trades: Trade[];
-  total: number;
-  page: number;
-  totalPages: number;
-  limit: number;
-};
+import type { Trade, CreateTradeInput, TradesParams, TradesResponse } from "@/types/trade";
 
 export async function getTrades(params: TradesParams = {}): Promise<TradesResponse> {
   const query = new URLSearchParams();
