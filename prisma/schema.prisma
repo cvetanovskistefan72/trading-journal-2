@@ -25,6 +25,7 @@ model User {
   disabled         Boolean    @default(false)
   testFlag         Boolean    @default(false)
   strategies       Strategy[]
+  trades           Trade[]
 }
 
 model Strategy {
@@ -35,8 +36,41 @@ model Strategy {
   description  String?
   confluences  String[]
   questions    Json     @default("[]")
+  trades       Trade[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @default(now()) @updatedAt
 
   @@index([userId])
+}
+
+model Trade {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strategyId  String
+  strategy    Strategy @relation(fields: [strategyId], references: [id])
+  date        DateTime @db.Date
+  instrument  String
+  direction   String
+  session     String
+  entryTime   String
+  exitTime    String
+  result      String
+  pnl         Float
+  riskAmount  Float
+  grade       String
+  gradeOrder  Int      @default(0)
+  confluences String[]
+  answers     Json     @default("[]")
+  notes       String?
+  archived    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  @@index([userId])
+  @@index([userId, archived])
+  @@index([userId, date])
+  @@index([userId, gradeOrder])
+  @@index([userId, pnl])
+  @@index([strategyId])
 }

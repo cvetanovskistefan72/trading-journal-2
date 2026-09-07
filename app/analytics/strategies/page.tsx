@@ -60,7 +60,10 @@ export default function StrategiesPage() {
       setDeleting(null);
       setViewing(null);
     },
-    onError: () => toast.error("Failed to delete strategy"),
+    onError: (e: unknown) => {
+      const msg = (e as { response?: { data?: { error?: string } } })?.response?.data?.error;
+      toast.error(msg ?? "Failed to delete strategy");
+    },
   });
 
   function handleSubmit(input: CreateStrategyInput) {

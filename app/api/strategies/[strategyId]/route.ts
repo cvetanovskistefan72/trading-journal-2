@@ -58,6 +58,14 @@ export async function DELETE(_req: NextRequest, context: { params: Params }) {
   const existing = await getOwnedStrategy(strategyId, user.id);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  const tradeCount = await prisma.trade.count({ where: { strategyId } });
+  if (tradeCount > 0) {
+    return NextResponse.json(
+      { error: `Cannot delete strategy with ${tradeCount} trade${tradeCount !== 1 ? "s" : ""} attached to it.` },
+      { status: 409 }
+    );
+  }
+
   await prisma.strategy.delete({ where: { id: strategyId } });
 
   return NextResponse.json({ success: true });
