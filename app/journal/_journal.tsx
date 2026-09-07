@@ -115,9 +115,12 @@ export default function JournalPage() {
   });
 
   const randomMutation = useMutation({
-    mutationFn: () => Promise.all(
-      Array.from({ length: 10 }, () => createTrade(buildRandomTrade(strategies)))
-    ),
+    mutationFn: async () => {
+      for (let i = 0; i < 10; i++) {
+        await createTrade(buildRandomTrade(strategies));
+        if (i < 9) await new Promise((r) => setTimeout(r, 300));
+      }
+    },
     onSuccess: () => {
       toast.success("10 random trades logged");
       queryClient.invalidateQueries({ queryKey: ["trades"] });
