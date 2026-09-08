@@ -36,13 +36,17 @@ export function AuthSplitLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="relative z-10 w-full max-w-sm">
-          <div className="bg-card rounded-2xl shadow-2xl border border-border/60 p-8 space-y-6">
+          <div className="bg-card rounded-2xl shadow-2xl border border-border/60 px-8 py-8 space-y-5">
 
             {/* Logo */}
-            <div className="flex items-center gap-2 pb-1">
-              <LineChart className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold tracking-tight text-muted-foreground">Trading Journal</span>
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10">
+                <LineChart className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <span className="text-sm font-semibold tracking-tight text-foreground">Trading Journal</span>
             </div>
+
+            <hr className="border-border/50" />
 
             {children}
           </div>

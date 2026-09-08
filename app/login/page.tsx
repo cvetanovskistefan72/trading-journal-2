@@ -37,14 +37,14 @@ export default function LoginPage() {
 
   return (
     <AuthSplitLayout>
-      <div className="space-y-6">
+      <div className="space-y-5">
         <div className="space-y-1">
-          <h1 className="text-xl font-bold tracking-tight">Welcome back</h1>
-          <p className="text-sm text-muted-foreground">Sign in to continue</p>
+          <h1 className="text-2xl font-bold tracking-tight">Sign in</h1>
+          <p className="text-sm text-muted-foreground">Welcome back to your trading journal</p>
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="space-y-4">
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="email">Email</Label>
             <InputGroup
               id="email"
@@ -58,29 +58,27 @@ export default function LoginPage() {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <button
+                type="button"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => router.push(routes.forgotPassword)}
+              >
+                Forgot password?
+              </button>
+            </div>
             <InputGroup
               id="password"
               icon={Lock}
               type="password"
-              placeholder="Your password"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
               autoComplete="current-password"
             />
-          </div>
-
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              variant="link"
-              className="text-xs text-muted-foreground px-0 h-auto"
-              onClick={() => router.push(routes.forgotPassword)}
-            >
-              Forgot password?
-            </Button>
           </div>
 
           <Button type="submit" size="lg" className="w-full" disabled={loading}>
