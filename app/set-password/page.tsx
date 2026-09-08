@@ -9,30 +9,19 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { InputGroup } from "@/components/ui/input-group";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { AuthShell } from "@/components/auth-shell";
+import { AuthSplitLayout } from "@/components/auth-split-layout";
 import { getSetPasswordUser, setPassword } from "@/services/auth.service";
 import { routes } from "@/config/routes";
 
-type FormData = {
-  password: string;
-  confirmPassword: string;
-};
+type FormData = { password: string; confirmPassword: string };
 
 function SetPasswordInner() {
   const router = useRouter();
   const params = useSearchParams();
   const token = params.get("token");
-
   const { register, handleSubmit } = useForm<FormData>();
 
   const { data, isLoading, error } = useQuery({
@@ -42,131 +31,97 @@ function SetPasswordInner() {
     enabled: !!token,
   });
 
-  const email = data?.email ?? "";
-
   const mutation = useMutation({
-    mutationFn: ({ password }: { password: string }) =>
-      setPassword(token!, password),
-    onSuccess: () => {
-      toast.success("Password saved");
-      router.push(routes.login);
-    },
+    mutationFn: ({ password }: { password: string }) => setPassword(token!, password),
+    onSuccess: () => { toast.success("Password saved"); router.push(routes.login); },
     onError: (err: unknown) => {
-      const message =
-        typeof err === "object" && err && "error" in err
-          ? String((err as { error: string }).error)
-          : "Something went wrong";
+      const message = typeof err === "object" && err && "error" in err
+        ? String((err as { error: string }).error) : "Something went wrong";
       toast.error(message);
     },
   });
 
   const onSubmit = (form: FormData) => {
-    if (!form.password || !form.confirmPassword) {
-      toast.error("Enter a password");
-      return;
-    }
-    if (form.password.length < 8) {
-      toast.error("Password must be at least 8 characters");
-      return;
-    }
-    if (form.password !== form.confirmPassword) {
-      toast.error("Passwords don't match");
-      return;
-    }
+    if (!form.password || !form.confirmPassword) { toast.error("Enter a password"); return; }
+    if (form.password.length < 8) { toast.error("Password must be at least 8 characters"); return; }
+    if (form.password !== form.confirmPassword) { toast.error("Passwords don't match"); return; }
     mutation.mutate({ password: form.password });
   };
 
   if (!token || error) {
     return (
-      <AuthShell>
-        <Card className="w-full max-w-sm border-border/60 bg-card/80 backdrop-blur-xl shadow-2xl">
-          <CardContent className="py-10 text-center space-y-3">
-            <h2 className="text-lg font-semibold">Invalid link</h2>
-            <p className="text-sm text-muted-foreground">
-              The link is expired or has already been used.
-            </p>
-            <Button onClick={() => router.push(routes.login)}>
-              Back to sign in
-            </Button>
-          </CardContent>
-        </Card>
-      </AuthShell>
+      <AuthSplitLayout>
+        <div className="py-4 text-center space-y-4">
+          <h2 className="text-lg font-semibold">Invalid link</h2>
+          <p className="text-sm text-muted-foreground">The link is expired or has already been used.</p>
+          <Button onClick={() => router.push(routes.login)}>Back to sign in</Button>
+        </div>
+      </AuthSplitLayout>
     );
   }
 
   if (isLoading) {
     return (
-      <AuthShell>
-        <Spinner />
-      </AuthShell>
+      <AuthSplitLayout>
+        <div className="flex justify-center py-8"><Spinner /></div>
+      </AuthSplitLayout>
     );
   }
 
   return (
-    <AuthShell>
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-sm">
-        <Card className="border-border/60 bg-card/80 backdrop-blur-xl shadow-2xl">
-          <CardHeader>
-            <CardTitle className="text-xl">Set password</CardTitle>
-            <CardDescription>
-              Choose a new password for your account
-            </CardDescription>
-          </CardHeader>
+    <AuthSplitLayout>
+      <div className="space-y-7">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight">Set password</h1>
+          <p className="text-sm text-muted-foreground">Choose a new password for your account</p>
+        </div>
 
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" value={email} disabled />
-            </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" value={data?.email ?? ""} disabled />
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <InputGroup
-                id="password"
-                icon={Lock}
-                type="password"
-                placeholder="New password"
-                autoComplete="new-password"
-                {...register("password")}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <InputGroup
+              id="password"
+              icon={Lock}
+              type="password"
+              placeholder="New password"
+              autoComplete="new-password"
+              {...register("password")}
+            />
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirm">Confirm password</Label>
-              <InputGroup
-                id="confirm"
-                icon={Lock}
-                type="password"
-                placeholder="Repeat password"
-                autoComplete="new-password"
-                {...register("confirmPassword")}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirm">Confirm password</Label>
+            <InputGroup
+              id="confirm"
+              icon={Lock}
+              type="password"
+              placeholder="Repeat password"
+              autoComplete="new-password"
+              {...register("confirmPassword")}
+            />
+          </div>
 
-            <Button
-              type="submit"
-              size="lg"
-              className="w-full"
-              disabled={mutation.isPending}
-            >
-              {mutation.isPending ? "Saving..." : "Save password"}
-            </Button>
-          </CardContent>
-        </Card>
-      </form>
-    </AuthShell>
+          <Button type="submit" size="lg" className="w-full" disabled={mutation.isPending}>
+            {mutation.isPending ? "Saving..." : "Save password"}
+          </Button>
+        </form>
+      </div>
+    </AuthSplitLayout>
   );
 }
 
 export default function Page() {
   return (
-    <Suspense
-      fallback={
-        <AuthShell>
-          <Spinner />
-        </AuthShell>
-      }
-    >
+    <Suspense fallback={
+      <AuthSplitLayout>
+        <div className="flex justify-center py-8"><Spinner /></div>
+      </AuthSplitLayout>
+    }>
       <SetPasswordInner />
     </Suspense>
   );

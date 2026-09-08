@@ -34,7 +34,7 @@ export default function RootLayout({
       className={`${fontSans.variable} ${fontMono.variable} antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen flex bg-background text-foreground">
+      <body className="min-h-screen flex bg-background text-foreground" suppressHydrationWarning>
         <Providers>
           <Sidebar />
           <div className="flex flex-1 flex-col min-h-screen">

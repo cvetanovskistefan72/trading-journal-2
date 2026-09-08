@@ -8,15 +8,8 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { InputGroup } from "@/components/ui/input-group";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { AuthShell } from "@/components/auth-shell";
+import { AuthSplitLayout } from "@/components/auth-split-layout";
 import { routes } from "@/config/routes";
 
 export default function LoginPage() {
@@ -30,15 +23,9 @@ export default function LoginPage() {
       toast.error("Enter your email and password");
       return;
     }
-
     setLoading(true);
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    const res = await signIn("credentials", { email, password, redirect: false });
     setLoading(false);
-
     if (!res?.error) {
       toast.success("Welcome back");
       router.push(routes.dashboard);
@@ -49,68 +36,58 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthShell>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleLogin();
-        }}
-        className="w-full max-w-sm"
-      >
-        <Card className="border-border/60 bg-card/80 backdrop-blur-xl shadow-2xl">
-          <CardHeader>
-            <CardTitle className="text-xl">Welcome back</CardTitle>
-            <CardDescription>
-              Sign in to your trading journal
-            </CardDescription>
-          </CardHeader>
+    <AuthSplitLayout>
+      <div className="space-y-6">
+        <div className="space-y-1">
+          <h1 className="text-xl font-bold tracking-tight">Welcome back</h1>
+          <p className="text-sm text-muted-foreground">Sign in to continue</p>
+        </div>
 
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <InputGroup
-                id="email"
-                icon={Mail}
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-                autoComplete="email"
-              />
-            </div>
+        <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <InputGroup
+              id="email"
+              icon={Mail}
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+              autoComplete="email"
+            />
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <InputGroup
-                id="password"
-                icon={Lock}
-                type="password"
-                placeholder="Your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
-                autoComplete="current-password"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <InputGroup
+              id="password"
+              icon={Lock}
+              type="password"
+              placeholder="Your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+              autoComplete="current-password"
+            />
+          </div>
 
-            <Button type="submit" size="lg" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign in"}
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              variant="link"
+              className="text-xs text-muted-foreground px-0 h-auto"
+              onClick={() => router.push(routes.forgotPassword)}
+            >
+              Forgot password?
             </Button>
+          </div>
 
-            <div className="flex justify-center">
-              <Button
-                type="button"
-                variant="link"
-                className="text-muted-foreground"
-                onClick={() => router.push(routes.forgotPassword)}
-              >
-                Forgot password?
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </form>
-    </AuthShell>
+          <Button type="submit" size="lg" className="w-full" disabled={loading}>
+            {loading ? "Signing in..." : "Sign in"}
+          </Button>
+        </form>
+      </div>
+    </AuthSplitLayout>
   );
 }

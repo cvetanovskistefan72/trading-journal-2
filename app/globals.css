@@ -92,31 +92,31 @@
 
 .dark {
   /* Zinc dark palette — deep neutral surfaces, emerald primary, red destructive. */
-  --background: oklch(0.141 0.005 285.823);
+  --background: oklch(0.22 0.005 285.823);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.21 0.006 285.885);
+  --card: oklch(0.28 0.006 285.885);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.21 0.006 285.885);
+  --popover: oklch(0.28 0.006 285.885);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.72 0.18 152);
   --primary-foreground: oklch(0.141 0.005 285.823);
-  --secondary: oklch(0.274 0.006 286.033);
+  --secondary: oklch(0.34 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
+  --muted: oklch(0.34 0.006 286.033);
+  --muted-foreground: oklch(0.73 0.015 286.067);
+  --accent: oklch(0.34 0.006 286.033);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --success: oklch(0.72 0.18 152);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 18%);
   --ring: oklch(0.552 0.016 285.938);
   --chart-1: oklch(0.72 0.18 152);
   --chart-2: oklch(0.704 0.191 22.216);
   --chart-3: oklch(0.828 0.189 84.429);
   --chart-4: oklch(0.696 0.17 162.48);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.21 0.006 285.885);
+  --sidebar: oklch(0.24 0.006 285.885);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.72 0.18 152);
   --sidebar-primary-foreground: oklch(0.141 0.005 285.823);

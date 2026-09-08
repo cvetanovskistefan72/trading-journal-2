@@ -188,7 +188,7 @@ export default function CalendarPage() {
                         <p className={cn("text-xs font-bold tabular-nums leading-none", RESULT_TEXT[entry.result])}>
                           {fmtPnl(entry.pnl, true)}
                         </p>
-                        <p className="text-[10px] text-muted-foreground leading-none">{entry.tradeCount}t</p>
+                        <p className="text-[10px] text-muted-foreground leading-none">{entry.tradeCount} trade{entry.tradeCount !== 1 ? "s" : ""}</p>
                       </div>
                     )}
                   </div>
@@ -202,7 +202,7 @@ export default function CalendarPage() {
                     <span className={cn("text-xs font-bold tabular-nums", ws.pnl > 0 ? "text-emerald-500" : ws.pnl < 0 ? "text-rose-500" : "text-amber-500")}>
                       {fmtPnl(ws.pnl, true)}
                     </span>
-                    <span className="text-[10px] text-muted-foreground">{ws.count}t</span>
+                    <span className="text-[10px] text-muted-foreground">{ws.count} trade{ws.count !== 1 ? "s" : ""}</span>
                     <div className="flex gap-1 mt-0.5">
                       {ws.wins > 0 && <span className="text-[9px] font-semibold text-emerald-500">{ws.wins}W</span>}
                       {ws.losses > 0 && <span className="text-[9px] font-semibold text-rose-500">{ws.losses}L</span>}
