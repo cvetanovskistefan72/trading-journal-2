@@ -1,9 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Cell, ReferenceLine, ResponsiveContainer } from "recharts";
-
-type DayBucket = { day: string; pnl: number; wins: number; losses: number; trades: number };
+import { useAnalytics } from "@/hooks/useAnalytics";
+import type { DayBucket } from "@/hooks/useAnalytics";
 
 function fmtUsd(v: number) {
   return (v >= 0 ? "+" : "-") + "$" + Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -28,13 +27,9 @@ function DayTooltip({ active, payload }: { active?: boolean; payload?: { payload
 }
 
 export function WeekdayPerformance() {
-  const { data = [], isLoading } = useQuery<DayBucket[]>({
-    queryKey: ["analytics", "by-weekday"],
-    queryFn: () => fetch("/api/analytics/by-weekday").then((r) => r.json()),
-    staleTime: 60_000,
-  });
-
-  const hasTrades = data.some((d) => d.trades > 0);
+  const { data, isLoading } = useAnalytics();
+  const days = data?.byWeekday ?? [];
+  const hasTrades = days.some((d) => d.trades > 0);
 
   return (
     <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
@@ -46,7 +41,7 @@ export function WeekdayPerformance() {
         <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">No trades yet</div>
       ) : (
         <ResponsiveContainer width="100%" height={192}>
-          <BarChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }} barSize={32}>
+          <BarChart data={days} margin={{ top: 4, right: 4, left: 0, bottom: 0 }} barSize={32}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
             <XAxis
               dataKey="day"
@@ -64,7 +59,7 @@ export function WeekdayPerformance() {
             <ReferenceLine y={0} stroke="var(--color-border)" strokeWidth={1.5} />
             <Tooltip content={<DayTooltip />} cursor={{ fill: "var(--color-border)", opacity: 0.3 }} />
             <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
-              {data.map((entry, i) => (
+              {days.map((entry, i) => (
                 <Cell
                   key={i}
                   fill={entry.pnl > 0 ? "var(--color-chart-1)" : entry.pnl < 0 ? "var(--color-chart-2)" : "var(--color-chart-3)"}

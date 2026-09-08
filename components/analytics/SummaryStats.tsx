@@ -1,13 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { PieChart, Pie, Cell } from "recharts";
 import { cn } from "@/lib/utils";
-
-type Summary = {
-  total: number; wins: number; losses: number; winRate: number;
-  totalPnl: number; profitFactor: number; avgWin: number; avgLoss: number; avgR: number;
-};
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 function fmtUsd(v: number) {
   return (v >= 0 ? "+" : "") + "$" + Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -23,11 +18,8 @@ function StatBox({ label, value, color }: { label: string; value: string; color?
 }
 
 export function SummaryStats() {
-  const { data, isLoading } = useQuery<Summary>({
-    queryKey: ["analytics", "summary"],
-    queryFn: () => fetch("/api/analytics/summary").then((r) => r.json()),
-    staleTime: 60_000,
-  });
+  const { data, isLoading } = useAnalytics();
+  const summary = data?.summary;
 
   if (isLoading) {
     return (
@@ -37,7 +29,7 @@ export function SummaryStats() {
     );
   }
 
-  if (!data || data.total === 0) {
+  if (!summary || summary.total === 0) {
     return (
       <div className="rounded-2xl border border-border bg-card p-6 h-56 flex items-center justify-center text-sm text-muted-foreground">
         No trades yet
@@ -45,10 +37,10 @@ export function SummaryStats() {
     );
   }
 
-  const breakeven = data.total - data.wins - data.losses;
+  const breakeven = summary.total - summary.wins - summary.losses;
   const pieData = [
-    { name: "Wins", value: data.wins, color: "var(--color-chart-1)" },
-    { name: "Losses", value: data.losses, color: "var(--color-chart-2)" },
+    { name: "Wins", value: summary.wins, color: "var(--color-chart-1)" },
+    { name: "Losses", value: summary.losses, color: "var(--color-chart-2)" },
     ...(breakeven > 0 ? [{ name: "Breakeven", value: breakeven, color: "var(--color-chart-3)" }] : []),
   ];
 
@@ -73,23 +65,23 @@ export function SummaryStats() {
             </Pie>
           </PieChart>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-2xl font-bold tabular-nums leading-none">{data.winRate.toFixed(0)}%</span>
+            <span className="text-2xl font-bold tabular-nums leading-none">{summary.winRate.toFixed(0)}%</span>
             <span className="text-[10px] text-muted-foreground mt-0.5 uppercase tracking-widest leading-none">win rate</span>
           </div>
         </div>
 
         {/* Stats grid */}
         <div className="flex-1 grid grid-cols-2 gap-x-6 gap-y-4">
-          <StatBox label="Total Trades" value={String(data.total)} />
+          <StatBox label="Total Trades" value={String(summary.total)} />
           <StatBox label="Profit Factor" value={
-            data.profitFactor === Infinity ? "∞" : data.profitFactor.toFixed(2)
-          } color={data.profitFactor >= 1 ? "text-emerald-500" : "text-rose-400"} />
-          <StatBox label="Avg Win" value={fmtUsd(data.avgWin)} color="text-emerald-500" />
-          <StatBox label="Avg Loss" value={fmtUsd(-data.avgLoss)} color="text-rose-400" />
-          <StatBox label="Avg R" value={`${data.avgR >= 0 ? "+" : ""}${data.avgR.toFixed(2)}R`}
-            color={data.avgR >= 0 ? "text-emerald-500" : "text-rose-400"} />
-          <StatBox label="Net P&L" value={fmtUsd(data.totalPnl)}
-            color={data.totalPnl >= 0 ? "text-emerald-500" : "text-rose-400"} />
+            summary.profitFactor === Infinity ? "∞" : summary.profitFactor.toFixed(2)
+          } color={summary.profitFactor >= 1 ? "text-emerald-500" : "text-rose-400"} />
+          <StatBox label="Avg Win" value={fmtUsd(summary.avgWin)} color="text-emerald-500" />
+          <StatBox label="Avg Loss" value={fmtUsd(-summary.avgLoss)} color="text-rose-400" />
+          <StatBox label="Avg R" value={`${summary.avgR >= 0 ? "+" : ""}${summary.avgR.toFixed(2)}R`}
+            color={summary.avgR >= 0 ? "text-emerald-500" : "text-rose-400"} />
+          <StatBox label="Net P&L" value={fmtUsd(summary.totalPnl)}
+            color={summary.totalPnl >= 0 ? "text-emerald-500" : "text-rose-400"} />
         </div>
       </div>
 
