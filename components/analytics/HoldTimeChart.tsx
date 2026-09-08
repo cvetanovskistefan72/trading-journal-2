@@ -81,7 +81,7 @@ export function HoldTimeChart() {
           {holdTime.map((b) => (
             <div key={b.label} className="flex flex-col gap-0.5 text-center">
               <span className="text-xs font-bold text-foreground">{b.label}</span>
-              <span className="text-[11px] text-muted-foreground">{b.trades} trade{b.trades !== 1 ? "s" : ""}</span>
+              <span className="text-[11px] text-muted-foreground">{b.trades} Trade{b.trades !== 1 ? "s" : ""}</span>
               <span className="text-[11px] text-muted-foreground">{b.winRate}% WR</span>
               <span className="text-[11px] font-medium" style={{ color: b.avgPnl > 0 ? "var(--color-chart-1)" : b.avgPnl < 0 ? "var(--color-chart-2)" : "var(--color-muted-foreground)" }}>
                 {fmtUsd(b.avgPnl)}

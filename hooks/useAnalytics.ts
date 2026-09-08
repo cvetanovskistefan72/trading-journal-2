@@ -12,6 +12,14 @@ export type RBucket = { bucket: string; count: number; pnl: number };
 export type HoldBucket = { label: string; trades: number; wins: number; losses: number; winRate: number; pnl: number; avgPnl: number; avgR: number };
 export type SessionBucket = { session: string; pnl: number; trades: number; wins: number; losses: number; winRate: number; avgR: number };
 export type InstrumentBucket = { instrument: string; pnl: number; trades: number; wins: number; losses: number; winRate: number; avgR: number };
+export type DirectionBucket = { direction: "long" | "short"; pnl: number; trades: number; wins: number; losses: number; winRate: number; avgR: number; profitFactor: number };
+export type WinRatePoint = { date: string; tradeIndex: number; winRate: number };
+export type GradeBucket = { grade: string; trades: number; wins: number; losses: number; winRate: number; pnl: number; avgPnl: number; avgR: number };
+export type Streaks = { current: number; currentType: "win" | "loss" | null; bestWin: number; bestLoss: number };
+export type DrawdownPoint = { date: string; drawdown: number; cumulative: number };
+export type PnlHistBucket = { bucket: number; label: string; count: number; wins: number; losses: number };
+export type ConfluenceBucket = { confluence: string; trades: number; wins: number; losses: number; winRate: number; pnl: number; avgR: number };
+export type CalendarDay = { date: string; pnl: number; trades: number; wins: number; losses: number };
 
 export type AnalyticsData = {
   equity: EquityPoint[];
@@ -21,6 +29,14 @@ export type AnalyticsData = {
   holdTime: HoldBucket[];
   bySession: SessionBucket[];
   byInstrument: InstrumentBucket[];
+  longShort: DirectionBucket[];
+  winRateTrend: WinRatePoint[];
+  byGrade: GradeBucket[];
+  streaks: Streaks;
+  drawdown: DrawdownPoint[];
+  pnlDistribution: PnlHistBucket[];
+  byConfluence: ConfluenceBucket[];
+  calendarHeatmap: CalendarDay[];
 };
 
 export function useAnalytics(from?: string) {

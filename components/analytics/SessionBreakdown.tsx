@@ -32,7 +32,7 @@ function SessionCard({ bucket }: { bucket: SessionBucket }) {
         </div>
       </div>
       <div className="flex gap-4 text-xs text-muted-foreground">
-        <span><span className="font-medium text-foreground tabular-nums">{bucket.trades}</span> trades</span>
+        <span><span className="font-medium text-foreground tabular-nums">{bucket.trades}</span> Trades</span>
         <span><span className="font-medium text-foreground tabular-nums">{bucket.avgR >= 0 ? "+" : ""}{bucket.avgR}R</span> avg</span>
         <span className="text-emerald-600 dark:text-emerald-400 tabular-nums">{bucket.wins}W</span>
         <span className="text-rose-600 dark:text-rose-400 tabular-nums">{bucket.losses}L</span>

@@ -1,0 +1,250 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import type { CalendarDay } from "@/hooks/useAnalytics";
+import { cn } from "@/lib/utils";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const DOW_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""];
+
+function fmtUsd(v: number) {
+  return (v >= 0 ? "+" : "-") + "$" + Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function cellColor(pnl: number, maxAbs: number): string {
+  if (maxAbs === 0) return "bg-emerald-500/20";
+  const intensity = Math.min(Math.abs(pnl) / maxAbs, 1);
+  if (pnl > 0) {
+    if (intensity > 0.66) return "bg-emerald-500";
+    if (intensity > 0.33) return "bg-emerald-400/70";
+    return "bg-emerald-400/35";
+  }
+  if (intensity > 0.66) return "bg-rose-500";
+  if (intensity > 0.33) return "bg-rose-400/70";
+  return "bg-rose-400/35";
+}
+
+function buildYearGrid(year: number, dayMap: Map<string, CalendarDay>) {
+  // Always show Jan 1 – Dec 31 for the given year, aligned to Mon–Sun weeks
+  const jan1 = new Date(year, 0, 1);
+  const dec31 = new Date(year, 11, 31);
+
+  // Rewind to Monday
+  const start = new Date(jan1);
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+
+  // Forward to Sunday
+  const end = new Date(dec31);
+  const toSun = (7 - end.getDay()) % 7;
+  end.setDate(end.getDate() + toSun);
+
+  const weeks: { date: string; inYear: boolean; day: CalendarDay | null; monthStart?: number }[][] = [];
+  const cur = new Date(start);
+  let lastMonth = -1;
+
+  while (cur <= end) {
+    const week: (typeof weeks)[number] = [];
+    for (let dow = 0; dow < 7; dow++) {
+      const iso = cur.toISOString().slice(0, 10);
+      const inYear = cur.getFullYear() === year;
+      const month = cur.getMonth();
+      week.push({
+        date: iso,
+        inYear,
+        day: dayMap.get(iso) ?? null,
+        monthStart: inYear && month !== lastMonth && dow === 0 ? month : undefined,
+      });
+      if (inYear && month !== lastMonth && dow === 0) lastMonth = month;
+      cur.setDate(cur.getDate() + 1);
+    }
+    weeks.push(week);
+  }
+
+  // Month label positions: find the first week where a month starts
+  const monthPositions: { col: number; month: number }[] = [];
+  weeks.forEach((week, wi) => {
+    week.forEach((cell) => {
+      if (cell.monthStart !== undefined) monthPositions.push({ col: wi, month: cell.monthStart });
+    });
+  });
+
+  return { weeks, monthPositions };
+}
+
+export function CalendarHeatmap() {
+  const { data, isLoading } = useAnalytics();
+  const calDays = data?.calendarHeatmap ?? [];
+
+  const dayMap = useMemo(() => new Map(calDays.map((d) => [d.date, d])), [calDays]);
+  const maxAbs = useMemo(() => Math.max(...calDays.map((d) => Math.abs(d.pnl)), 1), [calDays]);
+
+  const availableYears = useMemo(() => {
+    if (calDays.length === 0) return [new Date().getFullYear()];
+    const years = [...new Set(calDays.map((d) => new Date(d.date).getFullYear()))].sort((a, b) => b - a);
+    return years;
+  }, [calDays]);
+
+  const [yearIndex, setYearIndex] = useState(0);
+  const year = availableYears[yearIndex] ?? new Date().getFullYear();
+
+  const { weeks, monthPositions } = useMemo(() => buildYearGrid(year, dayMap), [year, dayMap]);
+
+  const yearTotal = useMemo(
+    () => calDays.filter((d) => new Date(d.date).getFullYear() === year).reduce((s, d) => s + d.pnl, 0),
+    [calDays, year]
+  );
+  const yearTradeDays = useMemo(
+    () => calDays.filter((d) => new Date(d.date).getFullYear() === year).length,
+    [calDays, year]
+  );
+
+  const CELL = 13;
+  const GAP = 3;
+  const DOW_W = 28;
+  const totalCols = weeks.length;
+  const svgW = DOW_W + totalCols * (CELL + GAP);
+  const svgH = 16 + 7 * (CELL + GAP);
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Trading Heatmap</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Daily P&L — hover for details</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {yearTradeDays > 0 && (
+            <span className={cn("text-sm font-bold tabular-nums", yearTotal >= 0 ? "text-emerald-500" : "text-rose-400")}>
+              {fmtUsd(yearTotal)}
+            </span>
+          )}
+          <div className="flex items-center gap-1 border border-border rounded-lg overflow-hidden">
+            <button
+              onClick={() => setYearIndex((i) => Math.min(i + 1, availableYears.length - 1))}
+              disabled={yearIndex >= availableYears.length - 1}
+              className="p-1.5 hover:bg-accent transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-default"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+            <span className="text-xs font-semibold px-2 tabular-nums">{year}</span>
+            <button
+              onClick={() => setYearIndex((i) => Math.max(i - 1, 0))}
+              disabled={yearIndex <= 0}
+              className="p-1.5 hover:bg-accent transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-default"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="h-28 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
+      ) : (
+        <div className="overflow-x-auto">
+          <svg width={svgW} height={svgH} className="block">
+            {/* Month labels */}
+            {monthPositions.map(({ col, month }) => (
+              <text
+                key={month}
+                x={DOW_W + col * (CELL + GAP)}
+                y={10}
+                fontSize={9}
+                fill="var(--color-muted-foreground)"
+                fontFamily="inherit"
+              >
+                {MONTHS[month]}
+              </text>
+            ))}
+
+            {/* Day-of-week labels */}
+            {DOW_LABELS.map((label, i) => (
+              label ? (
+                <text
+                  key={i}
+                  x={0}
+                  y={16 + i * (CELL + GAP) + CELL / 2 + 3}
+                  fontSize={8}
+                  fill="var(--color-muted-foreground)"
+                  fontFamily="inherit"
+                >
+                  {label}
+                </text>
+              ) : null
+            ))}
+
+            {/* Cells */}
+            {weeks.map((week, wi) =>
+              week.map((cell, di) => {
+                const x = DOW_W + wi * (CELL + GAP);
+                const y = 16 + di * (CELL + GAP);
+                const d = cell.day;
+                const isEmpty = !cell.inYear;
+
+                let fill = "var(--color-muted-foreground)";
+                let opacity = 0.08;
+
+                if (!isEmpty) {
+                  if (!d) {
+                    fill = "var(--color-muted-foreground)";
+                    opacity = 0.12;
+                  } else {
+                    const abs = maxAbs === 0 ? 1 : maxAbs;
+                    const intensity = Math.min(Math.abs(d.pnl) / abs, 1);
+                    if (d.pnl > 0) {
+                      fill = "var(--color-chart-1)";
+                      opacity = 0.25 + intensity * 0.75;
+                    } else {
+                      fill = "var(--color-chart-2)";
+                      opacity = 0.25 + intensity * 0.75;
+                    }
+                  }
+                }
+
+                return (
+                  <g key={`${wi}-${di}`}>
+                    <rect
+                      x={x} y={y}
+                      width={CELL} height={CELL}
+                      rx={2} ry={2}
+                      fill={fill}
+                      opacity={opacity}
+                    />
+                    {d && (
+                      <title>
+                        {new Date(d.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                        {"\n"}{fmtUsd(d.pnl)}
+                        {"\n"}{d.trades} Trade{d.trades !== 1 ? "s" : ""}
+                      </title>
+                    )}
+                  </g>
+                );
+              })
+            )}
+          </svg>
+        </div>
+      )}
+
+      {/* Legend */}
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-muted-foreground">Less</span>
+        {[0.25, 0.5, 0.75, 1].map((op) => (
+          <svg key={op} width={11} height={11}>
+            <rect width={11} height={11} rx={2} fill="var(--color-chart-2)" opacity={op} />
+          </svg>
+        ))}
+        <div className="w-px h-3 bg-border mx-0.5" />
+        {[0.25, 0.5, 0.75, 1].map((op) => (
+          <svg key={op} width={11} height={11}>
+            <rect width={11} height={11} rx={2} fill="var(--color-chart-1)" opacity={op} />
+          </svg>
+        ))}
+        <span className="text-[10px] text-muted-foreground">More</span>
+        <span className="text-[10px] text-muted-foreground ml-2">· {yearTradeDays} active day{yearTradeDays !== 1 ? "s" : ""}</span>
+      </div>
+    </div>
+  );
+}

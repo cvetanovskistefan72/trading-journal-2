@@ -21,7 +21,7 @@ function DayTooltip({ active, payload }: { active?: boolean; payload?: { payload
     <div style={tooltipStyle}>
       <p style={{ fontWeight: 600, marginBottom: 2 }}>{d.day}</p>
       <p>P&L: <strong style={{ color: d.pnl >= 0 ? "var(--color-chart-1)" : "var(--color-chart-2)" }}>{fmtUsd(d.pnl)}</strong></p>
-      <p><span style={{ color: "var(--color-chart-1)" }}>{d.wins}W</span> / <span style={{ color: "var(--color-chart-2)" }}>{d.losses}L</span> · {d.trades} trades</p>
+      <p><span style={{ color: "var(--color-chart-1)" }}>{d.wins}W</span> / <span style={{ color: "var(--color-chart-2)" }}>{d.losses}L</span> · {d.trades} Trades</p>
     </div>
   );
 }

@@ -41,7 +41,7 @@ export function SummaryStats() {
   const pieData = [
     { name: "Wins", value: summary.wins, color: "var(--color-chart-1)" },
     { name: "Losses", value: summary.losses, color: "var(--color-chart-2)" },
-    ...(breakeven > 0 ? [{ name: "Breakeven", value: breakeven, color: "var(--color-chart-3)" }] : []),
+    ...(breakeven > 0 ? [{ name: "Breakeven", value: breakeven, color: "oklch(0.828 0.189 84.429)" }] : []),
   ];
 
   return (

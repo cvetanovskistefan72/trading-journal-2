@@ -64,6 +64,10 @@ export async function GET(req: NextRequest) {
       session: true,
       entryTime: true,
       exitTime: true,
+      direction: true,
+      grade: true,
+      gradeOrder: true,
+      confluences: true,
     },
     orderBy: { date: "asc" },
   });
@@ -227,5 +231,168 @@ export async function GET(req: NextRequest) {
     avgR: round2(b.rValues.length > 0 ? b.rValues.reduce((s, v) => s + v, 0) / b.rValues.length : 0),
   })).sort((a, b) => b.pnl - a.pnl);
 
-  return NextResponse.json({ equity, summary, byWeekday, rMultiple, holdTime, bySession, byInstrument });
+  // ── GRADE DISTRIBUTION ────────────────────────────────────────
+  const gradeMap = new Map<string, { order: number; trades: number; wins: number; losses: number; pnl: number; rValues: number[] }>();
+  for (const t of trades) {
+    if (!t.grade) continue;
+    const b = gradeMap.get(t.grade) ?? { order: t.gradeOrder, trades: 0, wins: 0, losses: 0, pnl: 0, rValues: [] };
+    b.trades++;
+    b.pnl += t.pnl;
+    if (t.result === "win") b.wins++;
+    else if (t.result === "loss") b.losses++;
+    if (t.riskAmount > 0) b.rValues.push(t.pnl / t.riskAmount);
+    gradeMap.set(t.grade, b);
+  }
+  const byGrade = Array.from(gradeMap.entries())
+    .map(([grade, b]) => ({
+      grade,
+      trades: b.trades,
+      wins: b.wins,
+      losses: b.losses,
+      winRate: b.trades > 0 ? round2((b.wins / b.trades) * 100) : 0,
+      pnl: round2(b.pnl),
+      avgPnl: b.trades > 0 ? round2(b.pnl / b.trades) : 0,
+      avgR: b.rValues.length > 0 ? round2(b.rValues.reduce((s, v) => s + v, 0) / b.rValues.length) : 0,
+    }))
+    .sort((a, b) => (gradeMap.get(a.grade)!.order) - (gradeMap.get(b.grade)!.order));
+
+  // ── STREAKS ───────────────────────────────────────────────────
+  const decided = trades.filter((t) => t.result === "win" || t.result === "loss");
+  let curStreak = 0;
+  let curType: "win" | "loss" | null = null;
+  let bestWin = 0, bestLoss = 0;
+  let curWin = 0, curLoss = 0;
+  for (const t of decided) {
+    const isWin = t.result === "win";
+    if (curType === null || (isWin ? "win" : "loss") !== curType) {
+      curType = isWin ? "win" : "loss";
+      curStreak = 1;
+    } else {
+      curStreak++;
+    }
+    if (isWin) { curWin = curStreak; curLoss = 0; bestWin = Math.max(bestWin, curWin); }
+    else { curLoss = curStreak; curWin = 0; bestLoss = Math.max(bestLoss, curLoss); }
+  }
+  const streaks = {
+    current: curType === null ? 0 : (curType === "win" ? curWin : -curLoss),
+    currentType: curType,
+    bestWin,
+    bestLoss,
+  };
+
+  // ── LONG VS SHORT ─────────────────────────────────────────────
+  type DirAcc = { pnl: number; trades: number; wins: number; losses: number; rValues: number[] };
+  const dirAcc: Record<string, DirAcc> = {
+    long:  { pnl: 0, trades: 0, wins: 0, losses: 0, rValues: [] },
+    short: { pnl: 0, trades: 0, wins: 0, losses: 0, rValues: [] },
+  };
+  for (const t of trades) {
+    const key = t.direction?.toLowerCase() === "short" ? "short" : "long";
+    dirAcc[key].pnl += t.pnl;
+    dirAcc[key].trades++;
+    if (t.result === "win") dirAcc[key].wins++;
+    else if (t.result === "loss") dirAcc[key].losses++;
+    if (t.riskAmount > 0) dirAcc[key].rValues.push(t.pnl / t.riskAmount);
+  }
+  const longShort = (["long", "short"] as const).map((dir) => {
+    const b = dirAcc[dir];
+    return {
+      direction: dir,
+      pnl: round2(b.pnl),
+      trades: b.trades,
+      wins: b.wins,
+      losses: b.losses,
+      winRate: b.trades > 0 ? round2((b.wins / b.trades) * 100) : 0,
+      avgR: b.rValues.length > 0 ? round2(b.rValues.reduce((s, v) => s + v, 0) / b.rValues.length) : 0,
+      profitFactor: (() => {
+        const gw = b.rValues.filter((r) => r > 0).reduce((s, r) => s + r, 0);
+        const gl = Math.abs(b.rValues.filter((r) => r < 0).reduce((s, r) => s + r, 0));
+        return gl === 0 ? (gw > 0 ? Infinity : 0) : round2(gw / gl);
+      })(),
+    };
+  });
+
+  // ── WIN RATE TREND (rolling 20-trade window) ──────────────────
+  const WINDOW = 20;
+  const decidedTrades = trades.filter((t) => t.result === "win" || t.result === "loss");
+  const winRateTrend = decidedTrades.map((t, i) => {
+    if (i < WINDOW - 1) return null;
+    const slice = decidedTrades.slice(i - WINDOW + 1, i + 1);
+    const w = slice.filter((x) => x.result === "win").length;
+    return {
+      date: t.date.toISOString().slice(0, 10),
+      tradeIndex: i + 1,
+      winRate: round2((w / WINDOW) * 100),
+    };
+  }).filter((x): x is NonNullable<typeof x> => x !== null);
+
+  // ── DRAWDOWN ──────────────────────────────────────────────────
+  let peak = 0;
+  let runningPnl = 0;
+  const drawdown = equity.map((point) => {
+    runningPnl = point.cumulative;
+    if (runningPnl > peak) peak = runningPnl;
+    const dd = peak === 0 ? 0 : round2(((runningPnl - peak) / Math.abs(peak)) * 100);
+    return { date: point.date, drawdown: dd, cumulative: runningPnl };
+  });
+
+  // ── P&L DISTRIBUTION (histogram, $100 buckets) ───────────────
+  const pnlValues = trades.map((t) => t.pnl);
+  const pnlMin = pnlValues.length > 0 ? Math.floor(Math.min(...pnlValues) / 100) * 100 : 0;
+  const pnlMax = pnlValues.length > 0 ? Math.ceil(Math.max(...pnlValues) / 100) * 100 : 0;
+  const histMap = new Map<number, { count: number; wins: number; losses: number }>();
+  for (let b = pnlMin; b <= pnlMax; b += 100) histMap.set(b, { count: 0, wins: 0, losses: 0 });
+  for (const t of trades) {
+    const b = Math.floor(t.pnl / 100) * 100;
+    const bucket = histMap.get(b) ?? { count: 0, wins: 0, losses: 0 };
+    bucket.count++;
+    if (t.result === "win") bucket.wins++;
+    else if (t.result === "loss") bucket.losses++;
+    histMap.set(b, bucket);
+  }
+  const pnlDistribution = Array.from(histMap.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([bucket, v]) => ({ bucket, label: `$${bucket}`, ...v }));
+
+  // ── CONFLUENCE PERFORMANCE ────────────────────────────────────
+  const confMap = new Map<string, { trades: number; wins: number; losses: number; pnl: number; rValues: number[] }>();
+  for (const t of trades) {
+    for (const c of t.confluences) {
+      const b = confMap.get(c) ?? { trades: 0, wins: 0, losses: 0, pnl: 0, rValues: [] };
+      b.trades++;
+      b.pnl += t.pnl;
+      if (t.result === "win") b.wins++;
+      else if (t.result === "loss") b.losses++;
+      if (t.riskAmount > 0) b.rValues.push(t.pnl / t.riskAmount);
+      confMap.set(c, b);
+    }
+  }
+  const byConfluence = Array.from(confMap.entries())
+    .map(([confluence, b]) => ({
+      confluence,
+      trades: b.trades,
+      wins: b.wins,
+      losses: b.losses,
+      winRate: b.trades > 0 ? round2((b.wins / b.trades) * 100) : 0,
+      pnl: round2(b.pnl),
+      avgR: b.rValues.length > 0 ? round2(b.rValues.reduce((s, v) => s + v, 0) / b.rValues.length) : 0,
+    }))
+    .sort((a, b) => b.avgR - a.avgR);
+
+  // ── CALENDAR HEATMAP ──────────────────────────────────────────
+  const calMap = new Map<string, { pnl: number; trades: number; wins: number; losses: number }>();
+  for (const t of trades) {
+    const key = t.date.toISOString().slice(0, 10);
+    const b = calMap.get(key) ?? { pnl: 0, trades: 0, wins: 0, losses: 0 };
+    b.pnl += t.pnl;
+    b.trades++;
+    if (t.result === "win") b.wins++;
+    else if (t.result === "loss") b.losses++;
+    calMap.set(key, b);
+  }
+  const calendarHeatmap = Array.from(calMap.entries())
+    .map(([date, b]) => ({ date, pnl: round2(b.pnl), trades: b.trades, wins: b.wins, losses: b.losses }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  return NextResponse.json({ equity, summary, byWeekday, rMultiple, holdTime, bySession, byInstrument, longShort, winRateTrend, byGrade, streaks, drawdown, pnlDistribution, byConfluence, calendarHeatmap });
 }

@@ -40,7 +40,14 @@ export function EquityCurve() {
 
   const last = equity[equity.length - 1];
   const isUp = (last?.cumulative ?? 0) >= 0;
-  const color = isUp ? "var(--color-chart-1)" : "var(--color-chart-2)";
+
+  // Compute zero-crossing offset for split green/red gradient
+  const values = equity.map((e) => e.cumulative);
+  const minVal = Math.min(...values, 0);
+  const maxVal = Math.max(...values, 0);
+  const range = maxVal - minVal || 1;
+  // offset = how far from top (y=0 in SVG) the zero line sits (0% = top, 100% = bottom)
+  const zeroOffset = `${Math.round(((maxVal) / range) * 100)}%`;
 
   return (
     <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
@@ -71,15 +78,23 @@ export function EquityCurve() {
           <AreaChart data={equity} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="equityGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={color} stopOpacity={0.25} />
-                <stop offset="95%" stopColor={color} stopOpacity={0} />
+                <stop offset="0%" stopColor="var(--color-chart-1)" stopOpacity={0.25} />
+                <stop offset={zeroOffset} stopColor="var(--color-chart-1)" stopOpacity={0.05} />
+                <stop offset={zeroOffset} stopColor="var(--color-chart-2)" stopOpacity={0.05} />
+                <stop offset="100%" stopColor="var(--color-chart-2)" stopOpacity={0.25} />
+              </linearGradient>
+              <linearGradient id="equityStroke" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--color-chart-1)" />
+                <stop offset={zeroOffset} stopColor="var(--color-chart-1)" />
+                <stop offset={zeroOffset} stopColor="var(--color-chart-2)" />
+                <stop offset="100%" stopColor="var(--color-chart-2)" />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
             <XAxis dataKey="date" tickFormatter={fmtDate} tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} axisLine={false} tickLine={false} minTickGap={40} />
             <YAxis tickFormatter={(v) => `$${v}`} tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} axisLine={false} tickLine={false} width={56} />
             <Tooltip content={<EquityTooltip />} cursor={{ stroke: "var(--color-border)", strokeWidth: 1 }} />
-            <Area type="monotoneX" dataKey="cumulative" stroke={color} strokeWidth={2} fill="url(#equityGrad)" dot={false} activeDot={{ r: 4, strokeWidth: 0 }} />
+            <Area type="monotoneX" dataKey="cumulative" stroke="url(#equityStroke)" strokeWidth={2} fill="url(#equityGrad)" dot={false} activeDot={{ r: 4, strokeWidth: 0 }} />
           </AreaChart>
         </ResponsiveContainer>
       )}

@@ -22,7 +22,7 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
       <p style={{ fontWeight: 600, marginBottom: 4 }}>{d.instrument}</p>
       <p>Total P&L: <span style={{ color: d.pnl >= 0 ? "var(--color-chart-1)" : "var(--color-chart-2)" }}>{fmtPnl(d.pnl)}</span></p>
       <p>Win Rate: <strong style={{ color: "var(--color-chart-1)" }}>{d.winRate.toFixed(1)}%</strong></p>
-      <p><span style={{ color: "var(--color-chart-1)" }}>{d.wins}W</span> / <span style={{ color: "var(--color-chart-2)" }}>{d.losses}L</span> · {d.trades} trades</p>
+      <p><span style={{ color: "var(--color-chart-1)" }}>{d.wins}W</span> / <span style={{ color: "var(--color-chart-2)" }}>{d.losses}L</span> · {d.trades} Trades</p>
     </div>
   );
 }
