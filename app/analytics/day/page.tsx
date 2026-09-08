@@ -131,7 +131,7 @@ export default function CalendarPage() {
       </div>
 
       {/* Grid */}
-      <div className={cn("rounded-2xl border border-border overflow-hidden shadow-sm transition-opacity", isFetching && "opacity-60")}>
+      <div className={cn("rounded-2xl border border-border bg-card overflow-hidden transition-opacity", isFetching && "opacity-60")}>
 
         {/* Headers */}
         <div className="grid grid-cols-[repeat(7,1fr)_88px] bg-muted/40 border-b border-border">

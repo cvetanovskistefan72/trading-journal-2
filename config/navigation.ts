@@ -3,9 +3,11 @@ import {
   BookOpen,
   CalendarDays,
   LayoutDashboard,
+  PieChart,
   TrendingUp,
   Users,
 } from "lucide-react";
+
 import { Role } from "@prisma/client";
 import { routes } from "@/config/routes";
 import type { NavItem } from "@/types/navigation";
@@ -27,6 +29,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Analytics",
     icon: BarChart2,
     children: [
+      { label: "Performance", href: routes.analyticsPerformance, icon: PieChart },
       { label: "Calendar", href: routes.analyticsDay, icon: CalendarDays },
       { label: "Strategies", href: routes.analyticsStrategies, icon: TrendingUp },
     ],

@@ -6,6 +6,7 @@ export const routes = {
   changePassword: "/change-password",
   dashboard: "/dashboard",
   analyticsDay: "/analytics/day",
+  analyticsPerformance: "/analytics/performance",
   analyticsStrategies: "/analytics/strategies",
   journal: "/journal",
   adminUsers: "/admin/users",

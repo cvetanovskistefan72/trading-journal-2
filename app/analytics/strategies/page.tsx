@@ -176,7 +176,7 @@ function StrategyCard({
 
   return (
     <div
-      className="relative flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-all hover:shadow-md hover:shadow-black/20 hover:border-border/80 cursor-pointer"
+      className="relative flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-all hover:border-border/80 cursor-pointer"
       onClick={onClick}
     >
       {/* Header */}
