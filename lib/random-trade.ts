@@ -24,9 +24,13 @@ export function buildRandomTrade(strategies: Strategy[]): CreateTradeInput {
   const exitHour = Math.min(entryHour + Math.floor(Math.random() * 3) + 1, 23);
   const pad = (n: number) => String(n).padStart(2, "0");
 
-  const daysAgo = Math.floor(Math.random() * 90);
+  // Spread trades across the past 2 years only
+  const daysOffset = Math.floor(Math.random() * 365 * 2);
   const d = new Date();
-  d.setDate(d.getDate() - daysAgo);
+  d.setDate(d.getDate() - daysOffset);
+  // Skip weekends
+  if (d.getDay() === 0) d.setDate(d.getDate() + 1);
+  if (d.getDay() === 6) d.setDate(d.getDate() - 1);
 
   const confluences = strategy.confluences.length > 0
     ? strategy.confluences.slice(0, Math.floor(Math.random() * strategy.confluences.length) + 1)

@@ -21,9 +21,9 @@ function DirectionCard({ bucket }: { bucket: DirectionBucket }) {
         <div className="flex items-center gap-2">
           <div className={[
             "flex items-center justify-center w-8 h-8 rounded-lg",
-            isLong ? "bg-emerald-500/10" : "bg-rose-500/10",
+            isLong ? "bg-blue-500/10" : "bg-orange-500/10",
           ].join(" ")}>
-            <Icon className={["h-4 w-4", isLong ? "text-emerald-500" : "text-rose-400"].join(" ")} />
+            <Icon className={["h-4 w-4", isLong ? "text-blue-500" : "text-orange-500"].join(" ")} />
           </div>
           <span className="text-sm font-semibold capitalize">{bucket.direction}</span>
         </div>

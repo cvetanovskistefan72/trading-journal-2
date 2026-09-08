@@ -9,14 +9,20 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const month = searchParams.get("month"); // YYYY-MM
+  const date = searchParams.get("date");   // YYYY-MM-DD (single day)
 
-  if (!month || !/^\d{4}-\d{2}$/.test(month)) {
-    return NextResponse.json({ error: "month param required (YYYY-MM)" }, { status: 400 });
+  let from: Date, to: Date;
+
+  if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    from = new Date(date + "T00:00:00.000Z");
+    to = new Date(date + "T23:59:59.999Z");
+  } else if (month && /^\d{4}-\d{2}$/.test(month)) {
+    const [year, mon] = month.split("-").map(Number);
+    from = new Date(year, mon - 1, 1);
+    to = new Date(year, mon, 0, 23, 59, 59, 999);
+  } else {
+    return NextResponse.json({ error: "month (YYYY-MM) or date (YYYY-MM-DD) param required" }, { status: 400 });
   }
-
-  const [year, mon] = month.split("-").map(Number);
-  const from = new Date(year, mon - 1, 1);
-  const to = new Date(year, mon, 0, 23, 59, 59, 999);
 
   const trades = await prisma.trade.findMany({
     where: {
@@ -37,6 +43,7 @@ export async function GET(req: Request) {
       result: true,
       grade: true,
       notes: true,
+      confluences: true,
       strategy: { select: { name: true } },
     },
     orderBy: [{ date: "asc" }, { entryTime: "asc" }],
@@ -60,6 +67,7 @@ export async function GET(req: Request) {
       grade: t.grade,
       strategyName: t.strategy?.name ?? "—",
       notes: t.notes,
+      confluences: t.confluences,
     });
     byDate.set(key, existing);
   }

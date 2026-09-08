@@ -11,6 +11,7 @@ export type CalendarTrade = {
   grade: string;
   strategyName: string;
   notes: string | null;
+  confluences: string[];
 };
 
 export type CalendarDay = {

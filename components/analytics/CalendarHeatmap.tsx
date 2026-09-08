@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
-import type { CalendarDay } from "@/hooks/useAnalytics";
+import type { CalendarDay as HeatmapDay } from "@/hooks/useAnalytics";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { DayDialog } from "@/components/calendar/DayDialog";
+import type { CalendarDay } from "@/types/calendar";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const DOW_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""];
@@ -13,34 +15,18 @@ function fmtUsd(v: number) {
   return (v >= 0 ? "+" : "-") + "$" + Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function cellColor(pnl: number, maxAbs: number): string {
-  if (maxAbs === 0) return "bg-emerald-500/20";
-  const intensity = Math.min(Math.abs(pnl) / maxAbs, 1);
-  if (pnl > 0) {
-    if (intensity > 0.66) return "bg-emerald-500";
-    if (intensity > 0.33) return "bg-emerald-400/70";
-    return "bg-emerald-400/35";
-  }
-  if (intensity > 0.66) return "bg-rose-500";
-  if (intensity > 0.33) return "bg-rose-400/70";
-  return "bg-rose-400/35";
-}
-
-function buildYearGrid(year: number, dayMap: Map<string, CalendarDay>) {
-  // Always show Jan 1 – Dec 31 for the given year, aligned to Mon–Sun weeks
+function buildYearGrid(year: number, dayMap: Map<string, HeatmapDay>) {
   const jan1 = new Date(year, 0, 1);
   const dec31 = new Date(year, 11, 31);
 
-  // Rewind to Monday
   const start = new Date(jan1);
   start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
 
-  // Forward to Sunday
   const end = new Date(dec31);
   const toSun = (7 - end.getDay()) % 7;
   end.setDate(end.getDate() + toSun);
 
-  const weeks: { date: string; inYear: boolean; day: CalendarDay | null; monthStart?: number }[][] = [];
+  const weeks: { date: string; inYear: boolean; day: HeatmapDay | null; monthStart?: number }[][] = [];
   const cur = new Date(start);
   let lastMonth = -1;
 
@@ -62,7 +48,6 @@ function buildYearGrid(year: number, dayMap: Map<string, CalendarDay>) {
     weeks.push(week);
   }
 
-  // Month label positions: find the first week where a month starts
   const monthPositions: { col: number; month: number }[] = [];
   weeks.forEach((week, wi) => {
     week.forEach((cell) => {
@@ -100,11 +85,29 @@ export function CalendarHeatmap() {
     [calDays, year]
   );
 
+  // Dialog state — fetch full day data on click
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [dialogDay, setDialogDay] = useState<CalendarDay | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [loadingDay, setLoadingDay] = useState(false);
+
+  async function handleCellClick(date: string) {
+    setSelectedDate(date);
+    setLoadingDay(true);
+    setDialogOpen(true);
+    try {
+      const res = await fetch(`/api/trades/calendar?date=${date}`);
+      const days: CalendarDay[] = await res.json();
+      setDialogDay(days[0] ?? null);
+    } finally {
+      setLoadingDay(false);
+    }
+  }
+
   const CELL = 13;
   const GAP = 3;
   const DOW_W = 28;
-  const totalCols = weeks.length;
-  const svgW = DOW_W + totalCols * (CELL + GAP);
+  const svgW = DOW_W + weeks.length * (CELL + GAP);
   const svgH = 16 + 7 * (CELL + GAP);
 
   return (
@@ -113,7 +116,7 @@ export function CalendarHeatmap() {
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Trading Heatmap</p>
-          <p className="text-xs text-muted-foreground mt-0.5">Daily P&L — hover for details</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Daily P&L — click a day to view trades</p>
         </div>
         <div className="flex items-center gap-2">
           {yearTradeDays > 0 && (
@@ -148,33 +151,19 @@ export function CalendarHeatmap() {
           <svg width={svgW} height={svgH} className="block">
             {/* Month labels */}
             {monthPositions.map(({ col, month }) => (
-              <text
-                key={month}
-                x={DOW_W + col * (CELL + GAP)}
-                y={10}
-                fontSize={9}
-                fill="var(--color-muted-foreground)"
-                fontFamily="inherit"
-              >
+              <text key={month} x={DOW_W + col * (CELL + GAP)} y={10} fontSize={9} fill="var(--color-muted-foreground)" fontFamily="inherit">
                 {MONTHS[month]}
               </text>
             ))}
 
             {/* Day-of-week labels */}
-            {DOW_LABELS.map((label, i) => (
+            {DOW_LABELS.map((label, i) =>
               label ? (
-                <text
-                  key={i}
-                  x={0}
-                  y={16 + i * (CELL + GAP) + CELL / 2 + 3}
-                  fontSize={8}
-                  fill="var(--color-muted-foreground)"
-                  fontFamily="inherit"
-                >
+                <text key={i} x={0} y={16 + i * (CELL + GAP) + CELL / 2 + 3} fontSize={8} fill="var(--color-muted-foreground)" fontFamily="inherit">
                   {label}
                 </text>
               ) : null
-            ))}
+            )}
 
             {/* Cells */}
             {weeks.map((week, wi) =>
@@ -185,33 +174,30 @@ export function CalendarHeatmap() {
                 const isEmpty = !cell.inYear;
 
                 let fill = "var(--color-muted-foreground)";
-                let opacity = 0.08;
+                let opacity = isEmpty ? 0.08 : 0.12;
 
-                if (!isEmpty) {
-                  if (!d) {
-                    fill = "var(--color-muted-foreground)";
-                    opacity = 0.12;
-                  } else {
-                    const abs = maxAbs === 0 ? 1 : maxAbs;
-                    const intensity = Math.min(Math.abs(d.pnl) / abs, 1);
-                    if (d.pnl > 0) {
-                      fill = "var(--color-chart-1)";
-                      opacity = 0.25 + intensity * 0.75;
-                    } else {
-                      fill = "var(--color-chart-2)";
-                      opacity = 0.25 + intensity * 0.75;
-                    }
-                  }
+                if (!isEmpty && d) {
+                  const intensity = Math.min(Math.abs(d.pnl) / (maxAbs || 1), 1);
+                  fill = d.pnl > 0 ? "var(--color-chart-1)" : "var(--color-chart-2)";
+                  opacity = 0.25 + intensity * 0.75;
                 }
 
+                const isSelected = d?.date === selectedDate;
+
                 return (
-                  <g key={`${wi}-${di}`}>
+                  <g
+                    key={`${wi}-${di}`}
+                    onClick={() => d && handleCellClick(d.date)}
+                    style={{ cursor: d ? "pointer" : "default" }}
+                  >
                     <rect
                       x={x} y={y}
                       width={CELL} height={CELL}
                       rx={2} ry={2}
                       fill={fill}
                       opacity={opacity}
+                      stroke={isSelected ? "var(--color-foreground)" : "none"}
+                      strokeWidth={isSelected ? 1.5 : 0}
                     />
                     {d && (
                       <title>
@@ -245,6 +231,13 @@ export function CalendarHeatmap() {
         <span className="text-[10px] text-muted-foreground">More</span>
         <span className="text-[10px] text-muted-foreground ml-2">· {yearTradeDays} active day{yearTradeDays !== 1 ? "s" : ""}</span>
       </div>
+
+      {/* Reuse the same DayDialog as the calendar page */}
+      <DayDialog
+        day={loadingDay ? null : dialogDay}
+        open={dialogOpen}
+        onClose={() => { setDialogOpen(false); setSelectedDate(null); setDialogDay(null); }}
+      />
     </div>
   );
 }

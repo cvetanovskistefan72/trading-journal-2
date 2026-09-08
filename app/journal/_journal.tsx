@@ -25,8 +25,8 @@ const RESULT_STYLES: Record<string, string> = {
 };
 
 const DIRECTION_STYLES: Record<string, string> = {
-  long: "bg-blue-500/10 text-blue-500",
-  short: "bg-orange-500/10 text-orange-500",
+  long: "bg-blue-500/15 text-blue-500",
+  short: "bg-orange-500/15 text-orange-500",
 };
 
 export default function JournalPage() {

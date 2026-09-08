@@ -20,6 +20,12 @@ export type DrawdownPoint = { date: string; drawdown: number; cumulative: number
 export type PnlHistBucket = { bucket: number; label: string; count: number; wins: number; losses: number };
 export type ConfluenceBucket = { confluence: string; trades: number; wins: number; losses: number; winRate: number; pnl: number; avgR: number };
 export type CalendarDay = { date: string; pnl: number; trades: number; wins: number; losses: number };
+export type TimeOfDayCell = { hour: number; day: string; avgPnl: number; trades: number; wins: number; losses: number; winRate: number };
+export type CumulativeRPoint = { date: string; tradeIndex: number; cumulativeR: number };
+export type WaterfallBar = { tradeIndex: number; date: string; pnl: number; start: number; end: number; result: string };
+export type MonteCarloPoint = { tradeIndex: number; p10: number; p25: number; p50: number; p75: number; p90: number };
+export type MonteCarloStats = { probProfit: number; worstDD: number; p10Final: number; p90Final: number };
+export type TiltBucket = { label: string; trades: number; winRate: number; avgPnl: number };
 
 export type AnalyticsData = {
   equity: EquityPoint[];
@@ -37,6 +43,12 @@ export type AnalyticsData = {
   pnlDistribution: PnlHistBucket[];
   byConfluence: ConfluenceBucket[];
   calendarHeatmap: CalendarDay[];
+  timeOfDay: TimeOfDayCell[];
+  cumulativeRCurve: CumulativeRPoint[];
+  waterfall: WaterfallBar[];
+  monteCarlo: MonteCarloPoint[];
+  monteCarloStats: MonteCarloStats;
+  tiltMeter: TiltBucket[];
 };
 
 export function useAnalytics(from?: string) {

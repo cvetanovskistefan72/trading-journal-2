@@ -16,6 +16,11 @@ import { DrawdownChart } from "@/components/analytics/DrawdownChart";
 import { PnlDistribution } from "@/components/analytics/PnlDistribution";
 import { ConfluencePerformance } from "@/components/analytics/ConfluencePerformance";
 import { CalendarHeatmap } from "@/components/analytics/CalendarHeatmap";
+import { TimeOfDayHeatmap } from "@/components/analytics/TimeOfDayHeatmap";
+import { CumulativeRCurve } from "@/components/analytics/CumulativeRCurve";
+import { WaterfallChart } from "@/components/analytics/WaterfallChart";
+import { MonteCarlo } from "@/components/analytics/MonteCarlo";
+import { TiltMeter } from "@/components/analytics/TiltMeter";
 
 export default function PerformancePage() {
   return (
@@ -52,6 +57,18 @@ export default function PerformancePage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <PnlDistribution />
         <GradeDistribution />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <TimeOfDayHeatmap />
+        <CumulativeRCurve />
+      </div>
+
+      <WaterfallChart />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <MonteCarlo />
+        <TiltMeter />
       </div>
 
       <SessionBreakdown />

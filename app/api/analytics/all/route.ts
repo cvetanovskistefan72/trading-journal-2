@@ -394,5 +394,121 @@ export async function GET(req: NextRequest) {
     .map(([date, b]) => ({ date, pnl: round2(b.pnl), trades: b.trades, wins: b.wins, losses: b.losses }))
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  return NextResponse.json({ equity, summary, byWeekday, rMultiple, holdTime, bySession, byInstrument, longShort, winRateTrend, byGrade, streaks, drawdown, pnlDistribution, byConfluence, calendarHeatmap });
+  // ── TIME-OF-DAY HEATMAP (hour 0–23 × Mon–Fri) ────────────────
+  const TRADE_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+  type HourDowCell = { pnl: number; trades: number; wins: number; losses: number };
+  const todMap = new Map<string, HourDowCell>();
+  for (const t of trades) {
+    if (!t.entryTime) continue;
+    const hour = parseInt(t.entryTime.split(":")[0], 10);
+    const dow = new Date(t.date).getDay(); // 0=Sun..6=Sat
+    if (dow === 0 || dow === 6) continue; // skip weekends
+    const key = `${hour}-${dow}`;
+    const b = todMap.get(key) ?? { pnl: 0, trades: 0, wins: 0, losses: 0 };
+    b.pnl += t.pnl;
+    b.trades++;
+    if (t.result === "win") b.wins++;
+    else if (t.result === "loss") b.losses++;
+    todMap.set(key, b);
+  }
+  // Find active hours range
+  const activeHours = trades
+    .filter((t) => t.entryTime)
+    .map((t) => parseInt(t.entryTime.split(":")[0], 10));
+  const minHour = activeHours.length > 0 ? Math.min(...activeHours) : 7;
+  const maxHour = activeHours.length > 0 ? Math.max(...activeHours) : 17;
+  const timeOfDay: { hour: number; day: string; avgPnl: number; trades: number; wins: number; losses: number; winRate: number }[] = [];
+  for (let h = minHour; h <= maxHour; h++) {
+    for (let d = 1; d <= 5; d++) {
+      const b = todMap.get(`${h}-${d}`);
+      timeOfDay.push({
+        hour: h,
+        day: TRADE_DAYS[d - 1],
+        avgPnl: b && b.trades > 0 ? round2(b.pnl / b.trades) : 0,
+        trades: b?.trades ?? 0,
+        wins: b?.wins ?? 0,
+        losses: b?.losses ?? 0,
+        winRate: b && b.trades > 0 ? round2((b.wins / b.trades) * 100) : 0,
+      });
+    }
+  }
+
+  // ── CUMULATIVE R CURVE ────────────────────────────────────────
+  let cumulativeR = 0;
+  const cumulativeRCurve = trades
+    .filter((t) => t.riskAmount > 0)
+    .map((t, i) => {
+      cumulativeR += t.pnl / t.riskAmount;
+      return { date: t.date.toISOString().slice(0, 10), tradeIndex: i + 1, cumulativeR: round2(cumulativeR) };
+    });
+
+  // ── WATERFALL (trade-by-trade P&L) ───────────────────────────
+  let runningTotal = 0;
+  const waterfall = trades.map((t, i) => {
+    const start = runningTotal;
+    runningTotal = round2(runningTotal + t.pnl);
+    return {
+      tradeIndex: i + 1,
+      date: t.date.toISOString().slice(0, 10),
+      pnl: round2(t.pnl),
+      start: round2(start),
+      end: runningTotal,
+      result: t.result as string,
+    };
+  });
+
+  // ── MONTE CARLO (1000 simulations, sample from trade P&Ls) ───
+  const SIMULATIONS = 1000;
+  const pnls = trades.map((t) => t.pnl);
+  const monteCarloLines: number[][] = [];
+  for (let s = 0; s < SIMULATIONS; s++) {
+    const shuffled = [...pnls].sort(() => Math.random() - 0.5);
+    let cum = 0;
+    const line = shuffled.map((p) => { cum = round2(cum + p); return cum; });
+    monteCarloLines.push(line);
+  }
+  // Summarise into percentile bands at each trade index
+  const tradeCount = pnls.length;
+  const monteCarlo: { tradeIndex: number; p10: number; p25: number; p50: number; p75: number; p90: number }[] = [];
+  for (let i = 0; i < tradeCount; i++) {
+    const vals = monteCarloLines.map((l) => l[i]).sort((a, b) => a - b);
+    const pct = (p: number) => vals[Math.floor((p / 100) * (vals.length - 1))];
+    monteCarlo.push({ tradeIndex: i + 1, p10: pct(10), p25: pct(25), p50: pct(50), p75: pct(75), p90: pct(90) });
+  }
+  // Final distribution stats
+  const finalVals = monteCarloLines.map((l) => l[l.length - 1] ?? 0).sort((a, b) => a - b);
+  const probProfit = finalVals.length > 0 ? round2((finalVals.filter((v) => v > 0).length / finalVals.length) * 100) : 0;
+  const maxDrawdowns = monteCarloLines.map((line) => {
+    let pk = 0, maxDD = 0;
+    for (const v of line) { if (v > pk) pk = v; const dd = pk - v; if (dd > maxDD) maxDD = dd; }
+    return maxDD;
+  }).sort((a, b) => a - b);
+  const worstDD = maxDrawdowns[Math.floor(0.95 * (maxDrawdowns.length - 1))];
+  const monteCarloStats = { probProfit, worstDD: round2(worstDD), p10Final: finalVals[Math.floor(0.1 * (finalVals.length - 1))], p90Final: finalVals[Math.floor(0.9 * (finalVals.length - 1))] };
+
+  // ── TILT METER (performance after loss streaks) ───────────────
+  const decidedForTilt = trades.filter((t) => t.result === "win" || t.result === "loss");
+  type TiltBucket = { trades: number; wins: number; pnl: number };
+  const tiltMap: Record<string, TiltBucket> = {
+    "After 0 losses": { trades: 0, wins: 0, pnl: 0 },
+    "After 1 loss":   { trades: 0, wins: 0, pnl: 0 },
+    "After 2 losses": { trades: 0, wins: 0, pnl: 0 },
+    "After 3+ losses":{ trades: 0, wins: 0, pnl: 0 },
+  };
+  for (let i = 1; i < decidedForTilt.length; i++) {
+    let streak = 0;
+    for (let j = i - 1; j >= 0 && decidedForTilt[j].result === "loss"; j--) streak++;
+    const label = streak === 0 ? "After 0 losses" : streak === 1 ? "After 1 loss" : streak === 2 ? "After 2 losses" : "After 3+ losses";
+    tiltMap[label].trades++;
+    tiltMap[label].pnl += decidedForTilt[i].pnl;
+    if (decidedForTilt[i].result === "win") tiltMap[label].wins++;
+  }
+  const tiltMeter = Object.entries(tiltMap).map(([label, b]) => ({
+    label,
+    trades: b.trades,
+    winRate: b.trades > 0 ? round2((b.wins / b.trades) * 100) : 0,
+    avgPnl: b.trades > 0 ? round2(b.pnl / b.trades) : 0,
+  }));
+
+  return NextResponse.json({ equity, summary, byWeekday, rMultiple, holdTime, bySession, byInstrument, longShort, winRateTrend, byGrade, streaks, drawdown, pnlDistribution, byConfluence, calendarHeatmap, timeOfDay, cumulativeRCurve, waterfall, monteCarlo, monteCarloStats, tiltMeter });
 }

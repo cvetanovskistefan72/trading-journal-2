@@ -29,6 +29,11 @@ export const RESULT_BORDER: Record<string, string> = {
   breakeven: "border-amber-400/30",
 };
 
+export const DIRECTION_BADGE: Record<string, string> = {
+  long: "bg-blue-500/15 text-blue-500",
+  short: "bg-orange-500/15 text-orange-500",
+};
+
 export function fmtPnl(pnl: number, compact = false) {
   const abs = Math.abs(pnl).toLocaleString("en-US", {
     minimumFractionDigits: compact ? 0 : 2,

@@ -1,63 +1,109 @@
 "use client";
 
-import { Clock } from "lucide-react";
+import { Clock, TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { fmtPnl, RESULT_DOT, RESULT_TEXT, RESULT_BORDER } from "@/lib/calendar";
+import { fmtPnl, RESULT_TEXT, RESULT_BORDER, DIRECTION_BADGE } from "@/lib/calendar";
 import type { CalendarTrade } from "@/types/calendar";
 
+function StatPill({ label, value, valueClass }: { label: string; value: string; valueClass?: string }) {
+  return (
+    <div className="flex flex-col gap-0.5 min-w-0">
+      <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground leading-none">{label}</span>
+      <span className={cn("text-sm font-bold tabular-nums leading-none", valueClass)}>{value}</span>
+    </div>
+  );
+}
+
 export function TradeCard({ trade }: { trade: CalendarTrade }) {
+  const rMultiple = trade.riskAmount > 0 ? trade.pnl / trade.riskAmount : null;
+
+  // Calculate hold time
+  const [eh, em] = trade.entryTime.split(":").map(Number);
+  const [xh, xm] = trade.exitTime.split(":").map(Number);
+  const entryMins = eh * 60 + em;
+  const exitMins = xh * 60 + xm;
+  const holdMins = exitMins >= entryMins ? exitMins - entryMins : exitMins - entryMins + 24 * 60;
+  const holdLabel = holdMins < 60
+    ? `${holdMins}m`
+    : `${Math.floor(holdMins / 60)}h ${holdMins % 60 > 0 ? `${holdMins % 60}m` : ""}`.trim();
+
   return (
     <div className={cn(
-      "rounded-xl border p-4 space-y-3 transition-colors",
+      "rounded-xl border overflow-hidden",
       RESULT_BORDER[trade.result],
       trade.result === "win" && "bg-emerald-500/5",
       trade.result === "loss" && "bg-rose-400/4",
       trade.result === "breakeven" && "bg-amber-400/5",
     )}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <span className={cn("w-2 h-2 rounded-full shrink-0", RESULT_DOT[trade.result])} />
-          <span className="font-semibold text-sm">{trade.instrument}</span>
-          <span className={cn(
-            "text-[10px] font-bold uppercase px-1.5 py-0.5 rounded tracking-wide",
-            trade.direction === "long" ? "bg-emerald-500/15 text-emerald-500" : "bg-rose-500/15 text-rose-500"
-          )}>
+      {/* Header row */}
+      <div className="flex items-center justify-between px-4 pt-4 pb-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          {trade.direction === "long"
+            ? <TrendingUp className="h-4 w-4 text-blue-500 shrink-0" />
+            : <TrendingDown className="h-4 w-4 text-orange-500 shrink-0" />
+          }
+          <span className="font-bold text-base">{trade.instrument}</span>
+          <span className={cn("text-[10px] font-bold uppercase px-1.5 py-0.5 rounded tracking-wide shrink-0", DIRECTION_BADGE[trade.direction])}>
             {trade.direction}
           </span>
-          <span className="text-xs text-muted-foreground">{trade.session}</span>
+          <span className="text-xs text-muted-foreground truncate">{trade.session}</span>
         </div>
-        <span className={cn("text-sm font-bold tabular-nums", RESULT_TEXT[trade.result])}>
-          {fmtPnl(trade.pnl)}
-        </span>
+        <div className="text-right shrink-0 ml-3">
+          <p className={cn("text-lg font-bold tabular-nums leading-none", RESULT_TEXT[trade.result])}>
+            {fmtPnl(trade.pnl)}
+          </p>
+        </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1">
+      {/* Stats row */}
+      <div className="grid grid-cols-4 gap-3 px-4 pb-3 border-b border-border/50">
+        <StatPill
+          label="Risk"
+          value={`$${trade.riskAmount.toFixed(0)}`}
+        />
+        <StatPill
+          label="R Multiple"
+          value={rMultiple !== null ? `${rMultiple >= 0 ? "+" : ""}${rMultiple.toFixed(2)}R` : "—"}
+          valueClass={rMultiple !== null ? rMultiple >= 0 ? "text-emerald-500" : "text-rose-400" : undefined}
+        />
+        <StatPill
+          label="Hold"
+          value={holdLabel}
+        />
+        <StatPill
+          label="Grade"
+          value={trade.grade}
+          valueClass="text-foreground"
+        />
+      </div>
+
+      {/* Strategy + time */}
+      <div className="flex items-center justify-between px-4 py-2.5 text-xs text-muted-foreground">
+        <span className="font-medium truncate">{trade.strategyName}</span>
+        <span className="flex items-center gap-1 shrink-0 ml-3">
           <Clock className="h-3 w-3" />
           {trade.entryTime} – {trade.exitTime}
         </span>
-        <span>{trade.strategyName}</span>
-        <span className="ml-auto font-semibold text-foreground">{trade.grade}</span>
       </div>
 
-      <div className="flex items-center gap-4 text-xs">
-        <span className="text-muted-foreground">
-          Risk <span className="text-foreground font-medium">${trade.riskAmount.toFixed(0)}</span>
-        </span>
-        {trade.riskAmount > 0 && (
-          <span className="text-muted-foreground">
-            R:R <span className={cn("font-medium", RESULT_TEXT[trade.result])}>
-              {(trade.pnl / trade.riskAmount).toFixed(2)}R
+      {/* Confluences */}
+      {trade.confluences.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 px-4 pb-3">
+          {trade.confluences.map((c) => (
+            <span key={c} className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+              {c}
             </span>
-          </span>
-        )}
-      </div>
-
-      {trade.notes && (
-        <p className="text-xs text-muted-foreground bg-muted/40 rounded-lg px-3 py-2 leading-relaxed">
-          {trade.notes}
-        </p>
+          ))}
+        </div>
       )}
+
+      {/* Notes */}
+      {trade.notes && (
+        <div className="mx-4 mb-3 text-xs text-muted-foreground bg-muted/40 rounded-lg px-3 py-2 leading-relaxed">
+          {trade.notes}
+        </div>
+      )}
+
     </div>
   );
 }
