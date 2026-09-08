@@ -100,7 +100,7 @@ export function EquityCurve() {
             <Tooltip content={<EquityTooltip />} cursor={{ stroke: "var(--color-border)", strokeWidth: 1 }}
             />
             <Area
-              type="monotone"
+              type="monotoneX"
               dataKey="cumulative"
               stroke={color}
               strokeWidth={2}
