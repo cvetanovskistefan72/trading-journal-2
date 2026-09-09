@@ -4,7 +4,6 @@ import { getCurrentUser } from "@/lib/auth";
 import { Prisma } from "@prisma/client";
 
 const GRADE_ORDER = ["B", "B+", "A-", "A", "A+", "A+++"];
-const LIMIT = 10;
 
 export function gradeToOrder(grade: string): number {
   const idx = GRADE_ORDER.indexOf(grade);
@@ -17,6 +16,7 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"));
+  const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") ?? "10")));
   const dateFrom = searchParams.get("dateFrom") ?? "";
   const dateTo = searchParams.get("dateTo") ?? "";
   const sortBy = searchParams.get("sortBy") ?? "date";
@@ -60,8 +60,8 @@ export async function GET(req: Request) {
       where,
       include: { strategy: { select: { id: true, name: true } } },
       orderBy,
-      skip: (page - 1) * LIMIT,
-      take: LIMIT,
+      skip: (page - 1) * limit,
+      take: limit,
     }),
   ]);
 
@@ -69,8 +69,8 @@ export async function GET(req: Request) {
     trades,
     total,
     page,
-    totalPages: Math.ceil(total / LIMIT),
-    limit: LIMIT,
+    totalPages: Math.ceil(total / limit),
+    limit: limit,
   });
 }
 

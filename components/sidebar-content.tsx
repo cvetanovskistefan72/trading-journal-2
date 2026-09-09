@@ -150,7 +150,7 @@ function UserFooter({ email }: { email: string }) {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
               <Settings className="h-4 w-4" />
-              Appearance
+              Settings
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push(routes.changePassword)}>
               <KeyRound className="h-4 w-4" />
@@ -184,7 +184,7 @@ export function SidebarContent({
       <div className="flex h-14 items-center gap-2 border-b border-border px-5">
         <LineChart className="h-5 w-5 text-primary" />
         <span className="flex-1 font-semibold tracking-tight">Trading Journal</span>
-        <ThemeToggle />
+        <span className="hidden md:block"><ThemeToggle /></span>
       </div>
       <NavItems items={items} pathname={pathname} onNavigate={onNavigate} />
       <UserFooter email={email} />

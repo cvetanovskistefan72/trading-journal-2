@@ -4,6 +4,7 @@ import type { Trade, CreateTradeInput, TradesParams, TradesResponse } from "@/ty
 export async function getTrades(params: TradesParams = {}): Promise<TradesResponse> {
   const query = new URLSearchParams();
   if (params.page) query.set("page", String(params.page));
+  if (params.limit) query.set("limit", String(params.limit));
   if (params.dateFrom) query.set("dateFrom", params.dateFrom);
   if (params.dateTo) query.set("dateTo", params.dateTo);
   if (params.sortBy) query.set("sortBy", params.sortBy);

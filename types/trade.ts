@@ -50,6 +50,7 @@ export type CreateTradeInput = {
 
 export type TradesParams = {
   page?: number;
+  limit?: number;
   dateFrom?: string;
   dateTo?: string;
   sortBy?: "date" | "grade" | "pnl";

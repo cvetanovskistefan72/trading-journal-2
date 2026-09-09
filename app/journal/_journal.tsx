@@ -1,35 +1,30 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, Shuffle, Archive, ArchiveRestore, ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Shuffle, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { TradeDialog } from "@/components/journal/TradeDialog";
 import { TradeFilters } from "@/components/journal/TradeFilters";
+import { DataTable } from "@/components/data-table";
+import { TradeCards } from "@/components/journal/TradeCards";
+import { journalColumns } from "./columns";
+import type { JournalMeta } from "./columns";
+import { useJournalDensity } from "@/hooks/useJournalDensity";
 import { getTrades, createTrade, updateTrade, deleteTrade, archiveTrade, restoreTrade } from "@/services/trades.service";
 import { buildRandomTrade } from "@/lib/random-trade";
-import type { TradesParams } from "@/types/trade";
+import type { TradesParams, Trade, CreateTradeInput } from "@/types/trade";
 import { getStrategies } from "@/services/strategies.service";
-import type { Trade, CreateTradeInput } from "@/types/trade";
-
-const RESULT_STYLES: Record<string, string> = {
-  win:       "bg-[color-mix(in_oklch,var(--color-chart-1)_10%,transparent)] text-[var(--color-chart-1)]",
-  loss:      "bg-[color-mix(in_oklch,var(--color-chart-2)_10%,transparent)] text-[var(--color-chart-2)]",
-  breakeven: "bg-[color-mix(in_oklch,var(--color-chart-3)_10%,transparent)] text-[var(--color-chart-3)]",
-};
-
-const DIRECTION_STYLES: Record<string, string> = {
-  long:  "bg-[color-mix(in_oklch,var(--color-chart-4)_15%,transparent)] text-[var(--color-chart-4)]",
-  short: "bg-[color-mix(in_oklch,var(--color-chart-5)_15%,transparent)] text-[var(--color-chart-5)]",
-};
 
 export default function JournalPage() {
+  const density = useJournalDensity();
+  const limit = density === "cards" ? 9 : 10;
+  const prevDensity = useRef(density);
   const queryClient = useQueryClient();
   const { data: session, status } = useSession();
   const isAdmin = status === "authenticated" && (session?.user as { role?: string })?.role === "ADMIN";
@@ -44,13 +39,29 @@ export default function JournalPage() {
   const [dateTo, setDateTo] = useState("");
   const [search, setSearch] = useState("");
   const [strategyId, setStrategyId] = useState("");
+
   const [sortBy, setSortBy] = useState<"date" | "grade" | "pnl">("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
-  const params: TradesParams = { page, dateFrom, dateTo, search, sortBy, sortDir, strategyId, archived };
+  useEffect(() => {
+    if (prevDensity.current !== density) {
+      prevDensity.current = density;
+      setPage(1);
+      setDateFrom("");
+      setDateTo("");
+      setSearch("");
+      setStrategyId("");
+    }
+  }, [density]);
+
+  const params: TradesParams = {
+    page, limit, dateFrom, dateTo, search, strategyId, archived,
+    sortBy: density === "cards" ? "date" : sortBy,
+    sortDir: density === "cards" ? "desc" : sortDir,
+  };
 
   const { data, isLoading, isPlaceholderData } = useQuery({
-    queryKey: ["trades", page, dateFrom, dateTo, search, sortBy, sortDir, strategyId, archived],
+    queryKey: ["trades", page, limit, dateFrom, dateTo, search, density === "cards" ? "date" : sortBy, density === "cards" ? "desc" : sortDir, strategyId, archived],
     queryFn: () => getTrades(params),
     placeholderData: (prev) => prev,
   });
@@ -73,51 +84,31 @@ export default function JournalPage() {
 
   const createMutation = useMutation({
     mutationFn: (input: CreateTradeInput) => createTrade(input),
-    onSuccess: () => {
-      toast.success("Trade logged");
-      invalidateAll();
-      setDialogOpen(false);
-    },
+    onSuccess: () => { toast.success("Trade logged"); invalidateAll(); setDialogOpen(false); },
     onError: () => toast.error("Failed to log trade"),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, input }: { id: string; input: Partial<CreateTradeInput> }) =>
-      updateTrade(id, input),
-    onSuccess: () => {
-      toast.success("Trade updated");
-      invalidateAll();
-      setEditing(null);
-      setDialogOpen(false);
-    },
+    mutationFn: ({ id, input }: { id: string; input: Partial<CreateTradeInput> }) => updateTrade(id, input),
+    onSuccess: () => { toast.success("Trade updated"); invalidateAll(); setEditing(null); setDialogOpen(false); },
     onError: () => toast.error("Failed to update trade"),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteTrade(id),
-    onSuccess: () => {
-      toast.success("Trade deleted");
-      invalidateAll();
-      setDeleting(null);
-    },
+    onSuccess: () => { toast.success("Trade deleted"); invalidateAll(); setDeleting(null); },
     onError: () => toast.error("Only archived trades can be deleted."),
   });
 
   const archiveMutation = useMutation({
     mutationFn: (id: string) => archiveTrade(id),
-    onSuccess: () => {
-      toast.success("Trade archived");
-      invalidateAll();
-    },
+    onSuccess: () => { toast.success("Trade archived"); invalidateAll(); },
     onError: () => toast.error("Failed to archive trade"),
   });
 
   const restoreMutation = useMutation({
     mutationFn: (id: string) => restoreTrade(id),
-    onSuccess: () => {
-      toast.success("Trade restored");
-      invalidateAll();
-    },
+    onSuccess: () => { toast.success("Trade restored"); invalidateAll(); },
     onError: () => toast.error("Failed to restore trade"),
   });
 
@@ -128,49 +119,23 @@ export default function JournalPage() {
         if (i < 9) await new Promise((r) => setTimeout(r, 300));
       }
     },
-    onSuccess: () => {
-      toast.success("10 random trades logged");
-      invalidateAll();
-    },
+    onSuccess: () => { toast.success("10 random trades logged"); invalidateAll(); },
     onError: (e: Error) => toast.error(e.message || "Failed to log random trades"),
   });
 
   function handleSubmit(input: CreateTradeInput) {
-    if (editing) {
-      updateMutation.mutate({ id: editing.id, input });
-    } else {
-      createMutation.mutate(input);
-    }
+    if (editing) updateMutation.mutate({ id: editing.id, input });
+    else createMutation.mutate(input);
   }
 
   function toggleSort(field: "date" | "grade" | "pnl") {
-    if (sortBy === field) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortBy(field);
-      setSortDir("desc");
-    }
+    if (sortBy === field) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortBy(field); setSortDir("desc"); }
     setPage(1);
   }
 
-  const clearFilters = useCallback(() => {
-    setDateFrom("");
-    setDateTo("");
-    setSearch("");
-    setStrategyId("");
-    setPage(1);
-  }, []);
-
-  const handleArchived = useCallback((v: boolean) => {
-    setArchived(v);
-    // Reset all filters when switching to archived view
-    setDateFrom("");
-    setDateTo("");
-    setSearch("");
-    setStrategyId("");
-    setPage(1);
-  }, []);
-
+  const clearFilters = useCallback(() => { setDateFrom(""); setDateTo(""); setSearch(""); setStrategyId(""); setPage(1); }, []);
+  const handleArchived = useCallback((v: boolean) => { setArchived(v); setDateFrom(""); setDateTo(""); setSearch(""); setStrategyId(""); setPage(1); }, []);
   const handleDateFrom = useCallback((v: string) => { setDateFrom(v); setPage(1); }, []);
   const handleDateTo = useCallback((v: string) => { setDateTo(v); setPage(1); }, []);
   const handleSearch = useCallback((v: string) => { setSearch(v); setPage(1); }, []);
@@ -179,18 +144,23 @@ export default function JournalPage() {
   const isSaving = createMutation.isPending || updateMutation.isPending;
   const hasFilters = !!dateFrom || !!dateTo || !!search || !!strategyId;
 
-  function SortIcon({ field }: { field: "date" | "grade" | "pnl" }) {
-    if (sortBy !== field) return <ArrowUpDown className="h-3 w-3 ml-1 opacity-40" />;
-    return sortDir === "asc"
-      ? <ArrowUp className="h-3 w-3 ml-1" />
-      : <ArrowDown className="h-3 w-3 ml-1" />;
-  }
+  const meta: JournalMeta = {
+    archived,
+    onEdit: (trade) => { setEditing(trade); setDialogOpen(true); },
+    onDelete: (trade) => setDeleting(trade),
+    onArchive: (id) => archiveMutation.mutate(id),
+    onRestore: (id) => restoreMutation.mutate(id),
+    archivePending: archiveMutation.isPending,
+    restorePending: restoreMutation.isPending,
+    toggleSort,
+    sortBy,
+    sortDir,
+  };
 
   return (
     <main className="flex-1 px-4 py-6 sm:px-8 sm:py-8">
       <div className="space-y-6">
 
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Journal</h1>
@@ -204,7 +174,7 @@ export default function JournalPage() {
               </Button>
             )}
             {!archived && (
-              <Button onClick={() => { setEditing(null); setDialogOpen(true); }} disabled={strategies.length === 0 || createMutation.isPending || updateMutation.isPending}>
+              <Button onClick={() => { setEditing(null); setDialogOpen(true); }} disabled={strategies.length === 0 || isSaving}>
                 <Plus className="h-4 w-4" />
                 Log Trade
               </Button>
@@ -216,25 +186,13 @@ export default function JournalPage() {
           <p className="text-sm text-amber-500">You need at least one strategy before logging trades.</p>
         )}
 
-        {/* Filters */}
         <TradeFilters
-          dateFrom={dateFrom}
-          dateTo={dateTo}
-          search={search}
-          strategyId={strategyId}
-          archived={archived}
-          total={total}
-          hasFilters={hasFilters}
-          strategies={strategies}
-          onDateFrom={handleDateFrom}
-          onDateTo={handleDateTo}
-          onSearch={handleSearch}
-          onStrategyId={handleStrategyId}
-          onArchived={handleArchived}
-          onClear={clearFilters}
+          dateFrom={dateFrom} dateTo={dateTo} search={search} strategyId={strategyId}
+          archived={archived} total={total} hasFilters={hasFilters} strategies={strategies}
+          onDateFrom={handleDateFrom} onDateTo={handleDateTo} onSearch={handleSearch}
+          onStrategyId={handleStrategyId} onArchived={handleArchived} onClear={clearFilters}
         />
 
-        {/* Table */}
         {isLoading && !isPlaceholderData ? (
           <div className="flex items-center justify-center min-h-[300px]">
             <Spinner />
@@ -246,113 +204,36 @@ export default function JournalPage() {
             </p>
             {!hasFilters && !archived && strategies.length > 0 && (
               <Button variant="outline" onClick={() => { setEditing(null); setDialogOpen(true); }}>
-                <Plus className="h-4 w-4" />
-                Log your first trade
+                <Plus className="h-4 w-4" /> Log your first trade
               </Button>
             )}
           </div>
         ) : (
           <>
-            <div className={cn("rounded-xl border border-border overflow-hidden transition-opacity", isPlaceholderData && "opacity-60")}>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/40">
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                        <button type="button" onClick={() => toggleSort("date")}
-                          className="flex items-center cursor-pointer hover:text-foreground transition-colors">
-                          Date <SortIcon field="date" />
-                        </button>
-                      </th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Instrument</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Direction</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Result</th>
-                      <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-                        <button type="button" onClick={() => toggleSort("pnl")}
-                          className="flex items-center justify-end w-full cursor-pointer hover:text-foreground transition-colors">
-                          P&L <SortIcon field="pnl" />
-                        </button>
-                      </th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Strategy</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                        <button type="button" onClick={() => toggleSort("grade")}
-                          className="flex items-center cursor-pointer hover:text-foreground transition-colors">
-                          Grade <SortIcon field="grade" />
-                        </button>
-                      </th>
-                      <th className="px-4 py-3" />
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {trades.map((trade) => (
-                      <tr key={trade.id} className={cn("hover:bg-muted/30 transition-colors", trade.archived && "opacity-60")}>
-                        <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
-                          {new Date(trade.date).toLocaleDateString("en-GB", {
-                            day: "2-digit", month: "short", year: "numeric",
-                          })}
-                        </td>
-                        <td className="px-4 py-3 font-medium">{trade.instrument}</td>
-                        <td className="px-4 py-3">
-                          <span className={cn("rounded px-2 py-0.5 text-xs font-semibold", DIRECTION_STYLES[trade.direction])}>
-                            {trade.direction.toUpperCase()}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={cn("rounded px-2 py-0.5 text-xs font-semibold", RESULT_STYLES[trade.result])}>
-                            {trade.result === "breakeven" ? "BE" : trade.result.toUpperCase()}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-right font-medium tabular-nums"
-                          style={{ color: trade.pnl > 0 ? "var(--color-chart-1)" : trade.pnl < 0 ? "var(--color-chart-2)" : undefined }}
-                        >
-                          {trade.pnl >= 0 ? "+" : ""}${trade.pnl.toFixed(2)}
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">{trade.strategy?.name ?? "—"}</td>
-                        <td className="px-4 py-3">
-                          <span className="rounded bg-muted px-2 py-0.5 text-xs font-medium">{trade.grade}</span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-1">
-                            {archived ? (
-                              <>
-                                <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                                  onClick={() => restoreMutation.mutate(trade.id)}
-                                  disabled={restoreMutation.isPending}>
-                                  <ArchiveRestore className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive"
-                                  onClick={() => setDeleting(trade)}>
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </>
-                            ) : (
-                              <>
-                                <Button size="icon" variant="ghost" className="h-7 w-7"
-                                  onClick={() => { setEditing(trade); setDialogOpen(true); }}>
-                                  <Pencil className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                                  onClick={() => archiveMutation.mutate(trade.id)}
-                                  disabled={archiveMutation.isPending}>
-                                  <Archive className="h-3.5 w-3.5" />
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            {density === "cards" ? (
+              <TradeCards
+                trades={trades}
+                archived={archived}
+                archivePending={archiveMutation.isPending}
+                restorePending={restoreMutation.isPending}
+                onEdit={(trade) => { setEditing(trade); setDialogOpen(true); }}
+                onDelete={(trade) => setDeleting(trade)}
+                onArchive={(id) => archiveMutation.mutate(id)}
+                onRestore={(id) => restoreMutation.mutate(id)}
+              />
+            ) : (
+              <DataTable
+                columns={journalColumns}
+                data={trades}
+                meta={meta as unknown as Record<string, unknown>}
+                isPlaceholderData={isPlaceholderData}
+                rowClassName={(trade) => trade.archived ? "opacity-60" : ""}
+              />
+            )}
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  Page {page} of {totalPages}
-                </p>
+                <p className="text-xs text-muted-foreground">Page {page} of {totalPages}</p>
                 <div className="flex items-center gap-1">
                   <Button variant="outline" size="icon" className="h-8 w-8"
                     onClick={() => setPage((p) => Math.max(1, p - 1))}

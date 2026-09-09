@@ -38,25 +38,29 @@ export function RecentTrades() {
         <p className="text-sm text-muted-foreground py-8 text-center">No trades logged yet</p>
       ) : (
         <div>
-          {/* Column headers */}
-          <div className="grid grid-cols-[56px_1fr_1fr_36px_80px] sm:grid-cols-[60px_160px_1fr_36px_88px] items-center gap-x-3 px-3 pb-1.5 border-b border-border mb-1">
+          {/* Headers — strategy hidden on mobile */}
+          <div className="grid grid-cols-[52px_1fr_52px_80px] xl:grid-cols-[60px_160px_1fr_48px_96px] items-center gap-x-3 px-3 pb-1.5 border-b border-border mb-1">
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">Date</span>
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">Instrument</span>
-            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">Strategy</span>
+            <span className="hidden xl:block text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">Strategy</span>
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60 text-center">Grd</span>
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60 text-right">P&L</span>
           </div>
+
           <div className="space-y-0.5">
             {data.recentTrades.slice(0, 10).map((t) => (
               <div
                 key={t.id}
-                className="grid grid-cols-[56px_1fr_1fr_36px_80px] sm:grid-cols-[60px_160px_1fr_36px_88px] items-center gap-x-3 px-3 py-2 rounded-lg hover:bg-muted/30 transition-colors"
+                className="grid grid-cols-[52px_1fr_52px_80px] xl:grid-cols-[60px_160px_1fr_48px_96px] items-center gap-x-3 px-3 py-2 rounded-lg hover:bg-muted/30 transition-colors"
               >
-                <span className="text-xs text-muted-foreground tabular-nums truncate">{fmtDate(t.date)}</span>
+                {/* Date */}
+                <span className="text-xs text-muted-foreground tabular-nums">{fmtDate(t.date)}</span>
 
+                {/* Instrument + direction */}
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-sm font-medium shrink-0">{t.instrument}</span>
-                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full uppercase shrink-0"
+                  <span className="text-sm font-semibold shrink-0">{t.instrument}</span>
+                  <span
+                    className="text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase shrink-0 leading-none"
                     style={t.direction === "long"
                       ? { backgroundColor: "color-mix(in oklch, var(--chart-4) 15%, transparent)", color: "var(--color-chart-4)" }
                       : { backgroundColor: "color-mix(in oklch, var(--chart-5) 15%, transparent)", color: "var(--color-chart-5)" }
@@ -66,13 +70,15 @@ export function RecentTrades() {
                   </span>
                 </div>
 
-                <span className="text-xs text-muted-foreground truncate">{t.strategyName}</span>
+                {/* Strategy — hidden below xl */}
+                <span className="hidden xl:block text-xs text-muted-foreground truncate">{t.strategyName}</span>
 
-                <span className="text-xs font-medium text-muted-foreground text-center">
-                  {t.grade || "—"}
-                </span>
+                {/* Grade */}
+                <span className="text-xs font-semibold text-muted-foreground text-center">{t.grade || "—"}</span>
 
-                <span className="text-xs font-bold tabular-nums text-right"
+                {/* P&L */}
+                <span
+                  className="text-xs font-bold tabular-nums text-right"
                   style={{ color: t.pnl > 0 ? "var(--color-chart-1)" : t.pnl < 0 ? "var(--color-chart-2)" : "var(--color-chart-3)" }}
                 >
                   {fmtPnl(t.pnl)}

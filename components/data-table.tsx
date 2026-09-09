@@ -6,62 +6,52 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { cn } from "@/lib/utils";
 
 type Props<TData> = {
   columns: ColumnDef<TData, unknown>[];
   data: TData[];
-  meta?: {
-    onDelete?: (row: TData) => void;
-  };
-  emptyMessage?: string;
+  meta?: Record<string, unknown>;
+  emptyMessage?: string | React.ReactNode;
+  rowClassName?: (row: TData) => string;
+  isPlaceholderData?: boolean;
 };
-
-declare module "@tanstack/react-table" {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface TableMeta<TData extends unknown> {
-    onDelete?: (row: TData) => void;
-  }
-}
 
 export function DataTable<TData>({
   columns,
   data,
   meta,
   emptyMessage = "No results",
+  rowClassName,
+  isPlaceholderData,
 }: Props<TData>) {
   const table = useReactTable({
     data,
     columns,
-    meta,
+    meta: meta as never,
     getCoreRowModel: getCoreRowModel(),
   });
 
   return (
-    <div className="rounded-lg border border-border bg-card overflow-hidden">
+    <div className={cn("rounded-xl border border-border overflow-hidden transition-opacity", isPlaceholderData && "opacity-60")}>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[600px] text-sm">
-          <thead className="border-b border-border text-muted-foreground">
+          <thead className="border-b border-border bg-muted/40 text-muted-foreground">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <th key={header.id} className="px-4 py-3 text-left font-medium">
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
+                    {flexRender(header.column.columnDef.header, header.getContext())}
                   </th>
                 ))}
               </tr>
             ))}
           </thead>
 
-          <tbody>
+          <tbody className="divide-y divide-border">
             {table.getRowModel().rows.length === 0 ? (
               <tr>
-                <td
-                  colSpan={columns.length}
-                  className="px-4 py-8 text-center text-muted-foreground"
-                >
+                <td colSpan={columns.length} className="px-4 py-8 text-center text-muted-foreground">
                   {emptyMessage}
                 </td>
               </tr>
@@ -69,14 +59,11 @@ export function DataTable<TData>({
               table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
-                  className="border-b border-border last:border-b-0"
+                  className={cn("hover:bg-muted/30 transition-colors", rowClassName?.(row.original))}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 whitespace-nowrap">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}
                 </tr>

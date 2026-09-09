@@ -15,7 +15,7 @@ function Tile({ label, value, sub }: { label: string; value: number; sub?: strin
   const Icon = positive ? TrendingUp : negative ? TrendingDown : Minus;
 
   return (
-    <div className="rounded-2xl border border-border bg-card px-5 py-4 flex flex-col gap-3 min-w-0 min-h-[100px]">
+    <div className="rounded-2xl border border-border bg-card px-3 py-3 sm:px-5 sm:py-4 flex flex-col gap-2 sm:gap-3 min-w-0 min-h-[90px]">
       <div className="flex items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground truncate pr-2">{label}</p>
         <Icon
@@ -25,7 +25,7 @@ function Tile({ label, value, sub }: { label: string; value: number; sub?: strin
       </div>
       <div>
         <p
-          className={cn("text-3xl font-bold tabular-nums leading-none", !positive && !negative && "text-muted-foreground")}
+          className={cn("text-lg sm:text-2xl lg:text-3xl font-bold tabular-nums leading-none truncate", !positive && !negative && "text-muted-foreground")}
           style={positive ? { color: "var(--color-chart-1)" } : negative ? { color: "var(--color-chart-2)" } : undefined}
         >
           {fmtPnl(value)}
@@ -41,7 +41,7 @@ export function SnapshotRow() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="rounded-2xl border border-border bg-card px-5 py-4 min-h-[100px] animate-pulse" />
         ))}
