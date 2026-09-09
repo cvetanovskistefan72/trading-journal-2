@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { EquityCurve } from "@/components/analytics/EquityCurve";
 import { SummaryStats } from "@/components/analytics/SummaryStats";
 import { PnlByPeriod } from "@/components/analytics/PnlByPeriod";
@@ -21,6 +22,16 @@ import { CumulativeRCurve } from "@/components/analytics/CumulativeRCurve";
 import { TiltMeter } from "@/components/analytics/TiltMeter";
 
 export default function PerformancePage() {
+  useEffect(() => {
+    if (window.location.hash) {
+      const id = window.location.hash.slice(1);
+      // slight delay so the page has rendered before scrolling
+      setTimeout(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 120);
+    }
+  }, []);
+
   return (
     <main className="flex-1 px-4 py-6 sm:px-8 sm:py-8 space-y-5">
       <div className="space-y-1">

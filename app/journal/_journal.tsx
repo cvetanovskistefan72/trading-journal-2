@@ -68,6 +68,7 @@ export default function JournalPage() {
     queryClient.invalidateQueries({ queryKey: ["trades"] });
     queryClient.invalidateQueries({ queryKey: ["analytics"] });
     queryClient.invalidateQueries({ queryKey: ["calendar"] });
+    queryClient.invalidateQueries({ queryKey: ["dashboard"] });
   }
 
   const createMutation = useMutation({

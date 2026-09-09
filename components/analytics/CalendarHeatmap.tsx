@@ -114,7 +114,7 @@ export function CalendarHeatmap() {
   const svgH = 16 + 7 * (CELL + GAP);
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+    <div id="heatmap" className="rounded-2xl border border-border bg-card p-6 space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
