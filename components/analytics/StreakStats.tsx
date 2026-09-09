@@ -66,24 +66,24 @@ export function StreakStats() {
             label="Current Streak"
             value={currentVal === 0 ? "—" : `${Math.abs(currentVal)} ${isWinStreak ? "W" : "L"}`}
             sub={isWinStreak ? "Win streak" : isLossStreak ? "Loss streak" : "No active streak"}
-            color={isWinStreak ? "text-emerald-500" : isLossStreak ? "text-rose-400" : "text-muted-foreground"}
-            bg={isWinStreak ? "bg-emerald-500/10" : isLossStreak ? "bg-rose-500/10" : "bg-muted"}
+            color={isWinStreak ? "text-[var(--color-chart-1)]" : isLossStreak ? "text-[var(--color-chart-2)]" : "text-muted-foreground"}
+            bg={isWinStreak ? "bg-[color-mix(in_oklch,var(--color-chart-1)_10%,transparent)]" : isLossStreak ? "bg-[color-mix(in_oklch,var(--color-chart-2)_10%,transparent)]" : "bg-muted"}
           />
           <StreakCard
             icon={Trophy}
             label="Best Win Streak"
             value={streaks.bestWin > 0 ? `${streaks.bestWin} W` : "—"}
             sub="All-time best"
-            color="text-emerald-500"
-            bg="bg-emerald-500/10"
+            color="text-[var(--color-chart-1)]"
+            bg="bg-[color-mix(in_oklch,var(--color-chart-1)_10%,transparent)]"
           />
           <StreakCard
             icon={AlertTriangle}
             label="Worst Loss Streak"
             value={streaks.bestLoss > 0 ? `${streaks.bestLoss} L` : "—"}
             sub="All-time worst"
-            color="text-rose-400"
-            bg="bg-rose-500/10"
+            color="text-[var(--color-chart-2)]"
+            bg="bg-[color-mix(in_oklch,var(--color-chart-2)_10%,transparent)]"
           />
         </div>
       )}

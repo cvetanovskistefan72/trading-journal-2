@@ -6,32 +6,32 @@ export const MONTHS = [
 export const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export const RESULT_DOT: Record<string, string> = {
-  win: "bg-emerald-500",
-  loss: "bg-rose-400",
-  breakeven: "bg-amber-400",
+  win:       "bg-[var(--color-chart-1)]",
+  loss:      "bg-[var(--color-chart-2)]",
+  breakeven: "bg-[var(--color-chart-3)]",
 };
 
 export const RESULT_BG: Record<string, string> = {
-  win: "bg-emerald-500/8 hover:bg-emerald-500/12",
-  loss: "bg-rose-400/6 hover:bg-rose-400/10",
-  breakeven: "bg-amber-400/8 hover:bg-amber-400/12",
+  win:       "bg-[color-mix(in_oklch,var(--color-chart-1)_10%,transparent)] hover:bg-[color-mix(in_oklch,var(--color-chart-1)_15%,transparent)]",
+  loss:      "bg-[color-mix(in_oklch,var(--color-chart-2)_8%,transparent)] hover:bg-[color-mix(in_oklch,var(--color-chart-2)_12%,transparent)]",
+  breakeven: "bg-[color-mix(in_oklch,var(--color-chart-3)_8%,transparent)] hover:bg-[color-mix(in_oklch,var(--color-chart-3)_12%,transparent)]",
 };
 
 export const RESULT_TEXT: Record<string, string> = {
-  win: "text-emerald-500",
-  loss: "text-rose-400",
-  breakeven: "text-amber-500",
+  win:       "text-[var(--color-chart-1)]",
+  loss:      "text-[var(--color-chart-2)]",
+  breakeven: "text-[var(--color-chart-3)]",
 };
 
 export const RESULT_BORDER: Record<string, string> = {
-  win: "border-emerald-500/30",
-  loss: "border-rose-400/20",
-  breakeven: "border-amber-400/30",
+  win:       "border-[color-mix(in_oklch,var(--color-chart-1)_30%,transparent)]",
+  loss:      "border-[color-mix(in_oklch,var(--color-chart-2)_20%,transparent)]",
+  breakeven: "border-[color-mix(in_oklch,var(--color-chart-3)_30%,transparent)]",
 };
 
 export const DIRECTION_BADGE: Record<string, string> = {
-  long: "bg-blue-500/15 text-blue-500",
-  short: "bg-orange-500/15 text-orange-500",
+  long:  "bg-[color-mix(in_oklch,var(--color-chart-4)_15%,transparent)] text-[var(--color-chart-4)]",
+  short: "bg-[color-mix(in_oklch,var(--color-chart-5)_15%,transparent)] text-[var(--color-chart-5)]",
 };
 
 export function fmtPnl(pnl: number, compact = false) {

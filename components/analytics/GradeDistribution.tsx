@@ -99,7 +99,10 @@ export function GradeDistribution() {
                   <tr key={row.grade} className="border-b border-border/50 last:border-0 hover:bg-accent/30 transition-colors">
                     <td className="py-1 pr-4 font-semibold">{row.grade}</td>
                     <td className="text-right py-1 px-3 text-muted-foreground">{row.trades}</td>
-                    <td className={cn("text-right py-1 px-3 font-medium", row.wins + row.losses === 0 ? "text-muted-foreground" : row.winRate >= 50 ? "text-emerald-500" : "text-rose-400")}>
+                    <td
+                      className={cn("text-right py-1 px-3 font-medium", row.wins + row.losses === 0 && "text-muted-foreground")}
+                      style={row.wins + row.losses > 0 ? { color: row.winRate >= 50 ? "var(--color-chart-1)" : "var(--color-chart-2)" } : undefined}
+                    >
                       {row.wins + row.losses === 0 ? "—" : `${row.winRate.toFixed(1)}%`}
                     </td>
                     <td className="text-right py-1 px-3" style={{ color: row.avgR > 0 ? "var(--color-chart-1)" : row.avgR < 0 ? "var(--color-chart-2)" : undefined }}>

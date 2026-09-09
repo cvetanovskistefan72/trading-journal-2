@@ -40,9 +40,9 @@ export function DayDialog({
               <DialogTitle className="text-base leading-snug">{label}</DialogTitle>
               <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
                 <span>{day.tradeCount} trade{day.tradeCount !== 1 ? "s" : ""}</span>
-                {wins > 0 && <span className="text-emerald-500 font-medium">{wins}W</span>}
-                {losses > 0 && <span className="text-rose-500 font-medium">{losses}L</span>}
-                {bes > 0 && <span className="text-amber-500 font-medium">{bes}BE</span>}
+                {wins > 0 && <span className="font-medium" style={{ color: "var(--color-chart-1)" }}>{wins}W</span>}
+                {losses > 0 && <span className="font-medium" style={{ color: "var(--color-chart-2)" }}>{losses}L</span>}
+                {bes > 0 && <span className="font-medium" style={{ color: "var(--color-chart-3)" }}>{bes}BE</span>}
               </div>
             </div>
             <div className="text-right shrink-0">

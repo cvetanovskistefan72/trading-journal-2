@@ -97,14 +97,14 @@ export default function CalendarPage() {
           <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
             {totalTrades > 0 ? (
               <>
-                <span className={cn("font-semibold", totalPnl >= 0 ? "text-emerald-500" : "text-rose-500")}>
+                <span className="font-semibold" style={{ color: totalPnl >= 0 ? "var(--color-chart-1)" : "var(--color-chart-2)" }}>
                   {fmtPnl(totalPnl)}
                 </span>
                 <span>·</span>
                 <span>{totalTrades} trade{totalTrades !== 1 ? "s" : ""}</span>
                 <span>·</span>
-                <span className="text-emerald-500">{winDays}W</span>
-                <span className="text-rose-500">{lossDays}L</span>
+                <span style={{ color: "var(--color-chart-1)" }}>{winDays}W</span>
+                <span style={{ color: "var(--color-chart-2)" }}>{lossDays}L</span>
               </>
             ) : (
               <span>No trades this month</span>
@@ -205,13 +205,13 @@ export default function CalendarPage() {
               <div className="min-h-[100px] border-b border-border/60 px-3 py-2.5 flex flex-col justify-center items-center gap-1 bg-muted/40">
                 {ws.count > 0 ? (
                   <>
-                    <span className={cn("text-xs font-bold tabular-nums", ws.pnl > 0 ? "text-emerald-500" : ws.pnl < 0 ? "text-rose-500" : "text-amber-500")}>
+                    <span className="text-xs font-bold tabular-nums" style={{ color: ws.pnl > 0 ? "var(--color-chart-1)" : ws.pnl < 0 ? "var(--color-chart-2)" : "var(--color-chart-3)" }}>
                       {fmtPnl(ws.pnl, true)}
                     </span>
                     <span className="text-[10px] text-muted-foreground">{ws.count} trade{ws.count !== 1 ? "s" : ""}</span>
                     <div className="flex gap-1 mt-0.5">
-                      {ws.wins > 0 && <span className="text-[9px] font-semibold text-emerald-500">{ws.wins}W</span>}
-                      {ws.losses > 0 && <span className="text-[9px] font-semibold text-rose-500">{ws.losses}L</span>}
+                      {ws.wins > 0 && <span className="text-[9px] font-semibold" style={{ color: "var(--color-chart-1)" }}>{ws.wins}W</span>}
+                      {ws.losses > 0 && <span className="text-[9px] font-semibold" style={{ color: "var(--color-chart-2)" }}>{ws.losses}L</span>}
                     </div>
                   </>
                 ) : (
@@ -225,9 +225,9 @@ export default function CalendarPage() {
 
       {/* Legend */}
       <div className="flex items-center gap-5 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" />Win day</div>
-        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-400" />Loss day</div>
-        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400" />Breakeven</div>
+        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: "var(--color-chart-1)" }} />Win day</div>
+        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: "var(--color-chart-2)" }} />Loss day</div>
+        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: "var(--color-chart-3)" }} />Breakeven</div>
       </div>
 
       <DayDialog day={selectedDay} open={dialogOpen} onClose={() => setDialogOpen(false)} />

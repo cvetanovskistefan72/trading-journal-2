@@ -54,13 +54,13 @@ export function StatTiles() {
   const weekTrades = data?.weekTrades ?? 0;
   const monthTrades = data?.monthTrades ?? 0;
 
-  const streakColor = streakType === "win" ? "text-emerald-500" : streakType === "loss" ? "text-rose-400" : "text-muted-foreground/40";
-  const streakIconColor = streakType === "win" ? "text-emerald-500" : streakType === "loss" ? "text-rose-400" : "text-muted-foreground";
+  const streakColor = streakType === "win" ? "text-[var(--color-chart-1)]" : streakType === "loss" ? "text-[var(--color-chart-2)]" : "text-muted-foreground/40";
+  const streakIconColor = streakType === "win" ? "text-[var(--color-chart-1)]" : streakType === "loss" ? "text-[var(--color-chart-2)]" : "text-muted-foreground";
   const streakLabel = streakType === "loss" ? "Loss Streak" : "Win Streak";
   const streakValue = streak > 0 ? `${streak}${streakType === "win" ? "W" : streakType === "loss" ? "L" : ""}` : "—";
 
-  const wrColor = winRate == null ? undefined : winRate >= 50 ? "text-emerald-500" : "text-rose-400";
-  const wrIconColor = winRate == null ? undefined : winRate >= 50 ? "text-emerald-500" : "text-rose-400";
+  const wrColor = winRate == null ? undefined : winRate >= 50 ? "text-[var(--color-chart-1)]" : "text-[var(--color-chart-2)]";
+  const wrIconColor = winRate == null ? undefined : winRate >= 50 ? "text-[var(--color-chart-1)]" : "text-[var(--color-chart-2)]";
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

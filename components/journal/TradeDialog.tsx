@@ -51,9 +51,9 @@ function pnlToResult(pnl: number): TradeResult {
 }
 
 const RESULT_STYLES: Record<TradeResult, string> = {
-  win: "bg-green-500/10 text-green-500",
-  loss: "bg-red-400/10 text-red-400",
-  breakeven: "bg-yellow-500/10 text-yellow-500",
+  win:       "bg-[color-mix(in_oklch,var(--color-chart-1)_10%,transparent)] text-[var(--color-chart-1)]",
+  loss:      "bg-[color-mix(in_oklch,var(--color-chart-2)_10%,transparent)] text-[var(--color-chart-2)]",
+  breakeven: "bg-[color-mix(in_oklch,var(--color-chart-3)_10%,transparent)] text-[var(--color-chart-3)]",
 };
 
 export function TradeDialog({ open, onClose, onSubmit, loading, strategies, initial }: Props) {

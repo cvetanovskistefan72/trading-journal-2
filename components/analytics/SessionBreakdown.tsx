@@ -14,22 +14,27 @@ function SessionCard({ bucket }: { bucket: SessionBucket }) {
   const negative = bucket.pnl < 0;
 
   return (
-    <div className={[
-      "rounded-xl border p-4 space-y-3 transition-colors",
-      empty    ? "bg-muted/10 border-border" :
-      positive ? "bg-emerald-500/5 border-emerald-500/20" :
-                 "bg-rose-500/5 border-rose-500/20",
-    ].join(" ")}>
-      <p className={[
-        "text-sm font-semibold capitalize truncate",
-        empty ? "text-muted-foreground" : positive ? "text-emerald-500" : "text-rose-500",
-      ].join(" ")}>
+    <div
+      className="rounded-xl border p-4 space-y-3 transition-colors"
+      style={empty ? undefined : {
+        backgroundColor: positive
+          ? "color-mix(in oklch, var(--chart-1) 5%, transparent)"
+          : "color-mix(in oklch, var(--chart-2) 5%, transparent)",
+        borderColor: positive
+          ? "color-mix(in oklch, var(--chart-1) 20%, transparent)"
+          : "color-mix(in oklch, var(--chart-2) 20%, transparent)",
+      }}
+    >
+      <p
+        className="text-sm font-semibold capitalize truncate"
+        style={empty ? undefined : { color: positive ? "var(--color-chart-1)" : "var(--color-chart-2)" }}
+      >
         {bucket.session}
       </p>
-      <p className={[
-        "text-2xl font-bold tabular-nums leading-none",
-        empty ? "text-muted-foreground/40" : positive ? "text-emerald-500" : "text-rose-500",
-      ].join(" ")}>
+      <p
+        className="text-2xl font-bold tabular-nums leading-none"
+        style={empty ? { color: "color-mix(in oklch, currentColor 40%, transparent)" } : { color: positive ? "var(--color-chart-1)" : "var(--color-chart-2)" }}
+      >
         {empty ? "$0.00" : fmtUsd(bucket.pnl)}
       </p>
       <div className="space-y-1">
@@ -38,14 +43,14 @@ function SessionCard({ bucket }: { bucket: SessionBucket }) {
           <span className="tabular-nums font-medium">{bucket.winRate}%</span>
         </div>
         <div className="bg-muted rounded-full h-1.5 overflow-hidden">
-          <div className="bg-emerald-500 h-1.5 rounded-full transition-all duration-500" style={{ width: `${Math.min(bucket.winRate, 100)}%` }} />
+          <div className="h-1.5 rounded-full transition-all duration-500" style={{ width: `${Math.min(bucket.winRate, 100)}%`, backgroundColor: "var(--color-chart-1)" }} />
         </div>
       </div>
       <div className="flex gap-4 text-xs text-muted-foreground">
         <span><span className="font-medium text-foreground tabular-nums">{bucket.trades}</span> Trades</span>
         <span><span className="font-medium text-foreground tabular-nums">{bucket.avgR >= 0 ? "+" : ""}{bucket.avgR}R</span> avg</span>
-        <span className="text-emerald-600 dark:text-emerald-400 tabular-nums">{bucket.wins}W</span>
-        <span className="text-rose-600 dark:text-rose-400 tabular-nums">{bucket.losses}L</span>
+        <span className="tabular-nums" style={{ color: "var(--color-chart-1)" }}>{bucket.wins}W</span>
+        <span className="tabular-nums" style={{ color: "var(--color-chart-2)" }}>{bucket.losses}L</span>
       </div>
     </div>
   );

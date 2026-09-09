@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { useDashboard } from "@/hooks/useDashboard";
 import { AlertTriangle, CheckCircle2, TrendingDown, Zap } from "lucide-react";
 
@@ -17,13 +16,15 @@ export function DisciplineBanner() {
   // Loss streak ≥ 3 — highest priority warning
   if (streakType === "loss" && streak >= 3) {
     return (
-      <div className={cn(
-        "rounded-2xl border px-5 py-4 flex items-start gap-3",
-        "border-rose-500/30 bg-rose-500/5"
-      )}>
-        <AlertTriangle className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
+      <div className="rounded-2xl border px-5 py-4 flex items-start gap-3"
+        style={{
+          borderColor: "color-mix(in oklch, var(--chart-2) 30%, transparent)",
+          backgroundColor: "color-mix(in oklch, var(--chart-2) 5%, transparent)",
+        }}
+      >
+        <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "var(--color-chart-2)" }} />
         <div>
-          <p className="text-sm font-semibold text-rose-400">
+          <p className="text-sm font-semibold" style={{ color: "var(--color-chart-2)" }}>
             {streak}-loss streak — consider stepping back
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -37,13 +38,15 @@ export function DisciplineBanner() {
   // Overtrading — more than 25 trades in a week is unusually high
   if (weekTrades >= 25) {
     return (
-      <div className={cn(
-        "rounded-2xl border px-5 py-4 flex items-start gap-3",
-        "border-amber-500/30 bg-amber-500/5"
-      )}>
-        <Zap className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+      <div className="rounded-2xl border px-5 py-4 flex items-start gap-3"
+        style={{
+          borderColor: "color-mix(in oklch, var(--chart-3) 30%, transparent)",
+          backgroundColor: "color-mix(in oklch, var(--chart-3) 5%, transparent)",
+        }}
+      >
+        <Zap className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "var(--color-chart-3)" }} />
         <div>
-          <p className="text-sm font-semibold text-amber-400">
+          <p className="text-sm font-semibold" style={{ color: "var(--color-chart-3)" }}>
             High trade volume this week ({weekTrades} trades)
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -57,13 +60,15 @@ export function DisciplineBanner() {
   // Win streak ≥ 3 — positive reinforcement
   if (streakType === "win" && streak >= 3) {
     return (
-      <div className={cn(
-        "rounded-2xl border px-5 py-4 flex items-start gap-3",
-        "border-emerald-500/30 bg-emerald-500/5"
-      )}>
-        <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
+      <div className="rounded-2xl border px-5 py-4 flex items-start gap-3"
+        style={{
+          borderColor: "color-mix(in oklch, var(--chart-1) 30%, transparent)",
+          backgroundColor: "color-mix(in oklch, var(--chart-1) 5%, transparent)",
+        }}
+      >
+        <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "var(--color-chart-1)" }} />
         <div>
-          <p className="text-sm font-semibold text-emerald-500">
+          <p className="text-sm font-semibold" style={{ color: "var(--color-chart-1)" }}>
             {streak}-win streak — great trading!
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -77,10 +82,7 @@ export function DisciplineBanner() {
   // Quiet week — no trades at all and month has some history
   if (weekTrades === 0 && monthTrades > 0) {
     return (
-      <div className={cn(
-        "rounded-2xl border px-5 py-4 flex items-start gap-3",
-        "border-border bg-muted/20"
-      )}>
+      <div className="rounded-2xl border border-border bg-muted/20 px-5 py-4 flex items-start gap-3">
         <TrendingDown className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
         <div>
           <p className="text-sm font-semibold text-foreground">No trades logged this week</p>

@@ -19,11 +19,11 @@ function DirectionCard({ bucket }: { bucket: DirectionBucket }) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className={[
-            "flex items-center justify-center w-8 h-8 rounded-lg",
-            isLong ? "bg-blue-500/10" : "bg-orange-500/10",
-          ].join(" ")}>
-            <Icon className={["h-4 w-4", isLong ? "text-blue-500" : "text-orange-500"].join(" ")} />
+          <div
+            className="flex items-center justify-center w-8 h-8 rounded-lg"
+            style={{ backgroundColor: `color-mix(in oklch, var(--chart-${isLong ? 4 : 5}) 10%, transparent)` }}
+          >
+            <Icon className="h-4 w-4" style={{ color: `var(--color-chart-${isLong ? 4 : 5})` }} />
           </div>
           <span className="text-sm font-semibold capitalize">{bucket.direction}</span>
         </div>
@@ -33,7 +33,7 @@ function DirectionCard({ bucket }: { bucket: DirectionBucket }) {
       {/* P&L */}
       <div>
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-0.5">Net P&L</p>
-        <p className={["text-2xl font-bold tabular-nums", positive ? "text-emerald-500" : "text-rose-400"].join(" ")}>
+        <p className="text-2xl font-bold tabular-nums" style={{ color: positive ? "var(--color-chart-1)" : "var(--color-chart-2)" }}>
           {fmtUsd(bucket.pnl)}
         </p>
       </div>
@@ -46,13 +46,13 @@ function DirectionCard({ bucket }: { bucket: DirectionBucket }) {
         </div>
         <div className="relative h-2 rounded-full bg-muted overflow-hidden">
           <div
-            className="absolute inset-y-0 left-0 rounded-full bg-emerald-500 transition-all duration-700"
-            style={{ width: `${Math.min(bucket.winRate, 100)}%` }}
+            className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
+            style={{ width: `${Math.min(bucket.winRate, 100)}%`, backgroundColor: "var(--color-chart-1)" }}
           />
         </div>
         <div className="flex justify-between text-[10px] text-muted-foreground">
-          <span className="text-emerald-500 font-medium">{bucket.wins}W</span>
-          <span className="text-rose-400 font-medium">{bucket.losses}L</span>
+          <span className="font-medium" style={{ color: "var(--color-chart-1)" }}>{bucket.wins}W</span>
+          <span className="font-medium" style={{ color: "var(--color-chart-2)" }}>{bucket.losses}L</span>
         </div>
       </div>
 
@@ -60,13 +60,13 @@ function DirectionCard({ bucket }: { bucket: DirectionBucket }) {
       <div className="grid grid-cols-2 gap-3 pt-1 border-t border-border">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-0.5">Avg R</p>
-          <p className={["text-sm font-bold tabular-nums", bucket.avgR >= 0 ? "text-emerald-500" : "text-rose-400"].join(" ")}>
+          <p className="text-sm font-bold tabular-nums" style={{ color: bucket.avgR >= 0 ? "var(--color-chart-1)" : "var(--color-chart-2)" }}>
             {bucket.avgR >= 0 ? "+" : ""}{bucket.avgR.toFixed(2)}R
           </p>
         </div>
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-0.5">Profit Factor</p>
-          <p className={["text-sm font-bold tabular-nums", (bucket.profitFactor ?? 0) >= 1 ? "text-emerald-500" : "text-rose-400"].join(" ")}>
+          <p className="text-sm font-bold tabular-nums" style={{ color: (bucket.profitFactor ?? 0) >= 1 ? "var(--color-chart-1)" : "var(--color-chart-2)" }}>
             {bucket.profitFactor == null ? "—" : bucket.profitFactor >= 999 ? "∞" : bucket.profitFactor.toFixed(2)}
           </p>
         </div>

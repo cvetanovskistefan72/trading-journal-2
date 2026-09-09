@@ -47,14 +47,19 @@ export function InstrumentBreakdown() {
                   <div className="flex-1 flex items-center gap-2">
                     <div className="flex-1 h-9 relative bg-muted/10 rounded overflow-hidden">
                       <div
-                        className={cn(
-                          "h-full rounded transition-all duration-500",
-                          noData ? "bg-muted/30" : positive ? "bg-emerald-500/80" : "bg-rose-500/80"
-                        )}
-                        style={{ width: noData ? "100%" : `${pct}%` }}
+                        className={cn("h-full rounded transition-all duration-500", noData && "bg-muted/30")}
+                        style={{
+                          width: noData ? "100%" : `${pct}%`,
+                          backgroundColor: noData ? undefined : positive
+                            ? "color-mix(in oklch, var(--chart-1) 80%, transparent)"
+                            : "color-mix(in oklch, var(--chart-2) 80%, transparent)",
+                        }}
                       />
                     </div>
-                    <span className={cn("text-[11px] font-semibold tabular-nums whitespace-nowrap w-16 text-right", noData ? "text-muted-foreground/50" : positive ? "text-emerald-400" : "text-rose-400")}>
+                    <span
+                      className="text-[11px] font-semibold tabular-nums whitespace-nowrap w-16 text-right"
+                      style={{ color: noData ? undefined : positive ? "var(--color-chart-1)" : "var(--color-chart-2)", opacity: noData ? 0.5 : 1 }}
+                    >
                       {noData ? "$0.00" : fmtPnl(row.pnl)}
                     </span>
                   </div>

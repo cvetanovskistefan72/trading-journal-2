@@ -28,19 +28,20 @@ export function TradeCard({ trade }: { trade: CalendarTrade }) {
     : `${Math.floor(holdMins / 60)}h ${holdMins % 60 > 0 ? `${holdMins % 60}m` : ""}`.trim();
 
   return (
-    <div className={cn(
-      "rounded-xl border overflow-hidden",
-      RESULT_BORDER[trade.result],
-      trade.result === "win" && "bg-emerald-500/5",
-      trade.result === "loss" && "bg-rose-400/4",
-      trade.result === "breakeven" && "bg-amber-400/5",
-    )}>
+    <div className={cn("rounded-xl border overflow-hidden", RESULT_BORDER[trade.result])}
+      style={{
+        backgroundColor:
+          trade.result === "win"       ? "color-mix(in oklch, var(--chart-1) 5%, transparent)"  :
+          trade.result === "loss"      ? "color-mix(in oklch, var(--chart-2) 4%, transparent)"  :
+                                         "color-mix(in oklch, var(--chart-3) 5%, transparent)",
+      }}
+    >
       {/* Header row */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <div className="flex items-center gap-2.5 min-w-0">
           {trade.direction === "long"
-            ? <TrendingUp className="h-4 w-4 text-blue-500 shrink-0" />
-            : <TrendingDown className="h-4 w-4 text-orange-500 shrink-0" />
+            ? <TrendingUp className="h-4 w-4 shrink-0" style={{ color: "var(--color-chart-4)" }} />
+            : <TrendingDown className="h-4 w-4 shrink-0" style={{ color: "var(--color-chart-5)" }} />
           }
           <span className="font-bold text-base">{trade.instrument}</span>
           <span className={cn("text-[10px] font-bold uppercase px-1.5 py-0.5 rounded tracking-wide shrink-0", DIRECTION_BADGE[trade.direction])}>
@@ -64,7 +65,7 @@ export function TradeCard({ trade }: { trade: CalendarTrade }) {
         <StatPill
           label="R Multiple"
           value={rMultiple !== null ? `${rMultiple >= 0 ? "+" : ""}${rMultiple.toFixed(2)}R` : "—"}
-          valueClass={rMultiple !== null ? rMultiple >= 0 ? "text-emerald-500" : "text-rose-400" : undefined}
+          valueClass={rMultiple !== null ? rMultiple >= 0 ? "text-[var(--color-chart-1)]" : "text-[var(--color-chart-2)]" : undefined}
         />
         <StatPill
           label="Hold"

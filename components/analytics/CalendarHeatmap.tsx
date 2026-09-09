@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { CalendarDay as HeatmapDay } from "@/hooks/useAnalytics";
-import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayDialog } from "@/components/calendar/DayDialog";
 import type { CalendarDay } from "@/types/calendar";
@@ -123,7 +122,7 @@ export function CalendarHeatmap() {
         </div>
         <div className="flex items-center gap-2">
           {yearTradeDays > 0 && (
-            <span className={cn("text-sm font-bold tabular-nums", yearTotal >= 0 ? "text-emerald-500" : "text-rose-400")}>
+            <span className="text-sm font-bold tabular-nums" style={{ color: yearTotal >= 0 ? "var(--color-chart-1)" : "var(--color-chart-2)" }}>
               {fmtUsd(yearTotal)}
             </span>
           )}

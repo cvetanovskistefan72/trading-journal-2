@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { TrendingUp, TrendingDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { PeriodFilter, fromDate, type PeriodPreset } from "@/components/analytics/PeriodFilter";
 
@@ -55,7 +54,7 @@ export function EquityCurve() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Equity Curve</p>
           {last && (
-            <p className={cn("text-2xl font-bold tabular-nums mt-1", isUp ? "text-emerald-500" : "text-rose-400")}>
+            <p className="text-2xl font-bold tabular-nums mt-1" style={{ color: isUp ? "var(--color-chart-1)" : "var(--color-chart-2)" }}>
               {fmtUsd(last.cumulative)}
             </p>
           )}
@@ -63,8 +62,8 @@ export function EquityCurve() {
         <div className="flex items-center gap-3">
           <PeriodFilter value={preset} onChange={setPreset} />
           {last && (isUp
-            ? <TrendingUp className="h-5 w-5 text-emerald-500" />
-            : <TrendingDown className="h-5 w-5 text-rose-400" />
+            ? <TrendingUp className="h-5 w-5" style={{ color: "var(--color-chart-1)" }} />
+            : <TrendingDown className="h-5 w-5" style={{ color: "var(--color-chart-2)" }} />
           )}
         </div>
       </div>

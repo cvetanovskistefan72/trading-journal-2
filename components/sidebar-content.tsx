@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ChevronDown, KeyRound, LineChart, LogOut, UserRound } from "lucide-react";
+import { ChevronDown, KeyRound, LineChart, LogOut, Settings, UserRound } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { signOut } from "next-auth/react";
 
@@ -19,6 +19,7 @@ import {
 import { cn, isActive } from "@/lib/utils";
 import { routes } from "@/config/routes";
 import type { NavItem, NavLeafItem } from "@/types/navigation";
+import { SettingsModal } from "@/components/SettingsModal";
 
 function NavLeaf({
   item,
@@ -125,37 +126,45 @@ function NavItems({
 
 function UserFooter({ email }: { email: string }) {
   const router = useRouter();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
-    <div className="border-t border-border px-3 py-3">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="w-full justify-start gap-3 px-2">
-            <div className="h-8 w-8 shrink-0 rounded-full bg-accent flex items-center justify-center">
-              <UserRound className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <p className="flex-1 truncate text-xs text-left text-muted-foreground">{email}</p>
-            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
-          </Button>
-        </DropdownMenuTrigger>
+    <>
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <div className="border-t border-border px-3 py-3">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="w-full justify-start gap-3 px-2">
+              <div className="h-8 w-8 shrink-0 rounded-full bg-accent flex items-center justify-center">
+                <UserRound className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <p className="flex-1 truncate text-xs text-left text-muted-foreground">{email}</p>
+              <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+            </Button>
+          </DropdownMenuTrigger>
 
-        <DropdownMenuContent side="top" align="start" className="w-56">
-          <DropdownMenuLabel className="font-normal">
-            <p className="text-xs text-muted-foreground truncate">{email}</p>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => router.push(routes.changePassword)}>
-            <KeyRound className="h-4 w-4" />
-            Change password
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => signOut({ callbackUrl: routes.login })}>
-            <LogOut className="h-4 w-4" />
-            Sign out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+          <DropdownMenuContent side="top" align="start" className="w-56">
+            <DropdownMenuLabel className="font-normal">
+              <p className="text-xs text-muted-foreground truncate">{email}</p>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
+              <Settings className="h-4 w-4" />
+              Appearance
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push(routes.changePassword)}>
+              <KeyRound className="h-4 w-4" />
+              Change password
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => signOut({ callbackUrl: routes.login })}>
+              <LogOut className="h-4 w-4" />
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </>
   );
 }
 

@@ -19,14 +19,14 @@ import { getStrategies } from "@/services/strategies.service";
 import type { Trade, CreateTradeInput } from "@/types/trade";
 
 const RESULT_STYLES: Record<string, string> = {
-  win: "bg-green-500/10 text-green-500",
-  loss: "bg-red-400/10 text-red-400",
-  breakeven: "bg-yellow-500/10 text-yellow-500",
+  win:       "bg-[color-mix(in_oklch,var(--color-chart-1)_10%,transparent)] text-[var(--color-chart-1)]",
+  loss:      "bg-[color-mix(in_oklch,var(--color-chart-2)_10%,transparent)] text-[var(--color-chart-2)]",
+  breakeven: "bg-[color-mix(in_oklch,var(--color-chart-3)_10%,transparent)] text-[var(--color-chart-3)]",
 };
 
 const DIRECTION_STYLES: Record<string, string> = {
-  long: "bg-blue-500/15 text-blue-500",
-  short: "bg-orange-500/15 text-orange-500",
+  long:  "bg-[color-mix(in_oklch,var(--color-chart-4)_15%,transparent)] text-[var(--color-chart-4)]",
+  short: "bg-[color-mix(in_oklch,var(--color-chart-5)_15%,transparent)] text-[var(--color-chart-5)]",
 };
 
 export default function JournalPage() {
@@ -302,9 +302,9 @@ export default function JournalPage() {
                             {trade.result === "breakeven" ? "BE" : trade.result.toUpperCase()}
                           </span>
                         </td>
-                        <td className={cn("px-4 py-3 text-right font-medium tabular-nums",
-                          trade.pnl > 0 ? "text-green-500" : trade.pnl < 0 ? "text-red-400" : "text-muted-foreground"
-                        )}>
+                        <td className="px-4 py-3 text-right font-medium tabular-nums"
+                          style={{ color: trade.pnl > 0 ? "var(--color-chart-1)" : trade.pnl < 0 ? "var(--color-chart-2)" : undefined }}
+                        >
                           {trade.pnl >= 0 ? "+" : ""}${trade.pnl.toFixed(2)}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">{trade.strategy?.name ?? "—"}</td>

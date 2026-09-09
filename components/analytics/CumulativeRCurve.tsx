@@ -2,7 +2,6 @@
 
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import { TrendingUp, TrendingDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useAnalytics } from "@/hooks/useAnalytics";
 
 const tooltipStyle = {
@@ -43,15 +42,15 @@ export function CumulativeRCurve() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Cumulative R Curve</p>
           {last && (
-            <p className={cn("text-2xl font-bold tabular-nums mt-1", isUp ? "text-emerald-500" : "text-rose-400")}>
+            <p className="text-2xl font-bold tabular-nums mt-1" style={{ color: isUp ? "var(--color-chart-1)" : "var(--color-chart-2)" }}>
               {isUp ? "+" : ""}{last.cumulativeR.toFixed(2)}R
             </p>
           )}
           <p className="text-xs text-muted-foreground mt-0.5">Running sum of R-multiples across all trades</p>
         </div>
         {last && (isUp
-          ? <TrendingUp className="h-5 w-5 text-emerald-500" />
-          : <TrendingDown className="h-5 w-5 text-rose-400" />
+          ? <TrendingUp className="h-5 w-5" style={{ color: "var(--color-chart-1)" }} />
+          : <TrendingDown className="h-5 w-5" style={{ color: "var(--color-chart-2)" }} />
         )}
       </div>
 

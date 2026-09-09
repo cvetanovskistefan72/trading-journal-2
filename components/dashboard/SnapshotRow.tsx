@@ -18,13 +18,16 @@ function Tile({ label, value, sub }: { label: string; value: number; sub?: strin
     <div className="rounded-2xl border border-border bg-card px-5 py-4 flex flex-col gap-3 min-w-0 min-h-[100px]">
       <div className="flex items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground truncate pr-2">{label}</p>
-        <Icon className={cn("h-4 w-4 shrink-0 opacity-60", positive ? "text-emerald-500" : negative ? "text-rose-400" : "text-muted-foreground")} />
+        <Icon
+          className="h-4 w-4 shrink-0 opacity-60"
+          style={{ color: positive ? "var(--color-chart-1)" : negative ? "var(--color-chart-2)" : undefined }}
+        />
       </div>
       <div>
-        <p className={cn(
-          "text-3xl font-bold tabular-nums leading-none",
-          positive ? "text-emerald-500" : negative ? "text-rose-400" : "text-muted-foreground"
-        )}>
+        <p
+          className={cn("text-3xl font-bold tabular-nums leading-none", !positive && !negative && "text-muted-foreground")}
+          style={positive ? { color: "var(--color-chart-1)" } : negative ? { color: "var(--color-chart-2)" } : undefined}
+        >
           {fmtPnl(value)}
         </p>
         {sub && <p className="text-xs text-muted-foreground mt-1.5">{sub}</p>}

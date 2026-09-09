@@ -44,7 +44,7 @@ export function DrawdownChart() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Drawdown</p>
           {minDd < 0 && (
-            <p className="text-2xl font-bold tabular-nums mt-1 text-rose-400">
+            <p className="text-2xl font-bold tabular-nums mt-1" style={{ color: "var(--color-chart-2)" }}>
               {minDd.toFixed(2)}%
             </p>
           )}

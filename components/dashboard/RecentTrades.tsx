@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { useDashboard } from "@/hooks/useDashboard";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -57,12 +56,12 @@ export function RecentTrades() {
 
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span className="text-sm font-medium shrink-0">{t.instrument}</span>
-                  <span className={cn(
-                    "text-[10px] font-semibold px-1.5 py-0.5 rounded-full uppercase shrink-0",
-                    t.direction === "long"
-                      ? "bg-emerald-500/15 text-emerald-500"
-                      : "bg-rose-400/15 text-rose-400"
-                  )}>
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full uppercase shrink-0"
+                    style={t.direction === "long"
+                      ? { backgroundColor: "color-mix(in oklch, var(--chart-4) 15%, transparent)", color: "var(--color-chart-4)" }
+                      : { backgroundColor: "color-mix(in oklch, var(--chart-5) 15%, transparent)", color: "var(--color-chart-5)" }
+                    }
+                  >
                     {t.direction}
                   </span>
                 </div>
@@ -73,10 +72,9 @@ export function RecentTrades() {
                   {t.grade || "—"}
                 </span>
 
-                <span className={cn(
-                  "text-xs font-bold tabular-nums text-right",
-                  t.pnl > 0 ? "text-emerald-500" : t.pnl < 0 ? "text-rose-400" : "text-amber-400"
-                )}>
+                <span className="text-xs font-bold tabular-nums text-right"
+                  style={{ color: t.pnl > 0 ? "var(--color-chart-1)" : t.pnl < 0 ? "var(--color-chart-2)" : "var(--color-chart-3)" }}
+                >
                   {fmtPnl(t.pnl)}
                 </span>
               </div>

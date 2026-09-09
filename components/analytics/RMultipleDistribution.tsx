@@ -29,8 +29,8 @@ function RTooltip({ active, payload }: { active?: boolean; payload?: { payload: 
 }
 
 function bucketColor(bucket: string): string {
-  if (bucket === "0R to 1R") return "oklch(0.828 0.189 84.429)";
-  if (bucket.startsWith("0") || bucket.startsWith("1") || bucket.startsWith("2") || bucket.startsWith(">")) {
+  if (bucket === "0R to 1R") return "var(--color-chart-3)";
+  if (bucket.startsWith("1") || bucket.startsWith("2") || bucket.startsWith(">")) {
     return "var(--color-chart-1)";
   }
   return "var(--color-chart-2)";

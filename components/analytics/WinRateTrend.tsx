@@ -48,7 +48,7 @@ export function WinRateTrend() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Win Rate Trend</p>
           {last && (
-            <p className={["text-2xl font-bold tabular-nums mt-1", isUp ? "text-emerald-500" : "text-rose-400"].join(" ")}>
+            <p className="text-2xl font-bold tabular-nums mt-1" style={{ color: isUp ? "var(--color-chart-1)" : "var(--color-chart-2)" }}>
               {last.winRate.toFixed(1)}%
             </p>
           )}

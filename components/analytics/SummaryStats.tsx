@@ -41,7 +41,7 @@ export function SummaryStats() {
   const pieData = [
     { name: "Wins", value: summary.wins, color: "var(--color-chart-1)" },
     { name: "Losses", value: summary.losses, color: "var(--color-chart-2)" },
-    ...(breakeven > 0 ? [{ name: "Breakeven", value: breakeven, color: "oklch(0.828 0.189 84.429)" }] : []),
+    ...(breakeven > 0 ? [{ name: "Breakeven", value: breakeven, color: "var(--color-chart-3)" }] : []),
   ];
 
   return (
@@ -75,13 +75,13 @@ export function SummaryStats() {
           <StatBox label="Total Trades" value={String(summary.total)} />
           <StatBox label="Profit Factor" value={
             summary.profitFactor >= 999 ? "∞" : summary.profitFactor.toFixed(2)
-          } color={summary.profitFactor >= 1 ? "text-emerald-500" : "text-rose-400"} />
-          <StatBox label="Avg Win" value={fmtUsd(summary.avgWin)} color="text-emerald-500" />
-          <StatBox label="Avg Loss" value={fmtUsd(-summary.avgLoss)} color="text-rose-400" />
+          } color={summary.profitFactor >= 1 ? "text-[var(--color-chart-1)]" : "text-[var(--color-chart-2)]"} />
+          <StatBox label="Avg Win" value={fmtUsd(summary.avgWin)} color="text-[var(--color-chart-1)]" />
+          <StatBox label="Avg Loss" value={fmtUsd(-summary.avgLoss)} color="text-[var(--color-chart-2)]" />
           <StatBox label="Avg R" value={`${summary.avgR >= 0 ? "+" : ""}${summary.avgR.toFixed(2)}R`}
-            color={summary.avgR >= 0 ? "text-emerald-500" : "text-rose-400"} />
+            color={summary.avgR >= 0 ? "text-[var(--color-chart-1)]" : "text-[var(--color-chart-2)]"} />
           <StatBox label="Net P&L" value={fmtUsd(summary.totalPnl)}
-            color={summary.totalPnl >= 0 ? "text-emerald-500" : "text-rose-400"} />
+            color={summary.totalPnl >= 0 ? "text-[var(--color-chart-1)]" : "text-[var(--color-chart-2)]"} />
         </div>
       </div>
 

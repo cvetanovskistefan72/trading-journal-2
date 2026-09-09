@@ -48,7 +48,7 @@ export function TiltMeter() {
         </div>
         {tiltDrop !== null && (
           <div className="text-right shrink-0">
-            <p className={`text-lg font-bold tabular-nums ${tiltDrop < 0 ? "text-rose-400" : "text-emerald-500"}`}>
+            <p className="text-lg font-bold tabular-nums" style={{ color: tiltDrop < 0 ? "var(--color-chart-2)" : "var(--color-chart-1)" }}>
               {fmtUsd(tiltDrop)}
             </p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Tilt impact</p>
