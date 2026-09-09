@@ -38,6 +38,7 @@ export function AddTradeButton() {
         onClick={() => setOpen(true)}
         disabled={strategies.length === 0 || mutation.isPending}
         className="gap-2"
+        suppressHydrationWarning
       >
         <Plus className="h-4 w-4" />
         Add Trade

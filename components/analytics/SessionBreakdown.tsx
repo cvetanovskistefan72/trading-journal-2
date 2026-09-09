@@ -9,18 +9,28 @@ function fmtUsd(v: number) {
 }
 
 function SessionCard({ bucket }: { bucket: SessionBucket }) {
-  const positive = bucket.pnl >= 0;
+  const empty = bucket.trades === 0;
+  const positive = bucket.pnl > 0;
+  const negative = bucket.pnl < 0;
 
   return (
     <div className={[
       "rounded-xl border p-4 space-y-3 transition-colors",
-      positive ? "bg-emerald-500/5 border-emerald-500/20" : "bg-rose-500/5 border-rose-500/20",
+      empty    ? "bg-muted/10 border-border" :
+      positive ? "bg-emerald-500/5 border-emerald-500/20" :
+                 "bg-rose-500/5 border-rose-500/20",
     ].join(" ")}>
-      <p className={["text-sm font-semibold capitalize truncate", positive ? "text-emerald-500" : "text-rose-500"].join(" ")}>
+      <p className={[
+        "text-sm font-semibold capitalize truncate",
+        empty ? "text-muted-foreground" : positive ? "text-emerald-500" : "text-rose-500",
+      ].join(" ")}>
         {bucket.session}
       </p>
-      <p className={["text-2xl font-bold tabular-nums leading-none", positive ? "text-emerald-500" : "text-rose-500"].join(" ")}>
-        {fmtUsd(bucket.pnl)}
+      <p className={[
+        "text-2xl font-bold tabular-nums leading-none",
+        empty ? "text-muted-foreground/40" : positive ? "text-emerald-500" : "text-rose-500",
+      ].join(" ")}>
+        {empty ? "$0.00" : fmtUsd(bucket.pnl)}
       </p>
       <div className="space-y-1">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -41,9 +51,26 @@ function SessionCard({ bucket }: { bucket: SessionBucket }) {
   );
 }
 
+const ALL_SESSIONS = ["New York", "London", "Asia"] as const;
+
+const EMPTY_BUCKET = (session: string): SessionBucket => ({
+  session,
+  pnl: 0,
+  trades: 0,
+  wins: 0,
+  losses: 0,
+  winRate: 0,
+  avgR: 0,
+});
+
 export function SessionBreakdown() {
   const { data, isLoading } = useAnalytics();
   const sessions = data?.bySession ?? [];
+
+  // Always show all 3 sessions — fill missing ones with zeroes
+  const allSessions = ALL_SESSIONS.map(
+    (name) => sessions.find((s) => s.session === name) ?? EMPTY_BUCKET(name)
+  );
 
   return (
     <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
@@ -65,11 +92,9 @@ export function SessionBreakdown() {
             </div>
           ))}
         </div>
-      ) : sessions.length === 0 ? (
-        <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">No trades yet</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {sessions.map((bucket) => (
+          {allSessions.map((bucket) => (
             <SessionCard key={bucket.session} bucket={bucket} />
           ))}
         </div>

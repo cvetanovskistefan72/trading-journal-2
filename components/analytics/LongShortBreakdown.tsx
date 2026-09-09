@@ -66,8 +66,8 @@ function DirectionCard({ bucket }: { bucket: DirectionBucket }) {
         </div>
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-0.5">Profit Factor</p>
-          <p className={["text-sm font-bold tabular-nums", bucket.profitFactor >= 1 ? "text-emerald-500" : "text-rose-400"].join(" ")}>
-            {bucket.profitFactor === Infinity ? "∞" : bucket.profitFactor.toFixed(2)}
+          <p className={["text-sm font-bold tabular-nums", (bucket.profitFactor ?? 0) >= 1 ? "text-emerald-500" : "text-rose-400"].join(" ")}>
+            {bucket.profitFactor == null ? "—" : bucket.profitFactor >= 999 ? "∞" : bucket.profitFactor.toFixed(2)}
           </p>
         </div>
       </div>

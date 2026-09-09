@@ -20,9 +20,14 @@ export function buildRandomTrade(strategies: Strategy[]): CreateTradeInput {
     result === "win"  ? +(Math.random() * 800 + 50).toFixed(2) :
     result === "loss" ? -(Math.random() * 500 + 50).toFixed(2) : 0;
 
-  const entryHour = 8 + Math.floor(Math.random() * 6);
-  const exitHour = Math.min(entryHour + Math.floor(Math.random() * 3) + 1, 23);
   const pad = (n: number) => String(n).padStart(2, "0");
+  // Spread across full trading day 6am–8pm with random minutes
+  const entryHour = 6 + Math.floor(Math.random() * 14); // 6–19
+  const entryMin = Math.floor(Math.random() * 60);
+  const holdMins = 5 + Math.floor(Math.random() * 175); // 5m–3h
+  const exitTotalMins = Math.min(entryHour * 60 + entryMin + holdMins, 20 * 60 - 1); // cap at 20:00
+  const exitHour = Math.floor(exitTotalMins / 60);
+  const exitMin = exitTotalMins % 60;
 
   // Spread trades across the past 2 years only
   const daysOffset = Math.floor(Math.random() * 365 * 2);
@@ -47,8 +52,8 @@ export function buildRandomTrade(strategies: Strategy[]): CreateTradeInput {
     instrument: pick(INSTRUMENTS),
     direction: pick(DIRECTIONS),
     session: pick(SESSIONS),
-    entryTime: `${pad(entryHour)}:00`,
-    exitTime: `${pad(exitHour)}:00`,
+    entryTime: `${pad(entryHour)}:${pad(entryMin)}`,
+    exitTime: `${pad(exitHour)}:${pad(exitMin)}`,
     result,
     pnl,
     riskAmount: +(Math.random() * 300 + 100).toFixed(2),

@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { TimeOfDayCell } from "@/hooks/useAnalytics";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+// Always show 6am–8pm regardless of data
+const ALL_HOURS = Array.from({ length: 15 }, (_, i) => i + 6); // 6..20
 
 function fmtHour(h: number) {
   const suffix = h >= 12 ? "pm" : "am";
@@ -19,33 +21,35 @@ function fmtUsd(v: number) {
 function cellColor(avgPnl: number, maxAbs: number): { fill: string; opacity: number } {
   if (maxAbs === 0 || avgPnl === 0) return { fill: "var(--color-muted-foreground)", opacity: 0.1 };
   const intensity = Math.min(Math.abs(avgPnl) / maxAbs, 1);
-  const opacity = 0.2 + intensity * 0.8;
   return {
     fill: avgPnl > 0 ? "var(--color-chart-1)" : "var(--color-chart-2)",
-    opacity,
+    opacity: 0.2 + intensity * 0.8,
   };
 }
+
+type TooltipState = { x: number; y: number; cell: TimeOfDayCell } | null;
 
 export function TimeOfDayHeatmap() {
   const { data, isLoading } = useAnalytics();
   const cells = data?.timeOfDay ?? [];
+  const [tooltip, setTooltip] = useState<TooltipState>(null);
 
-  const hours = useMemo(() => [...new Set(cells.map((c) => c.hour))].sort((a, b) => a - b), [cells]);
   const maxAbs = useMemo(() => Math.max(...cells.map((c) => Math.abs(c.avgPnl)), 1), [cells]);
 
-  // Build lookup: "hour-day" -> cell
+  // lookup: "hour-day" -> cell
   const cellMap = useMemo(() => new Map(cells.map((c) => [`${c.hour}-${c.day}`, c])), [cells]);
 
   const hasTrades = cells.some((c) => c.trades > 0);
 
+  // Layout: hours on X, days on Y
   const CELL_W = 52;
   const CELL_H = 36;
-  const LABEL_W = 40;
-  const LABEL_H = 24;
+  const LABEL_W = 36; // day label column width
+  const LABEL_H = 22; // hour header row height
   const GAP = 3;
 
-  const svgW = LABEL_W + DAYS.length * (CELL_W + GAP);
-  const svgH = LABEL_H + hours.length * (CELL_H + GAP);
+  const svgW = LABEL_W + ALL_HOURS.length * (CELL_W + GAP);
+  const svgH = LABEL_H + DAYS.length * (CELL_H + GAP);
 
   return (
     <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
@@ -59,83 +63,82 @@ export function TimeOfDayHeatmap() {
       ) : !hasTrades ? (
         <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">No trades yet</div>
       ) : (
-        <div className="overflow-x-auto flex justify-center">
+        <div className="overflow-x-auto">
+          {tooltip && (
+            <div
+              className="pointer-events-none fixed z-50 rounded-lg border border-border bg-card px-3 py-2 text-xs shadow-lg"
+              style={{ left: tooltip.x + 12, top: tooltip.y - 8, minWidth: 140 }}
+            >
+              <p className="font-semibold mb-1">{tooltip.cell.day} {fmtHour(tooltip.cell.hour)}</p>
+              <p>Avg P&L: <strong style={{ color: tooltip.cell.avgPnl >= 0 ? "var(--color-chart-1)" : "var(--color-chart-2)" }}>{fmtUsd(tooltip.cell.avgPnl)}</strong></p>
+              <p>Win rate: <strong>{tooltip.cell.winRate.toFixed(1)}%</strong></p>
+              <p className="text-muted-foreground mt-0.5">{tooltip.cell.trades} Trade{tooltip.cell.trades !== 1 ? "s" : ""} ({tooltip.cell.wins}W / {tooltip.cell.losses}L)</p>
+            </div>
+          )}
           <svg width={svgW} height={svgH} className="block">
-            {/* Day column headers */}
-            {DAYS.map((day, di) => (
+
+            {/* Hour column headers (X axis) */}
+            {ALL_HOURS.map((hour, hi) => (
               <text
-                key={day}
-                x={LABEL_W + di * (CELL_W + GAP) + CELL_W / 2}
+                key={hour}
+                x={LABEL_W + hi * (CELL_W + GAP) + CELL_W / 2}
                 y={LABEL_H - 6}
                 textAnchor="middle"
-                fontSize={10}
+                fontSize={9}
                 fontWeight={600}
                 fill="var(--color-muted-foreground)"
                 fontFamily="inherit"
               >
-                {day}
+                {fmtHour(hour)}
               </text>
             ))}
 
-            {/* Hour row labels + cells */}
-            {hours.map((hour, hi) => (
-              <g key={hour}>
-                {/* Hour label */}
+            {/* Day rows (Y axis) */}
+            {DAYS.map((day, di) => (
+              <g key={day}>
+                {/* Day label */}
                 <text
                   x={LABEL_W - 6}
-                  y={LABEL_H + hi * (CELL_H + GAP) + CELL_H / 2 + 4}
+                  y={LABEL_H + di * (CELL_H + GAP) + CELL_H / 2 + 4}
                   textAnchor="end"
-                  fontSize={9}
+                  fontSize={10}
+                  fontWeight={600}
                   fill="var(--color-muted-foreground)"
                   fontFamily="inherit"
                 >
-                  {fmtHour(hour)}
+                  {day}
                 </text>
 
-                {/* Day cells for this hour */}
-                {DAYS.map((day, di) => {
+                {/* Hour cells for this day */}
+                {ALL_HOURS.map((hour, hi) => {
                   const cell = cellMap.get(`${hour}-${day}`);
-                  const x = LABEL_W + di * (CELL_W + GAP);
-                  const y = LABEL_H + hi * (CELL_H + GAP);
-                  const { fill, opacity } = cell && cell.trades > 0
+                  const x = LABEL_W + hi * (CELL_W + GAP);
+                  const y = LABEL_H + di * (CELL_H + GAP);
+                  const hasData = !!cell && cell.trades > 0;
+                  const { fill, opacity } = hasData
                     ? cellColor(cell.avgPnl, maxAbs)
                     : { fill: "var(--color-muted-foreground)", opacity: 0.08 };
 
                   return (
-                    <g key={day}>
+                    <g key={hour}>
                       <rect x={x} y={y} width={CELL_W} height={CELL_H} rx={4} fill={fill} opacity={opacity} />
-                      {cell && cell.trades > 0 && (
+                      {hasData && (
                         <>
-                          <text
-                            x={x + CELL_W / 2}
-                            y={y + CELL_H / 2 - 3}
-                            textAnchor="middle"
-                            fontSize={10}
-                            fontWeight={700}
-                            fill="var(--color-foreground)"
-                            fontFamily="inherit"
-                          >
+                          <text x={x + CELL_W / 2} y={y + CELL_H / 2 - 3} textAnchor="middle" fontSize={10} fontWeight={700} fill="var(--color-foreground)" fontFamily="inherit">
                             {fmtUsd(cell.avgPnl)}
                           </text>
-                          <text
-                            x={x + CELL_W / 2}
-                            y={y + CELL_H / 2 + 10}
-                            textAnchor="middle"
-                            fontSize={8}
-                            fill="var(--color-muted-foreground)"
-                            fontFamily="inherit"
-                          >
+                          <text x={x + CELL_W / 2} y={y + CELL_H / 2 + 10} textAnchor="middle" fontSize={8} fill="var(--color-muted-foreground)" fontFamily="inherit">
                             {cell.trades}T · {cell.winRate.toFixed(0)}%
                           </text>
+                          {/* transparent hit area */}
+                          <rect
+                            x={x} y={y} width={CELL_W} height={CELL_H} rx={4} fill="transparent"
+                            style={{ cursor: "pointer" }}
+                            onMouseEnter={(e) => setTooltip({ x: e.clientX, y: e.clientY, cell })}
+                            onMouseMove={(e) => setTooltip({ x: e.clientX, y: e.clientY, cell })}
+                            onMouseLeave={() => setTooltip(null)}
+                          />
                         </>
-                      )}
-                      {cell && cell.trades > 0 && (
-                        <title>
-                          {day} {fmtHour(hour)}
-                          {"\n"}Avg P&L: {fmtUsd(cell.avgPnl)}
-                          {"\n"}Win Rate: {cell.winRate.toFixed(1)}%
-                          {"\n"}{cell.trades} Trade{cell.trades !== 1 ? "s" : ""} ({cell.wins}W / {cell.losses}L)
-                        </title>
                       )}
                     </g>
                   );
@@ -147,7 +150,7 @@ export function TimeOfDayHeatmap() {
       )}
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-2" style={{ paddingLeft: LABEL_W }}>
+      <div className="flex items-center gap-2" style={{ paddingLeft: LABEL_W }}>
         <span className="text-[10px] text-muted-foreground">Worst</span>
         {[0.2, 0.45, 0.7, 1].map((op) => (
           <svg key={op} width={16} height={16}>

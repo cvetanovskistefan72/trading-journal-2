@@ -115,7 +115,7 @@ export async function GET(req: NextRequest) {
   const totalPnl = trades.reduce((s, t) => s + t.pnl, 0);
   const grossWin = wins.reduce((s, t) => s + t.pnl, 0);
   const grossLoss = Math.abs(losses.reduce((s, t) => s + t.pnl, 0));
-  const profitFactor = grossLoss === 0 ? (grossWin > 0 ? Infinity : 0) : grossWin / grossLoss;
+  const profitFactor = grossLoss === 0 ? (grossWin > 0 ? 999 : 0) : grossWin / grossLoss;
   const avgR = trades.length > 0
     ? trades.reduce((s, t) => s + (t.riskAmount > 0 ? t.pnl / t.riskAmount : 0), 0) / trades.length
     : 0;
@@ -307,7 +307,7 @@ export async function GET(req: NextRequest) {
       profitFactor: (() => {
         const gw = b.rValues.filter((r) => r > 0).reduce((s, r) => s + r, 0);
         const gl = Math.abs(b.rValues.filter((r) => r < 0).reduce((s, r) => s + r, 0));
-        return gl === 0 ? (gw > 0 ? Infinity : 0) : round2(gw / gl);
+        return gl === 0 ? (gw > 0 ? 999 : 0) : round2(gw / gl);
       })(),
     };
   });

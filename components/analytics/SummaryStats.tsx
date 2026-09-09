@@ -74,7 +74,7 @@ export function SummaryStats() {
         <div className="flex-1 grid grid-cols-2 gap-x-6 gap-y-4">
           <StatBox label="Total Trades" value={String(summary.total)} />
           <StatBox label="Profit Factor" value={
-            summary.profitFactor === Infinity ? "∞" : summary.profitFactor.toFixed(2)
+            summary.profitFactor >= 999 ? "∞" : summary.profitFactor.toFixed(2)
           } color={summary.profitFactor >= 1 ? "text-emerald-500" : "text-rose-400"} />
           <StatBox label="Avg Win" value={fmtUsd(summary.avgWin)} color="text-emerald-500" />
           <StatBox label="Avg Loss" value={fmtUsd(-summary.avgLoss)} color="text-rose-400" />

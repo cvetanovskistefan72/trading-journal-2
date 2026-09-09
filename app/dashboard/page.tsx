@@ -7,6 +7,7 @@ import { MiniHeatmap } from "@/components/dashboard/MiniHeatmap";
 import { DisciplineBanner } from "@/components/dashboard/DisciplineBanner";
 import { QuickLinks } from "@/components/dashboard/QuickLinks";
 import { AddTradeButton } from "@/components/dashboard/AddTradeButton";
+import { EconomicCalendar } from "@/components/dashboard/EconomicCalendar";
 
 export default function DashboardPage() {
   return (
@@ -21,22 +22,25 @@ export default function DashboardPage() {
         <AddTradeButton />
       </div>
 
-      {/* Discipline banner — only renders when there is something to say */}
+      {/* Discipline banner */}
       <DisciplineBanner />
 
       {/* P&L snapshot: today / this week / this month / all time */}
       <SnapshotRow />
 
-      {/* Key stat tiles: win rate, streak, trades this week, trades this month */}
+      {/* Economic calendar strip */}
+      <EconomicCalendar />
+
+      {/* Key stat tiles */}
       <StatTiles />
 
-      {/* Recent trades + mini heatmap side by side on larger screens */}
+      {/* Recent trades + mini heatmap */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5">
         <RecentTrades />
         <MiniHeatmap />
       </div>
 
-      {/* Quick links row */}
+      {/* Quick links */}
       <QuickLinks />
 
     </main>
