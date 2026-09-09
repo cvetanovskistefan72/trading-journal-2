@@ -64,11 +64,17 @@ export default function JournalPage() {
     queryFn: getStrategies,
   });
 
+  function invalidateAll() {
+    queryClient.invalidateQueries({ queryKey: ["trades"] });
+    queryClient.invalidateQueries({ queryKey: ["analytics"] });
+    queryClient.invalidateQueries({ queryKey: ["calendar"] });
+  }
+
   const createMutation = useMutation({
     mutationFn: (input: CreateTradeInput) => createTrade(input),
     onSuccess: () => {
       toast.success("Trade logged");
-      queryClient.invalidateQueries({ queryKey: ["trades"] });
+      invalidateAll();
       setDialogOpen(false);
     },
     onError: () => toast.error("Failed to log trade"),
@@ -79,7 +85,7 @@ export default function JournalPage() {
       updateTrade(id, input),
     onSuccess: () => {
       toast.success("Trade updated");
-      queryClient.invalidateQueries({ queryKey: ["trades"] });
+      invalidateAll();
       setEditing(null);
       setDialogOpen(false);
     },
@@ -90,7 +96,7 @@ export default function JournalPage() {
     mutationFn: (id: string) => deleteTrade(id),
     onSuccess: () => {
       toast.success("Trade deleted");
-      queryClient.invalidateQueries({ queryKey: ["trades"] });
+      invalidateAll();
       setDeleting(null);
     },
     onError: () => toast.error("Only archived trades can be deleted."),
@@ -100,7 +106,7 @@ export default function JournalPage() {
     mutationFn: (id: string) => archiveTrade(id),
     onSuccess: () => {
       toast.success("Trade archived");
-      queryClient.invalidateQueries({ queryKey: ["trades"] });
+      invalidateAll();
     },
     onError: () => toast.error("Failed to archive trade"),
   });
@@ -109,7 +115,7 @@ export default function JournalPage() {
     mutationFn: (id: string) => restoreTrade(id),
     onSuccess: () => {
       toast.success("Trade restored");
-      queryClient.invalidateQueries({ queryKey: ["trades"] });
+      invalidateAll();
     },
     onError: () => toast.error("Failed to restore trade"),
   });
@@ -123,7 +129,7 @@ export default function JournalPage() {
     },
     onSuccess: () => {
       toast.success("10 random trades logged");
-      queryClient.invalidateQueries({ queryKey: ["trades"] });
+      invalidateAll();
     },
     onError: (e: Error) => toast.error(e.message || "Failed to log random trades"),
   });
@@ -197,7 +203,7 @@ export default function JournalPage() {
               </Button>
             )}
             {!archived && (
-              <Button onClick={() => { setEditing(null); setDialogOpen(true); }} disabled={strategies.length === 0}>
+              <Button onClick={() => { setEditing(null); setDialogOpen(true); }} disabled={strategies.length === 0 || createMutation.isPending || updateMutation.isPending}>
                 <Plus className="h-4 w-4" />
                 Log Trade
               </Button>

@@ -46,7 +46,7 @@ export function PnlDistribution() {
       ) : !hasTrades ? (
         <div className="h-52 flex items-center justify-center text-sm text-muted-foreground">No trades yet</div>
       ) : (
-        <ResponsiveContainer width="100%" height={210}>
+        <ResponsiveContainer width="100%" height={420}>
           <BarChart data={hist} margin={{ top: 4, right: 4, left: 0, bottom: 0 }} barSize={16} barCategoryGap="10%">
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
             <XAxis

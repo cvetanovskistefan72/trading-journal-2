@@ -41,11 +41,11 @@ export function HoldTimeChart() {
       </p>
 
       {isLoading ? (
-        <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
+        <div className="h-52 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
       ) : !hasTrades ? (
-        <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">No trades yet</div>
+        <div className="h-52 flex items-center justify-center text-sm text-muted-foreground">No trades yet</div>
       ) : (
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={420}>
           <BarChart data={holdTime} margin={{ top: 4, right: 4, left: 0, bottom: 0 }} barSize={40}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
             <XAxis

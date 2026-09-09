@@ -442,50 +442,6 @@ export async function GET(req: NextRequest) {
       return { date: t.date.toISOString().slice(0, 10), tradeIndex: i + 1, cumulativeR: round2(cumulativeR) };
     });
 
-  // ── WATERFALL (trade-by-trade P&L) ───────────────────────────
-  let runningTotal = 0;
-  const waterfall = trades.map((t, i) => {
-    const start = runningTotal;
-    runningTotal = round2(runningTotal + t.pnl);
-    return {
-      tradeIndex: i + 1,
-      date: t.date.toISOString().slice(0, 10),
-      pnl: round2(t.pnl),
-      start: round2(start),
-      end: runningTotal,
-      result: t.result as string,
-    };
-  });
-
-  // ── MONTE CARLO (1000 simulations, sample from trade P&Ls) ───
-  const SIMULATIONS = 1000;
-  const pnls = trades.map((t) => t.pnl);
-  const monteCarloLines: number[][] = [];
-  for (let s = 0; s < SIMULATIONS; s++) {
-    const shuffled = [...pnls].sort(() => Math.random() - 0.5);
-    let cum = 0;
-    const line = shuffled.map((p) => { cum = round2(cum + p); return cum; });
-    monteCarloLines.push(line);
-  }
-  // Summarise into percentile bands at each trade index
-  const tradeCount = pnls.length;
-  const monteCarlo: { tradeIndex: number; p10: number; p25: number; p50: number; p75: number; p90: number }[] = [];
-  for (let i = 0; i < tradeCount; i++) {
-    const vals = monteCarloLines.map((l) => l[i]).sort((a, b) => a - b);
-    const pct = (p: number) => vals[Math.floor((p / 100) * (vals.length - 1))];
-    monteCarlo.push({ tradeIndex: i + 1, p10: pct(10), p25: pct(25), p50: pct(50), p75: pct(75), p90: pct(90) });
-  }
-  // Final distribution stats
-  const finalVals = monteCarloLines.map((l) => l[l.length - 1] ?? 0).sort((a, b) => a - b);
-  const probProfit = finalVals.length > 0 ? round2((finalVals.filter((v) => v > 0).length / finalVals.length) * 100) : 0;
-  const maxDrawdowns = monteCarloLines.map((line) => {
-    let pk = 0, maxDD = 0;
-    for (const v of line) { if (v > pk) pk = v; const dd = pk - v; if (dd > maxDD) maxDD = dd; }
-    return maxDD;
-  }).sort((a, b) => a - b);
-  const worstDD = maxDrawdowns[Math.floor(0.95 * (maxDrawdowns.length - 1))];
-  const monteCarloStats = { probProfit, worstDD: round2(worstDD), p10Final: finalVals[Math.floor(0.1 * (finalVals.length - 1))], p90Final: finalVals[Math.floor(0.9 * (finalVals.length - 1))] };
-
   // ── TILT METER (performance after loss streaks) ───────────────
   const decidedForTilt = trades.filter((t) => t.result === "win" || t.result === "loss");
   type TiltBucket = { trades: number; wins: number; pnl: number };
@@ -510,5 +466,5 @@ export async function GET(req: NextRequest) {
     avgPnl: b.trades > 0 ? round2(b.pnl / b.trades) : 0,
   }));
 
-  return NextResponse.json({ equity, summary, byWeekday, rMultiple, holdTime, bySession, byInstrument, longShort, winRateTrend, byGrade, streaks, drawdown, pnlDistribution, byConfluence, calendarHeatmap, timeOfDay, cumulativeRCurve, waterfall, monteCarlo, monteCarloStats, tiltMeter });
+  return NextResponse.json({ equity, summary, byWeekday, rMultiple, holdTime, bySession, byInstrument, longShort, winRateTrend, byGrade, streaks, drawdown, pnlDistribution, byConfluence, calendarHeatmap, timeOfDay, cumulativeRCurve, tiltMeter });
 }

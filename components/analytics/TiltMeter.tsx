@@ -57,11 +57,11 @@ export function TiltMeter() {
       </div>
 
       {isLoading ? (
-        <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
+        <div className="h-52 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
       ) : !hasData ? (
-        <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">Not enough data yet</div>
+        <div className="h-52 flex items-center justify-center text-sm text-muted-foreground">Not enough data yet</div>
       ) : (
-        <ResponsiveContainer width="100%" height={180}>
+        <ResponsiveContainer width="100%" height={220}>
           <BarChart data={tilt} margin={{ top: 4, right: 4, left: 0, bottom: 0 }} barCategoryGap="30%">
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
             <XAxis dataKey="label" tick={{ fontSize: 10, fill: "var(--color-muted-foreground)" }} axisLine={false} tickLine={false} />

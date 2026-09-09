@@ -62,9 +62,9 @@ export function WinRateTrend() {
       </div>
 
       {isLoading ? (
-        <div className="h-56 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
+        <div className="h-52 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
       ) : trend.length === 0 ? (
-        <div className="h-56 flex items-center justify-center text-sm text-muted-foreground">
+        <div className="h-52 flex items-center justify-center text-sm text-muted-foreground">
           Need at least {WINDOW} decided trades
         </div>
       ) : (

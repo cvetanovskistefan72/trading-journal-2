@@ -36,11 +36,11 @@ export function WeekdayPerformance() {
       <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">P&L by Day of Week</p>
 
       {isLoading ? (
-        <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
+        <div className="h-52 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
       ) : !hasTrades ? (
-        <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">No trades yet</div>
+        <div className="h-52 flex items-center justify-center text-sm text-muted-foreground">No trades yet</div>
       ) : (
-        <ResponsiveContainer width="100%" height={192}>
+        <ResponsiveContainer width="100%" height={220}>
           <BarChart data={days} margin={{ top: 4, right: 4, left: 0, bottom: 0 }} barSize={32}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
             <XAxis

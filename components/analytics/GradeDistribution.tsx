@@ -45,7 +45,7 @@ export function GradeDistribution() {
         <div className="h-52 flex items-center justify-center text-sm text-muted-foreground">No graded trades yet</div>
       ) : (
         <>
-          <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={220}>
             <BarChart data={grades} margin={{ top: 4, right: 4, left: 0, bottom: 0 }} barSize={36}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
               <XAxis

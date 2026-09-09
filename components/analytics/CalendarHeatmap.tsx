@@ -8,11 +8,13 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayDialog } from "@/components/calendar/DayDialog";
 import type { CalendarDay } from "@/types/calendar";
 
+type TooltipState = { x: number; y: number; day: HeatmapDay } | null;
+
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const DOW_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""];
 
 function fmtUsd(v: number) {
-  return (v >= 0 ? "+" : "-") + "$" + Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return (v >= 0 ? "+" : "-") + "$" + Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
 function buildYearGrid(year: number, dayMap: Map<string, HeatmapDay>) {
@@ -90,6 +92,7 @@ export function CalendarHeatmap() {
   const [dialogDay, setDialogDay] = useState<CalendarDay | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [loadingDay, setLoadingDay] = useState(false);
+  const [tooltip, setTooltip] = useState<TooltipState>(null);
 
   async function handleCellClick(date: string) {
     setSelectedDate(date);
@@ -104,7 +107,7 @@ export function CalendarHeatmap() {
     }
   }
 
-  const CELL = 13;
+  const CELL = 16;
   const GAP = 3;
   const DOW_W = 28;
   const svgW = DOW_W + weeks.length * (CELL + GAP);
@@ -127,7 +130,7 @@ export function CalendarHeatmap() {
           <div className="flex items-center gap-1 border border-border rounded-lg overflow-hidden">
             <button
               onClick={() => setYearIndex((i) => Math.min(i + 1, availableYears.length - 1))}
-              disabled={yearIndex >= availableYears.length - 1}
+              disabled={yearIndex >= availableYears.length - 1 || loadingDay}
               className="p-1.5 hover:bg-accent transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-default"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
@@ -135,7 +138,7 @@ export function CalendarHeatmap() {
             <span className="text-xs font-semibold px-2 tabular-nums">{year}</span>
             <button
               onClick={() => setYearIndex((i) => Math.max(i - 1, 0))}
-              disabled={yearIndex <= 0}
+              disabled={yearIndex <= 0 || loadingDay}
               className="p-1.5 hover:bg-accent transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-default"
             >
               <ChevronRight className="h-3.5 w-3.5" />
@@ -147,7 +150,20 @@ export function CalendarHeatmap() {
       {isLoading ? (
         <div className="h-28 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto pb-2">
+          <div className="flex justify-center" style={{ minWidth: svgW }}>
+          {tooltip && (
+            <div
+              className="pointer-events-none fixed z-50 rounded-lg border border-border bg-card px-3 py-2 text-xs shadow-lg"
+              style={{ left: tooltip.x + 12, top: tooltip.y - 8, minWidth: 140 }}
+            >
+              <p className="font-semibold mb-1">
+                {new Date(tooltip.day.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+              </p>
+              <p>P&L: <strong style={{ color: tooltip.day.pnl >= 0 ? "var(--color-chart-1)" : "var(--color-chart-2)" }}>{fmtUsd(tooltip.day.pnl)}</strong></p>
+              <p className="text-muted-foreground mt-0.5">{tooltip.day.wins}W / {tooltip.day.losses}L · {tooltip.day.trades} Trade{tooltip.day.trades !== 1 ? "s" : ""}</p>
+            </div>
+          )}
           <svg width={svgW} height={svgH} className="block">
             {/* Month labels */}
             {monthPositions.map(({ col, month }) => (
@@ -185,11 +201,7 @@ export function CalendarHeatmap() {
                 const isSelected = d?.date === selectedDate;
 
                 return (
-                  <g
-                    key={`${wi}-${di}`}
-                    onClick={() => d && handleCellClick(d.date)}
-                    style={{ cursor: d ? "pointer" : "default" }}
-                  >
+                  <g key={`${wi}-${di}`}>
                     <rect
                       x={x} y={y}
                       width={CELL} height={CELL}
@@ -199,18 +211,24 @@ export function CalendarHeatmap() {
                       stroke={isSelected ? "var(--color-foreground)" : "none"}
                       strokeWidth={isSelected ? 1.5 : 0}
                     />
-                    {d && (
-                      <title>
-                        {new Date(d.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
-                        {"\n"}{fmtUsd(d.pnl)}
-                        {"\n"}{d.trades} Trade{d.trades !== 1 ? "s" : ""}
-                      </title>
-                    )}
+                    {/* transparent hit area for reliable mouse events */}
+                    <rect
+                      x={x} y={y}
+                      width={CELL} height={CELL}
+                      rx={2} ry={2}
+                      fill="transparent"
+                      style={{ cursor: d ? "pointer" : "default" }}
+                      onClick={() => d && !loadingDay && handleCellClick(d.date)}
+                      onMouseEnter={(e) => d && setTooltip({ x: e.clientX, y: e.clientY, day: d })}
+                      onMouseMove={(e) => d && setTooltip({ x: e.clientX, y: e.clientY, day: d })}
+                      onMouseLeave={() => setTooltip(null)}
+                    />
                   </g>
                 );
               })
             )}
           </svg>
+          </div>
         </div>
       )}
 

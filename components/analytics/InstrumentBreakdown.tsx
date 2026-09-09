@@ -39,9 +39,9 @@ export function InstrumentBreakdown() {
       </p>
 
       {isLoading ? (
-        <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
+        <div className="h-52 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
       ) : instruments.length === 0 ? (
-        <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">No trades yet</div>
+        <div className="h-52 flex items-center justify-center text-sm text-muted-foreground">No trades yet</div>
       ) : (
         <>
           <ResponsiveContainer width="100%" height={chartHeight}>

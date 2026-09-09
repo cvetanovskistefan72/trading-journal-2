@@ -56,9 +56,9 @@ export function CumulativeRCurve() {
       </div>
 
       {isLoading ? (
-        <div className="h-56 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
+        <div className="h-52 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
       ) : curve.length < 2 ? (
-        <div className="h-56 flex items-center justify-center text-sm text-muted-foreground">Not enough data yet (need trades with risk set)</div>
+        <div className="h-52 flex items-center justify-center text-sm text-muted-foreground">Not enough data yet (need trades with risk set)</div>
       ) : (
         <ResponsiveContainer width="100%" height={220}>
           <AreaChart data={curve} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>

@@ -18,8 +18,6 @@ import { ConfluencePerformance } from "@/components/analytics/ConfluencePerforma
 import { CalendarHeatmap } from "@/components/analytics/CalendarHeatmap";
 import { TimeOfDayHeatmap } from "@/components/analytics/TimeOfDayHeatmap";
 import { CumulativeRCurve } from "@/components/analytics/CumulativeRCurve";
-import { WaterfallChart } from "@/components/analytics/WaterfallChart";
-import { MonteCarlo } from "@/components/analytics/MonteCarlo";
 import { TiltMeter } from "@/components/analytics/TiltMeter";
 
 export default function PerformancePage() {
@@ -64,12 +62,7 @@ export default function PerformancePage() {
         <CumulativeRCurve />
       </div>
 
-      <WaterfallChart />
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <MonteCarlo />
-        <TiltMeter />
-      </div>
+      <TiltMeter />
 
       <SessionBreakdown />
       <ConfluencePerformance />

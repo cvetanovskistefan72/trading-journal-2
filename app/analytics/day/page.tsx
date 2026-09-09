@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -65,13 +65,19 @@ export default function CalendarPage() {
   const today = toDateKey(new Date());
   const yearOptions = Array.from({ length: 6 }, (_, i) => now.getFullYear() - 3 + i);
 
+  const navTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   function prevMonth() {
+    if (navTimer.current) return;
     if (month === 1) { setYear(y => y - 1); setMonth(12); }
     else setMonth(m => m - 1);
+    navTimer.current = setTimeout(() => { navTimer.current = null; }, 300);
   }
   function nextMonth() {
+    if (navTimer.current) return;
     if (month === 12) { setYear(y => y + 1); setMonth(1); }
     else setMonth(m => m + 1);
+    navTimer.current = setTimeout(() => { navTimer.current = null; }, 300);
   }
 
   function handleDayClick(key: string) {
@@ -107,7 +113,7 @@ export default function CalendarPage() {
         </div>
 
         <div className="flex items-center gap-1.5">
-          <button onClick={prevMonth} className="p-2 rounded-lg border border-border hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">
+          <button onClick={prevMonth} disabled={isFetching} className="p-2 rounded-lg border border-border hover:bg-accent transition-colors text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed">
             <ChevronLeft className="h-4 w-4" />
           </button>
           <select
@@ -124,7 +130,7 @@ export default function CalendarPage() {
           >
             {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
-          <button onClick={nextMonth} className="p-2 rounded-lg border border-border hover:bg-accent transition-colors text-muted-foreground hover:text-foreground">
+          <button onClick={nextMonth} disabled={isFetching} className="p-2 rounded-lg border border-border hover:bg-accent transition-colors text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed">
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
