@@ -12,6 +12,7 @@ export type CalendarTrade = {
   strategyName: string;
   notes: string | null;
   confluences: string[];
+  images: { id: string; thumbnailUrl: string }[];
 };
 
 export type CalendarDay = {

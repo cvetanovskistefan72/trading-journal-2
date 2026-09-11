@@ -29,27 +29,27 @@ model User {
 }
 
 model Strategy {
-  id           String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name         String
-  description  String?
-  confluences  String[]
-  questions    Json     @default("[]")
-  trades       Trade[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @default(now()) @updatedAt
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  confluences String[]
+  questions   Json     @default("[]")
+  trades      Trade[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
 
   @@index([userId])
 }
 
 model Trade {
-  id          String   @id @default(cuid())
+  id          String       @id @default(cuid())
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   strategyId  String
-  strategy    Strategy @relation(fields: [strategyId], references: [id])
-  date        DateTime @db.Date
+  strategy    Strategy     @relation(fields: [strategyId], references: [id])
+  date        DateTime     @db.Date
   instrument  String
   direction   String
   session     String
@@ -59,13 +59,14 @@ model Trade {
   pnl         Float
   riskAmount  Float
   grade       String
-  gradeOrder  Int      @default(0)
+  gradeOrder  Int          @default(0)
   confluences String[]
-  answers     Json     @default("[]")
+  answers     Json         @default("[]")
   notes       String?
-  archived    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
+  archived    Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt
+  images      TradeImage[]
 
   @@index([userId])
   @@index([userId, archived])
@@ -73,4 +74,18 @@ model Trade {
   @@index([userId, gradeOrder])
   @@index([userId, pnl])
   @@index([strategyId])
+}
+
+model TradeImage {
+  id String @id @default(cuid())
+
+  tradeId String
+  trade   Trade  @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+
+  imageKey     String @unique
+  thumbnailKey String @unique
+
+  createdAt DateTime @default(now())
+
+  @@index([tradeId])
 }

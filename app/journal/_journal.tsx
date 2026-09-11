@@ -16,7 +16,7 @@ import { TradeCards } from "@/components/journal/TradeCards";
 import { journalColumns } from "./columns";
 import type { JournalMeta } from "./columns";
 import { useJournalDensity } from "@/hooks/useJournalDensity";
-import { getTrades, createTrade, updateTrade, deleteTrade, archiveTrade, restoreTrade } from "@/services/trades.service";
+import { getTrades, createTrade, updateTrade, deleteTrade, archiveTrade, restoreTrade, uploadTradeImage } from "@/services/trades.service";
 import { buildRandomTrade } from "@/lib/random-trade";
 import type { TradesParams, Trade, CreateTradeInput } from "@/types/trade";
 import { getStrategies } from "@/services/strategies.service";
@@ -32,6 +32,7 @@ export default function JournalPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Trade | null>(null);
   const [deleting, setDeleting] = useState<Trade | null>(null);
+  const [creating, setCreating] = useState(false);
 
   const [page, setPage] = useState(1);
   const [archived, setArchived] = useState(false);
@@ -82,11 +83,6 @@ export default function JournalPage() {
     queryClient.invalidateQueries({ queryKey: ["dashboard"] });
   }
 
-  const createMutation = useMutation({
-    mutationFn: (input: CreateTradeInput) => createTrade(input),
-    onSuccess: () => { toast.success("Trade logged"); invalidateAll(); setDialogOpen(false); },
-    onError: () => toast.error("Failed to log trade"),
-  });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, input }: { id: string; input: Partial<CreateTradeInput> }) => updateTrade(id, input),
@@ -123,9 +119,31 @@ export default function JournalPage() {
     onError: (e: Error) => toast.error(e.message || "Failed to log random trades"),
   });
 
-  function handleSubmit(input: CreateTradeInput) {
-    if (editing) updateMutation.mutate({ id: editing.id, input });
-    else createMutation.mutate(input);
+  async function handleSubmit(input: CreateTradeInput, images: File[]) {
+    if (editing) {
+      updateMutation.mutate({ id: editing.id, input });
+      return;
+    }
+    setCreating(true);
+    try {
+      const trade = await createTrade(input);
+      for (const file of images) {
+        try {
+          await uploadTradeImage(trade.id, file);
+        } catch (imgErr: any) {
+          console.error("image upload error:", imgErr?.response?.status, imgErr?.response?.data, imgErr?.message, imgErr);
+          throw imgErr;
+        }
+      }
+      toast.success("Trade logged");
+      invalidateAll();
+      setDialogOpen(false);
+    } catch (e: any) {
+      console.error("handleSubmit error:", e?.response?.status, e?.response?.data, e?.message, e);
+      toast.error("Failed to log trade");
+    } finally {
+      setCreating(false);
+    }
   }
 
   function toggleSort(field: "date" | "grade" | "pnl") {
@@ -141,7 +159,7 @@ export default function JournalPage() {
   const handleSearch = useCallback((v: string) => { setSearch(v); setPage(1); }, []);
   const handleStrategyId = useCallback((v: string) => { setStrategyId(v); setPage(1); }, []);
 
-  const isSaving = createMutation.isPending || updateMutation.isPending;
+  const isSaving = creating || updateMutation.isPending;
   const hasFilters = !!dateFrom || !!dateTo || !!search || !!strategyId;
 
   const meta: JournalMeta = {

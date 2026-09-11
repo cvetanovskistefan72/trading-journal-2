@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { X } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -34,7 +36,7 @@ type FormValues = {
 type Props = {
   open: boolean;
   onClose: () => void;
-  onSubmit: (input: CreateTradeInput) => void;
+  onSubmit: (input: CreateTradeInput, images: File[]) => void;
   loading?: boolean;
   strategies: Strategy[];
   initial?: Trade;
@@ -60,6 +62,8 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
   const [strategyId, setStrategyId] = useState("");
   const [confluences, setConfluences] = useState<string[]>([]);
   const [answers, setAnswers] = useState<TradeAnswer[]>([]);
+  const [images, setImages] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const selectedStrategy = strategies.find((s) => s.id === strategyId) ?? null;
 
@@ -107,6 +111,7 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
       setStrategyId(initial?.strategyId ?? "");
       setConfluences(initial?.confluences ?? []);
       setAnswers(initial?.answers ?? []);
+      setImages([]);
     }
   }, [open, initial, reset]);
 
@@ -154,6 +159,36 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
 
   const timesValid = !entryTime || !exitTime || entryTime < exitTime;
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const picked = Array.from(e.target.files ?? []);
+    const wrongType = picked.find((f) => !["image/jpeg", "image/png", "image/webp"].includes(f.type));
+    if (wrongType) {
+      toast.error("Only JPEG, PNG and WebP images are allowed");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+    if (images.length + picked.length > 3) {
+      toast.error("You can attach up to 3 screenshots per trade");
+      return;
+    }
+    const totalBytes = [...images, ...picked].reduce((sum, f) => sum + f.size, 0);
+    if (totalBytes > 10 * 1024 * 1024) {
+      toast.error("Total size of screenshots cannot exceed 10 MB");
+      return;
+    }
+    const invalid = picked.find((f) => f.size === 0);
+    if (invalid) {
+      toast.error("One or more selected files are empty");
+      return;
+    }
+    setImages((prev) => [...prev, ...picked]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function removeImage(index: number) {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  }
+
   const onValid = (values: FormValues) => {
     if (!values.instrument || !values.direction || !values.session ||
         !values.grade || !strategyId || !result) return;
@@ -173,7 +208,7 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
       confluences,
       answers,
       notes: values.notes || undefined,
-    });
+    }, images);
   };
 
   const canSubmit =
@@ -350,6 +385,49 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
               <Textarea id="notes" placeholder="Setup, mistakes, what went right..."
                 rows={3} {...register("notes")} />
             </div>
+
+            {/* Screenshots — new trades only */}
+            {!initial && (
+              <div className="space-y-2">
+                <Label>
+                  Screenshots <span className="text-muted-foreground text-xs">(optional, up to 3)</span>
+                </Label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                {images.length < 3 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    Choose files
+                  </Button>
+                )}
+                {images.length > 0 && (
+                  <ul className="space-y-1">
+                    {images.map((file, i) => (
+                      <li key={i} className="flex items-center justify-between rounded-md border border-border px-3 py-1.5 text-sm">
+                        <span className="truncate text-muted-foreground">{file.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeImage(i)}
+                          className="ml-2 shrink-0 text-muted-foreground hover:text-foreground"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 px-6 py-4 border-t border-border shrink-0">

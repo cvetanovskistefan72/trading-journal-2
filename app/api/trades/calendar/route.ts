@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { createImagePreviewUrl } from "@/services/image-server.service";
 import type { CalendarTrade, CalendarDay } from "@/types/calendar";
 
 export async function GET(req: Request) {
@@ -45,6 +46,7 @@ export async function GET(req: Request) {
       notes: true,
       confluences: true,
       strategy: { select: { name: true } },
+      images: { select: { id: true, thumbnailKey: true } },
     },
     orderBy: [{ date: "asc" }, { entryTime: "asc" }],
   });
@@ -54,6 +56,12 @@ export async function GET(req: Request) {
     const key = t.date.toISOString().split("T")[0];
     const existing = byDate.get(key) ?? { pnl: 0, trades: [] };
     existing.pnl += t.pnl;
+    const images = await Promise.all(
+      t.images.map(async (img) => ({
+        id: img.id,
+        thumbnailUrl: await createImagePreviewUrl(img.thumbnailKey),
+      })),
+    );
     existing.trades.push({
       id: t.id,
       instrument: t.instrument,
@@ -68,6 +76,7 @@ export async function GET(req: Request) {
       strategyName: t.strategy?.name ?? "—",
       notes: t.notes,
       confluences: t.confluences,
+      images,
     });
     byDate.set(key, existing);
   }
