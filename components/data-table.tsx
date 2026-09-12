@@ -14,6 +14,7 @@ type Props<TData> = {
   meta?: Record<string, unknown>;
   emptyMessage?: string | React.ReactNode;
   rowClassName?: (row: TData) => string;
+  onRowClick?: (row: TData) => void;
   isPlaceholderData?: boolean;
 };
 
@@ -23,6 +24,7 @@ export function DataTable<TData>({
   meta,
   emptyMessage = "No results",
   rowClassName,
+  onRowClick,
   isPlaceholderData,
 }: Props<TData>) {
   const table = useReactTable({
@@ -59,7 +61,8 @@ export function DataTable<TData>({
               table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
-                  className={cn("hover:bg-muted/30 transition-colors", rowClassName?.(row.original))}
+                  onClick={() => onRowClick?.(row.original)}
+                  className={cn("transition-colors", rowClassName?.(row.original), onRowClick && "cursor-pointer hover:bg-muted/30")}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 whitespace-nowrap">

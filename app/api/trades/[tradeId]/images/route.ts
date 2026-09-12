@@ -21,22 +21,23 @@ export async function POST(
 
     const trade = await prisma.trade.findFirst({
       where: { id: tradeId, userId: user.id },
-      select: {
-        id: true,
-        _count: { select: { images: true } },
-      },
+      select: { id: true },
     });
 
     if (!trade) {
       return NextResponse.json({ error: "Trade not found" }, { status: 404 });
     }
 
-    if (trade._count.images >= 3) {
+    const count = await prisma.image.count({
+      where: { entityType: "trade", entityId: tradeId },
+    });
+
+    if (count >= 3) {
       return NextResponse.json({ error: "Maximum 3 images per trade" }, { status: 400 });
     }
 
-    const image = await prisma.tradeImage.create({
-      data: { tradeId, imageKey, thumbnailKey },
+    const image = await prisma.image.create({
+      data: { entityType: "trade", entityId: tradeId, imageKey, thumbnailKey },
     });
 
     return NextResponse.json(image, { status: 201 });

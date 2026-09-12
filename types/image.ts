@@ -10,11 +10,11 @@ export interface ImageUploadResponse {
   objectKey: string;
 }
 
-export interface TradeImage {
+export interface Image {
   id: string;
-  tradeId: string;
-  objectKey: string;
-  fileSize: number | null;
-  mimeType: string | null;
+  entityType: string;
+  entityId: string;
+  imageKey: string;
+  thumbnailKey: string;
   createdAt: string;
 }

@@ -5,6 +5,8 @@ import type { ImageUploadOptions } from "@/types/image";
 
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png"];
 
+// --- client: compression & thumbnails ---
+
 export async function compressImage(
   file: File,
   options: ImageUploadOptions = {},
@@ -38,6 +40,11 @@ export async function createThumbnail(file: File): Promise<File> {
   return new File([thumbnail], `${crypto.randomUUID()}-thumb.webp`, {
     type: "image/webp",
   });
+}
+// --- client: URL helpers & upload ---
+
+export function getImageUrl(imageId: string, full = false): string {
+  return `/api/images/${imageId}${full ? "?full=true" : ""}`;
 }
 
 export async function uploadImageToUrl(

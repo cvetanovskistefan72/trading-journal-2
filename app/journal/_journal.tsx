@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Shuffle, ChevronLeft, ChevronRight } from "lucide-react";
@@ -16,12 +17,13 @@ import { TradeCards } from "@/components/journal/TradeCards";
 import { journalColumns } from "./columns";
 import type { JournalMeta } from "./columns";
 import { useJournalDensity } from "@/hooks/useJournalDensity";
-import { getTrades, createTrade, updateTrade, deleteTrade, archiveTrade, restoreTrade, uploadTradeImage } from "@/services/trades.service";
+import { getTrades, getTrade, createTrade, updateTrade, deleteTrade, archiveTrade, restoreTrade, uploadTradeImage, saveTradeImageKeys } from "@/services/trades.service";
 import { buildRandomTrade } from "@/lib/random-trade";
 import type { TradesParams, Trade, CreateTradeInput } from "@/types/trade";
 import { getStrategies } from "@/services/strategies.service";
 
 export default function JournalPage() {
+  const router = useRouter();
   const density = useJournalDensity();
   const limit = density === "cards" ? 9 : 10;
   const prevDensity = useRef(density);
@@ -33,6 +35,7 @@ export default function JournalPage() {
   const [editing, setEditing] = useState<Trade | null>(null);
   const [deleting, setDeleting] = useState<Trade | null>(null);
   const [creating, setCreating] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   const [page, setPage] = useState(1);
   const [archived, setArchived] = useState(false);
@@ -84,12 +87,6 @@ export default function JournalPage() {
   }
 
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, input }: { id: string; input: Partial<CreateTradeInput> }) => updateTrade(id, input),
-    onSuccess: () => { toast.success("Trade updated"); invalidateAll(); setEditing(null); setDialogOpen(false); },
-    onError: () => toast.error("Failed to update trade"),
-  });
-
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteTrade(id),
     onSuccess: () => { toast.success("Trade deleted"); invalidateAll(); setDeleting(null); },
@@ -119,27 +116,40 @@ export default function JournalPage() {
     onError: (e: Error) => toast.error(e.message || "Failed to log random trades"),
   });
 
-  async function handleSubmit(input: CreateTradeInput, images: File[]) {
+  async function handleSubmit(input: CreateTradeInput, newImages: File[], removedIds: string[]) {
     if (editing) {
-      updateMutation.mutate({ id: editing.id, input });
+      setUpdating(true);
+      try {
+        // Upload new files to B2 first, collect keys
+        const addedImageKeys: { imageKey: string; thumbnailKey: string }[] = [];
+        for (const file of newImages) {
+          const keys = await uploadTradeImage(editing.id, file, removedIds);
+          addedImageKeys.push(keys);
+        }
+        // Single PATCH: updates fields + deletes removed from B2+DB + saves new keys to DB
+        await updateTrade(editing.id, input, removedIds, addedImageKeys);
+        toast.success("Trade updated");
+        invalidateAll();
+        setEditing(null);
+        setDialogOpen(false);
+      } catch {
+        toast.error("Failed to update trade");
+      } finally {
+        setUpdating(false);
+      }
       return;
     }
     setCreating(true);
     try {
       const trade = await createTrade(input);
-      for (const file of images) {
-        try {
-          await uploadTradeImage(trade.id, file);
-        } catch (imgErr: any) {
-          console.error("image upload error:", imgErr?.response?.status, imgErr?.response?.data, imgErr?.message, imgErr);
-          throw imgErr;
-        }
+      for (const file of newImages) {
+        const keys = await uploadTradeImage(trade.id, file);
+        await saveTradeImageKeys(trade.id, keys);
       }
       toast.success("Trade logged");
       invalidateAll();
       setDialogOpen(false);
-    } catch (e: any) {
-      console.error("handleSubmit error:", e?.response?.status, e?.response?.data, e?.message, e);
+    } catch {
       toast.error("Failed to log trade");
     } finally {
       setCreating(false);
@@ -159,12 +169,16 @@ export default function JournalPage() {
   const handleSearch = useCallback((v: string) => { setSearch(v); setPage(1); }, []);
   const handleStrategyId = useCallback((v: string) => { setStrategyId(v); setPage(1); }, []);
 
-  const isSaving = creating || updateMutation.isPending;
+  const isSaving = creating || updating;
   const hasFilters = !!dateFrom || !!dateTo || !!search || !!strategyId;
 
   const meta: JournalMeta = {
     archived,
-    onEdit: (trade) => { setEditing(trade); setDialogOpen(true); },
+    onEdit: async (trade) => {
+      const full = await getTrade(trade.id);
+      setEditing(full);
+      setDialogOpen(true);
+    },
     onDelete: (trade) => setDeleting(trade),
     onArchive: (id) => archiveMutation.mutate(id),
     onRestore: (id) => restoreMutation.mutate(id),
@@ -234,7 +248,7 @@ export default function JournalPage() {
                 archived={archived}
                 archivePending={archiveMutation.isPending}
                 restorePending={restoreMutation.isPending}
-                onEdit={(trade) => { setEditing(trade); setDialogOpen(true); }}
+                onEdit={async (trade) => { const full = await getTrade(trade.id); setEditing(full); setDialogOpen(true); }}
                 onDelete={(trade) => setDeleting(trade)}
                 onArchive={(id) => archiveMutation.mutate(id)}
                 onRestore={(id) => restoreMutation.mutate(id)}
@@ -246,6 +260,7 @@ export default function JournalPage() {
                 meta={meta as unknown as Record<string, unknown>}
                 isPlaceholderData={isPlaceholderData}
                 rowClassName={(trade) => trade.archived ? "opacity-60" : ""}
+                onRowClick={(trade) => { if (!trade.archived) router.push(`/journal/${trade.id}`); }}
               />
             )}
 

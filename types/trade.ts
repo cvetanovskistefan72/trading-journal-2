@@ -29,6 +29,7 @@ export type Trade = {
   archived: boolean;
   createdAt: string;
   updatedAt: string;
+  images?: { id: string; thumbnailKey: string }[];
 };
 
 export type CreateTradeInput = {

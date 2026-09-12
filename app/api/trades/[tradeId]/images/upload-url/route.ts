@@ -22,25 +22,19 @@ export async function POST(
     const { tradeId } = await params;
 
     const trade = await prisma.trade.findFirst({
-      where: {
-        id: tradeId,
-        userId: token.sub,
-      },
-      select: {
-        id: true,
-        _count: {
-          select: {
-            images: true,
-          },
-        },
-      },
+      where: { id: tradeId, userId: token.sub },
+      select: { id: true },
     });
 
     if (!trade) {
       return NextResponse.json({ error: "Trade not found" }, { status: 404 });
     }
 
-    if (trade._count.images >= 3) {
+    const body = await req.json().catch(() => ({}));
+    const removedImageIds: string[] = Array.isArray(body.removedImageIds) ? body.removedImageIds : [];
+    const imageCount = await prisma.image.count({ where: { entityType: "trade", entityId: tradeId } });
+    const effectiveCount = imageCount - removedImageIds.length;
+    if (effectiveCount >= 3) {
       return NextResponse.json(
         { error: "Maximum 3 images per trade" },
         { status: 400 },

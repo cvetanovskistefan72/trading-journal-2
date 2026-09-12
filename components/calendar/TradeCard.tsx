@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Clock, TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fmtPnl, RESULT_TEXT, RESULT_BORDER, DIRECTION_BADGE } from "@/lib/calendar";
@@ -14,7 +15,8 @@ function StatPill({ label, value, valueClass }: { label: string; value: string; 
   );
 }
 
-export function TradeCard({ trade }: { trade: CalendarTrade }) {
+export function TradeCard({ trade, onNavigate }: { trade: CalendarTrade; onNavigate?: () => void }) {
+  const router = useRouter();
   const rMultiple = trade.riskAmount > 0 ? trade.pnl / trade.riskAmount : null;
 
   // Calculate hold time
@@ -28,7 +30,9 @@ export function TradeCard({ trade }: { trade: CalendarTrade }) {
     : `${Math.floor(holdMins / 60)}h ${holdMins % 60 > 0 ? `${holdMins % 60}m` : ""}`.trim();
 
   return (
-    <div className={cn("rounded-xl border overflow-hidden", RESULT_BORDER[trade.result])}
+    <div
+      className={cn("rounded-xl border overflow-hidden cursor-pointer hover:opacity-90 transition-opacity", RESULT_BORDER[trade.result])}
+      onClick={() => { onNavigate?.(); router.push(`/journal/${trade.id}`); }}
       style={{
         backgroundColor:
           trade.result === "win"       ? "color-mix(in oklch, var(--chart-1) 5%, transparent)"  :

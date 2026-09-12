@@ -46,10 +46,21 @@ export async function GET(req: Request) {
       notes: true,
       confluences: true,
       strategy: { select: { name: true } },
-      images: { select: { id: true, thumbnailKey: true } },
     },
     orderBy: [{ date: "asc" }, { entryTime: "asc" }],
   });
+
+  const tradeIds = trades.map((t) => t.id);
+  const allImages = await prisma.image.findMany({
+    where: { entityType: "trade", entityId: { in: tradeIds } },
+    select: { id: true, entityId: true, thumbnailKey: true },
+  });
+  const imagesByTradeId = new Map<string, { id: string; thumbnailKey: string }[]>();
+  for (const img of allImages) {
+    const list = imagesByTradeId.get(img.entityId) ?? [];
+    list.push({ id: img.id, thumbnailKey: img.thumbnailKey });
+    imagesByTradeId.set(img.entityId, list);
+  }
 
   const byDate = new Map<string, { pnl: number; trades: CalendarTrade[] }>();
   for (const t of trades) {
@@ -57,7 +68,7 @@ export async function GET(req: Request) {
     const existing = byDate.get(key) ?? { pnl: 0, trades: [] };
     existing.pnl += t.pnl;
     const images = await Promise.all(
-      t.images.map(async (img) => ({
+      (imagesByTradeId.get(t.id) ?? []).map(async (img) => ({
         id: img.id,
         thumbnailUrl: await createImagePreviewUrl(img.thumbnailKey),
       })),

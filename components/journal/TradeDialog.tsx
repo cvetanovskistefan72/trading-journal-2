@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { Strategy, StrategyQuestion } from "@/types/strategy";
 import type { Trade, CreateTradeInput, TradeDirection, TradeSession, TradeResult, TradeGrade, TradeAnswer } from "@/types/trade";
+import { getImageUrl } from "@/services/image.service";
 
 type FormValues = {
   date: string;
@@ -36,7 +37,7 @@ type FormValues = {
 type Props = {
   open: boolean;
   onClose: () => void;
-  onSubmit: (input: CreateTradeInput, images: File[]) => void;
+  onSubmit: (input: CreateTradeInput, newImages: File[], removedImageIds: string[]) => void;
   loading?: boolean;
   strategies: Strategy[];
   initial?: Trade;
@@ -63,7 +64,11 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
   const [confluences, setConfluences] = useState<string[]>([]);
   const [answers, setAnswers] = useState<TradeAnswer[]>([]);
   const [images, setImages] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<{ id: string; thumbnailKey: string }[]>([]);
+  const [removedIds, setRemovedIds] = useState<string[]>([]);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
 
   const selectedStrategy = strategies.find((s) => s.id === strategyId) ?? null;
 
@@ -112,6 +117,9 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
       setConfluences(initial?.confluences ?? []);
       setAnswers(initial?.answers ?? []);
       setImages([]);
+      setExistingImages(initial?.images ?? []);
+      setRemovedIds([]);
+      setNewFiles([]);
     }
   }, [open, initial, reset]);
 
@@ -189,11 +197,47 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
     setImages((prev) => prev.filter((_, i) => i !== index));
   }
 
+  function handleEditFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const picked = Array.from(e.target.files ?? []);
+    const wrongType = picked.find((f) => !["image/jpeg", "image/png", "image/webp"].includes(f.type));
+    if (wrongType) {
+      toast.error("Only JPEG, PNG and WebP images are allowed");
+      if (editFileInputRef.current) editFileInputRef.current.value = "";
+      return;
+    }
+    const totalSlots = existingImages.length + newFiles.length + picked.length;
+    if (totalSlots > 3) {
+      toast.error("You can attach up to 3 screenshots per trade");
+      return;
+    }
+    const newTotalBytes = [...newFiles, ...picked].reduce((sum, f) => sum + f.size, 0);
+    if (newTotalBytes > 10 * 1024 * 1024) {
+      toast.error("New screenshots cannot exceed 10 MB combined");
+      return;
+    }
+    const invalid = picked.find((f) => f.size === 0);
+    if (invalid) {
+      toast.error("One or more selected files are empty");
+      return;
+    }
+    setNewFiles((prev) => [...prev, ...picked]);
+    if (editFileInputRef.current) editFileInputRef.current.value = "";
+  }
+
+  function removeExistingImage(id: string) {
+    setExistingImages((prev) => prev.filter((img) => img.id !== id));
+    setRemovedIds((prev) => [...prev, id]);
+  }
+
+  function removeNewFile(index: number) {
+    setNewFiles((prev) => prev.filter((_, i) => i !== index));
+  }
+
   const onValid = (values: FormValues) => {
     if (!values.instrument || !values.direction || !values.session ||
         !values.grade || !strategyId || !result) return;
 
-    onSubmit({
+    const input: CreateTradeInput = {
       strategyId,
       date: values.date,
       instrument: values.instrument,
@@ -208,7 +252,13 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
       confluences,
       answers,
       notes: values.notes || undefined,
-    }, images);
+    };
+
+    if (initial) {
+      onSubmit(input, newFiles, removedIds);
+    } else {
+      onSubmit(input, images, []);
+    }
   };
 
   const canSubmit =
@@ -386,8 +436,69 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
                 rows={3} {...register("notes")} />
             </div>
 
-            {/* Screenshots — new trades only */}
-            {!initial && (
+            {/* Screenshots */}
+            {initial ? (
+              <div className="space-y-2">
+                <Label>
+                  Screenshots <span className="text-muted-foreground text-xs">(optional, up to 3)</span>
+                </Label>
+                <input
+                  ref={editFileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  className="hidden"
+                  onChange={handleEditFileChange}
+                />
+                {existingImages.length > 0 && (
+                  <div className="flex gap-2 flex-wrap">
+                    {existingImages.map((img) => (
+                      <div key={img.id} className="relative group">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={getImageUrl(img.id)}
+                          alt="Trade screenshot"
+                          className="h-16 w-24 object-cover rounded border border-border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeExistingImage(img.id)}
+                          className="absolute top-0.5 right-0.5 bg-background/80 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {newFiles.length > 0 && (
+                  <ul className="space-y-1">
+                    {newFiles.map((file, i) => (
+                      <li key={i} className="flex items-center justify-between rounded-md border border-border px-3 py-1.5 text-sm">
+                        <span className="truncate text-muted-foreground">{file.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeNewFile(i)}
+                          className="ml-2 shrink-0 text-muted-foreground hover:text-foreground"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {existingImages.length + newFiles.length < 3 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => editFileInputRef.current?.click()}
+                  >
+                    Choose files
+                  </Button>
+                )}
+              </div>
+            ) : (
               <div className="space-y-2">
                 <Label>
                   Screenshots <span className="text-muted-foreground text-xs">(optional, up to 3)</span>

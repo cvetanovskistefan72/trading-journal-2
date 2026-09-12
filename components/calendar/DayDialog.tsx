@@ -56,7 +56,7 @@ export function DayDialog({
 
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
           {day.trades.map(trade => (
-            <TradeCard key={trade.id} trade={trade} />
+            <TradeCard key={trade.id} trade={trade} onNavigate={onClose} />
           ))}
         </div>
       </DialogContent>

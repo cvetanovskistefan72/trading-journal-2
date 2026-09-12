@@ -1,5 +1,4 @@
 import axiosInstance from "@/lib/axios";
-import { TradeImage } from "@/types/image";
 import type {
   Trade,
   CreateTradeInput,
@@ -33,6 +32,11 @@ export async function getTrades(
   return data;
 }
 
+export async function getTrade(id: string): Promise<Trade> {
+  const { data } = await axiosInstance.get<Trade>(`/api/trades/${id}`);
+  return data;
+}
+
 export async function createTrade(input: CreateTradeInput): Promise<Trade> {
   const { data } = await axiosInstance.post<Trade>("/api/trades", input);
   return data;
@@ -41,8 +45,14 @@ export async function createTrade(input: CreateTradeInput): Promise<Trade> {
 export async function updateTrade(
   id: string,
   input: Partial<CreateTradeInput>,
+  removedImageIds?: string[],
+  addedImageKeys?: { imageKey: string; thumbnailKey: string }[],
 ): Promise<Trade> {
-  const { data } = await axiosInstance.patch<Trade>(`/api/trades/${id}`, input);
+  const { data } = await axiosInstance.patch<Trade>(`/api/trades/${id}`, {
+    ...input,
+    ...(removedImageIds && { removedImageIds }),
+    ...(addedImageKeys && { addedImageKeys }),
+  });
   return data;
 }
 
@@ -64,10 +74,22 @@ export async function deleteTrade(id: string): Promise<void> {
   await axiosInstance.delete(`/api/trades/${id}`);
 }
 
+export async function deleteTradeImage(tradeId: string, imageId: string): Promise<void> {
+  await axiosInstance.delete(`/api/trades/${tradeId}/images/${imageId}`);
+}
+
+export async function saveTradeImageKeys(
+  tradeId: string,
+  keys: { imageKey: string; thumbnailKey: string },
+): Promise<void> {
+  await axiosInstance.post(`/api/trades/${tradeId}/images`, keys);
+}
+
 export async function uploadTradeImage(
   tradeId: string,
   file: File,
-): Promise<TradeImage> {
+  removedImageIds: string[] = [],
+): Promise<{ imageKey: string; thumbnailKey: string }> {
   const isCompressible = file.type === "image/jpeg" || file.type === "image/png";
   const [image, thumbnail] = await Promise.all([
     isCompressible ? compressImage(file) : createThumbnail(file),
@@ -76,21 +98,13 @@ export async function uploadTradeImage(
 
   const { data: upload } = await axiosInstance.post<any>(
     `/api/trades/${tradeId}/images/upload-url`,
+    { removedImageIds },
   );
 
   await Promise.all([
     uploadImageToUrl(image, upload.imageUploadUrl),
-
     uploadImageToUrl(thumbnail, upload.thumbnailUploadUrl),
   ]);
 
-  const { data } = await axiosInstance.post<TradeImage>(
-    `/api/trades/${tradeId}/images`,
-    {
-      imageKey: upload.imageKey,
-      thumbnailKey: upload.thumbnailKey,
-    },
-  );
-
-  return data;
+  return { imageKey: upload.imageKey, thumbnailKey: upload.thumbnailKey };
 }

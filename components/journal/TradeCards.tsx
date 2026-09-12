@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Pencil, Archive, ArchiveRestore, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,13 +29,15 @@ type Props = {
 };
 
 export function TradeCards({ trades, archived, archivePending, restorePending, onEdit, onDelete, onArchive, onRestore }: Props) {
+  const router = useRouter();
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
       {trades.map((trade) => (
         <div
           key={trade.id}
+          onClick={() => router.push(`/journal/${trade.id}`)}
           className={cn(
-            "rounded-xl border border-border bg-card p-4 flex flex-col gap-3",
+            "rounded-xl border border-border bg-card p-4 flex flex-col gap-3 cursor-pointer hover:border-border/80 hover:bg-card/80 transition-colors",
             trade.archived && "opacity-60"
           )}
         >
@@ -43,7 +46,7 @@ export function TradeCards({ trades, archived, archivePending, restorePending, o
             <span className="text-xs text-muted-foreground tabular-nums">
               {new Date(trade.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
             </span>
-            <div className="flex items-center gap-0.5">
+            <div className="flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
               {archived ? (
                 <>
                   <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground hover:text-foreground"

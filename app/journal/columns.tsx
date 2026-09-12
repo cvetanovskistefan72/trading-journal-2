@@ -123,7 +123,7 @@ export const journalColumns: ColumnDef<Trade>[] = [
       const meta = table.options.meta as JournalMeta;
       const trade = row.original;
       return (
-        <div className="flex items-center gap-1 justify-end">
+        <div className="flex items-center gap-1 justify-end" onClick={(e) => e.stopPropagation()}>
           {meta.archived ? (
             <>
               <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-foreground"
