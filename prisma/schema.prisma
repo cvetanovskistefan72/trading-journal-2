@@ -55,6 +55,7 @@ model Trade {
   session     String
   entryTime   String
   exitTime    String
+  exitDate    String?
   result      String
   pnl         Float
   riskAmount  Float

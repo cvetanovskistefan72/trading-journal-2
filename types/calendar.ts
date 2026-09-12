@@ -5,6 +5,8 @@ export type CalendarTrade = {
   session: string;
   entryTime: string;
   exitTime: string;
+  exitDate: string | null;
+  date: string;
   pnl: number;
   riskAmount: number;
   result: "win" | "loss" | "breakeven";

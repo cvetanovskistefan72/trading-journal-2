@@ -81,7 +81,7 @@ export async function POST(req: Request) {
   const body = await req.json();
   const {
     strategyId, date, instrument, direction, session,
-    entryTime, exitTime, result, pnl, riskAmount,
+    entryTime, exitTime, exitDate, result, pnl, riskAmount,
     grade, confluences, answers, notes,
   } = body;
 
@@ -94,6 +94,17 @@ export async function POST(req: Request) {
   const strategy = await prisma.strategy.findFirst({ where: { id: strategyId, userId: user.id } });
   if (!strategy) return NextResponse.json({ error: "Strategy not found" }, { status: 404 });
 
+  const dayStart = new Date(date);
+  dayStart.setUTCHours(0, 0, 0, 0);
+  const dayEnd = new Date(date);
+  dayEnd.setUTCHours(23, 59, 59, 999);
+  const todayCount = await prisma.trade.count({
+    where: { userId: user.id, date: { gte: dayStart, lte: dayEnd } },
+  });
+  if (todayCount >= 30) {
+    return NextResponse.json({ error: "Daily trade limit reached (30 per day)" }, { status: 429 });
+  }
+
   const trade = await prisma.trade.create({
     data: {
       userId: user.id,
@@ -104,6 +115,7 @@ export async function POST(req: Request) {
       session,
       entryTime,
       exitTime,
+      exitDate: exitDate ?? null,
       result,
       pnl: Number(pnl),
       riskAmount: Number(riskAmount),

@@ -19,6 +19,7 @@ export type Trade = {
   session: TradeSession;
   entryTime: string;
   exitTime: string;
+  exitDate: string | null;
   result: TradeResult;
   pnl: number;
   riskAmount: number;
@@ -40,6 +41,7 @@ export type CreateTradeInput = {
   session: TradeSession;
   entryTime: string;
   exitTime: string;
+  exitDate?: string | null;
   result: TradeResult;
   pnl: number;
   riskAmount: number;

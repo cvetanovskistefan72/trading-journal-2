@@ -73,7 +73,12 @@ export default function TradeDetailPage() {
 
   const [eh, em] = trade.entryTime.split(":").map(Number);
   const [xh, xm] = trade.exitTime.split(":").map(Number);
-  const holdMins = (xh * 60 + xm) - (eh * 60 + em);
+  const entryMins = eh * 60 + em;
+  const exitMins = xh * 60 + xm;
+  const entryDate = trade.date.split("T")[0];
+  const exitDateStr = trade.exitDate ?? entryDate;
+  const dayDiff = (new Date(exitDateStr).getTime() - new Date(entryDate).getTime()) / (1000 * 60 * 60 * 24);
+  const holdMins = exitMins - entryMins + dayDiff * 24 * 60;
   const holdLabel = holdMins < 60
     ? `${holdMins}m`
     : `${Math.floor(holdMins / 60)}h ${holdMins % 60 > 0 ? `${holdMins % 60}m` : ""}`.trim();
@@ -249,28 +254,29 @@ export default function TradeDetailPage() {
         </div>
       </div>
 
-      {/* Lightbox */}
-      {lightbox && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-6"
+      {/* Lightbox — images stay mounted so browser keeps them in memory cache */}
+      <div
+        className={`fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-6 transition-opacity duration-200 ${lightbox ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+        onClick={() => setLightbox(null)}
+      >
+        <button
+          type="button"
           onClick={() => setLightbox(null)}
+          className="absolute top-5 right-5 text-white/50 hover:text-white transition-colors cursor-pointer"
         >
-          <button
-            type="button"
-            onClick={() => setLightbox(null)}
-            className="absolute top-5 right-5 text-white/50 hover:text-white transition-colors"
-          >
-            <X className="h-6 w-6" />
-          </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <X className="h-6 w-6" />
+        </button>
+        {trade?.images.map((img) => (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={lightbox}
+            key={img.id}
+            src={getImageUrl(img.id, true)}
             alt="Trade screenshot fullsize"
-            className="max-w-full max-h-full rounded-xl shadow-2xl object-contain"
+            className={`max-w-full max-h-full rounded-xl shadow-2xl object-contain absolute transition-opacity duration-150 ${lightbox === getImageUrl(img.id, true) ? "opacity-100" : "opacity-0 pointer-events-none"}`}
             onClick={(e) => e.stopPropagation()}
           />
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 }

@@ -67,7 +67,7 @@ export async function PATCH(req: NextRequest, context: { params: Params }) {
   const body = await req.json();
   const {
     strategyId, date, instrument, direction, session,
-    entryTime, exitTime, result, pnl, riskAmount,
+    entryTime, exitTime, exitDate, result, pnl, riskAmount,
     grade, confluences, answers, notes, archived,
     removedImageIds, addedImageKeys,
   } = body;
@@ -108,6 +108,7 @@ export async function PATCH(req: NextRequest, context: { params: Params }) {
       ...(session !== undefined && { session }),
       ...(entryTime !== undefined && { entryTime }),
       ...(exitTime !== undefined && { exitTime }),
+      ...(exitDate !== undefined && { exitDate: exitDate ?? null }),
       ...(result !== undefined && { result }),
       ...(pnl !== undefined && { pnl: Number(pnl) }),
       ...(riskAmount !== undefined && { riskAmount: Number(riskAmount) }),

@@ -54,6 +54,7 @@ export function buildRandomTrade(strategies: Strategy[]): CreateTradeInput {
     session: pick(SESSIONS),
     entryTime: `${pad(entryHour)}:${pad(entryMin)}`,
     exitTime: `${pad(exitHour)}:${pad(exitMin)}`,
+    exitDate: null,
     result,
     pnl,
     riskAmount: +(Math.random() * 300 + 100).toFixed(2),

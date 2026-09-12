@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Strategy, StrategyQuestion } from "@/types/strategy";
 import type { Trade, CreateTradeInput, TradeDirection, TradeSession, TradeResult, TradeGrade, TradeAnswer } from "@/types/trade";
 import { getImageUrl } from "@/services/image.service";
@@ -28,6 +29,7 @@ type FormValues = {
   session: TradeSession | "";
   entryTime: string;
   exitTime: string;
+  exitDate: string;
   pnl: string;
   riskAmount: string;
   grade: TradeGrade | "";
@@ -81,6 +83,7 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
         session: "",
         entryTime: "",
         exitTime: "",
+        exitDate: "",
         pnl: "",
         riskAmount: "",
         grade: "",
@@ -95,6 +98,8 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
   const pnlValue = watch("pnl");
   const entryTime = watch("entryTime");
   const exitTime = watch("exitTime");
+  const exitDate = watch("exitDate");
+  const tradeDate = watch("date");
 
   const pnlNum = parseFloat(pnlValue);
   const result: TradeResult | null = isNaN(pnlNum) || pnlValue === "" ? null : pnlToResult(pnlNum);
@@ -108,6 +113,7 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
         session: initial?.session ?? "",
         entryTime: initial?.entryTime ?? "",
         exitTime: initial?.exitTime ?? "",
+        exitDate: initial?.exitDate ?? "",
         pnl: initial?.pnl?.toString() ?? "",
         riskAmount: initial?.riskAmount?.toString() ?? "",
         grade: initial?.grade ?? "",
@@ -133,7 +139,7 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
       setConfluences([]);
       setAnswers([]);
     }
-  }, [strategyId, selectedStrategy, initial]);
+  }, [strategyId, initial]);
 
   function toggleConfluence(c: string) {
     setConfluences((prev) =>
@@ -162,10 +168,12 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
   }
 
   const allQuestionsAnswered =
+    !!initial ||
     !selectedStrategy ||
     selectedStrategy.questions.every((q) => getAnswer(q.id).length > 0);
 
-  const timesValid = !entryTime || !exitTime || entryTime < exitTime;
+  const effectiveExitDate = exitDate || tradeDate;
+  const timesValid = !entryTime || !exitTime || effectiveExitDate > tradeDate || entryTime < exitTime;
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const picked = Array.from(e.target.files ?? []);
@@ -245,6 +253,7 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
       session: values.session as TradeSession,
       entryTime: values.entryTime,
       exitTime: values.exitTime,
+      exitDate: values.exitDate || null,
       result,
       pnl: pnlNum,
       riskAmount: parseFloat(values.riskAmount),
@@ -275,20 +284,14 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
         <form onSubmit={handleSubmit(onValid)} className="flex flex-col flex-1 min-h-0">
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
 
-            {/* Date + Instrument */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
-                <Input id="date" type="date" {...register("date", { required: true })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Instrument</Label>
-                <Controller control={control} name="instrument" rules={{ required: true }}
-                  render={({ field }) => (
-                    <ToggleGroup options={INSTRUMENTS} value={field.value as string} onChange={field.onChange} />
-                  )}
-                />
-              </div>
+            {/* Instrument */}
+            <div className="space-y-2">
+              <Label>Instrument</Label>
+              <Controller control={control} name="instrument" rules={{ required: true }}
+                render={({ field }) => (
+                  <ToggleGroup options={INSTRUMENTS} value={field.value as string} onChange={field.onChange} />
+                )}
+              />
             </div>
 
             {/* Direction + Session */}
@@ -313,19 +316,31 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
               </div>
             </div>
 
-            {/* Entry / Exit Time */}
+            {/* Entry + Exit */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="entryTime">Entry Time</Label>
+                <Label>Entry</Label>
+                <Input id="date" type="date" {...register("date", { required: true })} />
                 <Input id="entryTime" type="time" {...register("entryTime", { required: true })} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="exitTime">
-                  Exit Time
+                <Label>
+                  Exit
                   {entryTime && exitTime && !timesValid && (
                     <span className="ml-2 text-xs text-destructive">must be after entry</span>
                   )}
                 </Label>
+                <div className="relative">
+                  <Input
+                    type="date"
+                    {...register("exitDate")}
+                    min={tradeDate}
+                    className="w-full"
+                  />
+                  {exitDate && exitDate !== tradeDate && (
+                    <span className="absolute -top-2 -right-1 text-[9px] font-bold text-amber-500 bg-background px-0.5">+{Math.round((new Date(exitDate).getTime() - new Date(tradeDate).getTime()) / 86400000)}d</span>
+                  )}
+                </div>
                 <Input id="exitTime" type="time" {...register("exitTime", { required: true })}
                   className={cn(entryTime && exitTime && !timesValid && "border-destructive")} />
               </div>
@@ -354,17 +369,25 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
 
             {/* Strategy */}
             <div className="space-y-2">
-              <Label>Strategy</Label>
-              <select
-                value={strategyId}
-                onChange={(e) => setStrategyId(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              <Label>
+                Strategy
+                {initial && <span className="text-muted-foreground text-xs ml-2">(locked on edit)</span>}
+              </Label>
+              <Select
+                value={strategyId || "__none__"}
+                onValueChange={(v) => { if (!initial) setStrategyId(v === "__none__" ? "" : v); }}
+                disabled={!!initial}
               >
-                <option value="">Select a strategy...</option>
-                {strategies.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a strategy..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Select a strategy...</SelectItem>
+                  {strategies.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Confluences */}
@@ -386,9 +409,12 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
             {/* Post-trade questions */}
             {selectedStrategy && selectedStrategy.questions.length > 0 && (
               <div className="space-y-4">
-                <Label>Post-trade questions</Label>
+                <Label>
+                  Post-trade questions
+                  {initial && <span className="text-muted-foreground text-xs ml-2">(locked on edit)</span>}
+                </Label>
                 {selectedStrategy.questions.map((q, i) => (
-                  <div key={q.id} className="space-y-2 rounded-lg border border-border p-3">
+                  <div key={q.id} className={cn("space-y-2 rounded-lg border border-border p-3", initial && "opacity-60")}>
                     <p className="text-sm font-medium">
                       <span className="text-muted-foreground mr-2">{i + 1}.</span>
                       {q.text}
@@ -402,13 +428,14 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
                     <div className="flex flex-wrap gap-2">
                       {q.options.map((opt) => (
                         <Button key={opt} type="button"
+                          disabled={!!initial}
                           variant={getAnswer(q.id).includes(opt) ? "default" : "outline"}
-                          onClick={() => toggleAnswer(q, opt)}>
+                          onClick={() => { if (!initial) toggleAnswer(q, opt); }}>
                           {opt}
                         </Button>
                       ))}
                     </div>
-                    {getAnswer(q.id).length === 0 && (
+                    {!initial && getAnswer(q.id).length === 0 && (
                       <p className="text-xs text-destructive">Required</p>
                     )}
                   </div>

@@ -24,7 +24,9 @@ export function TradeCard({ trade, onNavigate }: { trade: CalendarTrade; onNavig
   const [xh, xm] = trade.exitTime.split(":").map(Number);
   const entryMins = eh * 60 + em;
   const exitMins = xh * 60 + xm;
-  const holdMins = exitMins >= entryMins ? exitMins - entryMins : exitMins - entryMins + 24 * 60;
+  const exitDateStr = trade.exitDate ?? trade.date;
+  const dayDiff = (new Date(exitDateStr).getTime() - new Date(trade.date).getTime()) / (1000 * 60 * 60 * 24);
+  const holdMins = exitMins - entryMins + dayDiff * 24 * 60;
   const holdLabel = holdMins < 60
     ? `${holdMins}m`
     : `${Math.floor(holdMins / 60)}h ${holdMins % 60 > 0 ? `${holdMins % 60}m` : ""}`.trim();
