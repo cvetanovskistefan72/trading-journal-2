@@ -14,6 +14,7 @@ import { TradeDialog } from "@/components/journal/TradeDialog";
 import { TradeFilters } from "@/components/journal/TradeFilters";
 import { DataTable } from "@/components/data-table";
 import { TradeCards } from "@/components/journal/TradeCards";
+import { RateLimitDialog } from "@/components/journal/RateLimitDialog";
 import { journalColumns } from "./columns";
 import type { JournalMeta } from "./columns";
 import { useJournalDensity } from "@/hooks/useJournalDensity";
@@ -36,6 +37,7 @@ export default function JournalPage() {
   const [deleting, setDeleting] = useState<Trade | null>(null);
   const [creating, setCreating] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [rateLimit, setRateLimit] = useState<"create" | "edit" | null>(null);
 
   const [page, setPage] = useState(1);
   const [archived, setArchived] = useState(false);
@@ -132,8 +134,9 @@ export default function JournalPage() {
         invalidateAll();
         setEditing(null);
         setDialogOpen(false);
-      } catch {
-        toast.error("Failed to update trade");
+      } catch (err: any) {
+        if (err?.error?.includes("Daily edit") || err?.error?.includes("Daily trade")) { setRateLimit("edit"); setDialogOpen(false); }
+        else toast.error("Failed to update trade");
       } finally {
         setUpdating(false);
       }
@@ -149,8 +152,9 @@ export default function JournalPage() {
       toast.success("Trade logged");
       invalidateAll();
       setDialogOpen(false);
-    } catch {
-      toast.error("Failed to log trade");
+    } catch (err: any) {
+      if (err?.error?.includes("Daily trade limit")) { setRateLimit("create"); setDialogOpen(false); }
+      else toast.error("Failed to log trade");
     } finally {
       setCreating(false);
     }
@@ -318,6 +322,12 @@ export default function JournalPage() {
         loading={deleteMutation.isPending}
         title="Delete trade"
         description="This will permanently delete the trade. This cannot be undone."
+      />
+
+      <RateLimitDialog
+        open={!!rateLimit}
+        onClose={() => setRateLimit(null)}
+        type={rateLimit ?? "create"}
       />
     </main>
   );

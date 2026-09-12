@@ -24,6 +24,8 @@ model User {
   resetTokenExpiry DateTime?
   disabled         Boolean    @default(false)
   testFlag         Boolean    @default(false)
+  dailyEditCount   Int        @default(0)
+  editCountDate    String?
   strategies       Strategy[]
   trades           Trade[]
 }

@@ -94,16 +94,19 @@ export async function POST(req: Request) {
   const strategy = await prisma.strategy.findFirst({ where: { id: strategyId, userId: user.id } });
   if (!strategy) return NextResponse.json({ error: "Strategy not found" }, { status: 404 });
 
-  const dayStart = new Date(date);
-  dayStart.setUTCHours(0, 0, 0, 0);
-  const dayEnd = new Date(date);
-  dayEnd.setUTCHours(23, 59, 59, 999);
-  const todayCount = await prisma.trade.count({
-    where: { userId: user.id, date: { gte: dayStart, lte: dayEnd } },
+  const today = new Date().toISOString().split("T")[0];
+  const freshUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { dailyEditCount: true, editCountDate: true },
   });
-  if (todayCount >= 30) {
-    return NextResponse.json({ error: "Daily trade limit reached (30 per day)" }, { status: 429 });
+  const isToday = freshUser?.editCountDate === today;
+  if (isToday && (freshUser?.dailyEditCount ?? 0) >= 50) {
+    return NextResponse.json({ error: "Daily trade limit reached (50 per day)" }, { status: 429 });
   }
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { editCountDate: today, dailyEditCount: isToday ? { increment: 1 } : 1 },
+  });
 
   const trade = await prisma.trade.create({
     data: {

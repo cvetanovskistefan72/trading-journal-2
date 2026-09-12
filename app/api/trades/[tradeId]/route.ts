@@ -64,6 +64,20 @@ export async function PATCH(req: NextRequest, context: { params: Params }) {
   const trade = await prisma.trade.findFirst({ where: { id: tradeId, userId: user.id } });
   if (!trade) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  const today = new Date().toISOString().split("T")[0];
+  const freshUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { dailyEditCount: true, editCountDate: true },
+  });
+  const isToday = freshUser?.editCountDate === today;
+  if (isToday && (freshUser?.dailyEditCount ?? 0) >= 50) {
+    return NextResponse.json({ error: "Daily edit limit reached (50 per day)" }, { status: 429 });
+  }
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { editCountDate: today, dailyEditCount: isToday ? { increment: 1 } : 1 },
+  });
+
   const body = await req.json();
   const {
     strategyId, date, instrument, direction, session,
