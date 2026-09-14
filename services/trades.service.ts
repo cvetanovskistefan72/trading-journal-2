@@ -23,6 +23,7 @@ export async function getTrades(
   if (params.sortDir) query.set("sortDir", params.sortDir);
   if (params.search) query.set("search", params.search);
   if (params.strategyId) query.set("strategyId", params.strategyId);
+  if (params.direction) query.set("direction", params.direction);
   if (params.archived !== undefined)
     query.set("archived", String(params.archived));
 

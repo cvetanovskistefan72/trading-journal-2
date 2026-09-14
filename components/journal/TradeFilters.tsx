@@ -13,6 +13,7 @@ type Props = {
   dateTo: string;
   search: string;
   strategyId: string;
+  direction: string;
   archived: boolean;
   total: number;
   hasFilters: boolean;
@@ -21,13 +22,14 @@ type Props = {
   onDateTo: (v: string) => void;
   onSearch: (v: string) => void;
   onStrategyId: (v: string) => void;
+  onDirection: (v: string) => void;
   onArchived: (v: boolean) => void;
   onClear: () => void;
 };
 
 export function TradeFilters({
-  dateFrom, dateTo, search, strategyId, archived, total, hasFilters, strategies = [],
-  onDateFrom, onDateTo, onSearch, onStrategyId, onArchived, onClear,
+  dateFrom, dateTo, search, strategyId, direction, archived, total, hasFilters, strategies = [],
+  onDateFrom, onDateTo, onSearch, onStrategyId, onDirection, onArchived, onClear,
 }: Props) {
   const [searchInput, setSearchInput] = useState(search);
 
@@ -104,6 +106,23 @@ export function TradeFilters({
                 {strategies.map((s) => (
                   <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {/* Direction filter */}
+        {!archived && (
+          <div className="space-y-1">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Direction</p>
+            <Select value={direction || "__all__"} onValueChange={(v) => onDirection(v === "__all__" ? "" : v)}>
+              <SelectTrigger className="h-8 w-32 text-sm">
+                <SelectValue placeholder="All" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">All</SelectItem>
+                <SelectItem value="long">Long</SelectItem>
+                <SelectItem value="short">Short</SelectItem>
               </SelectContent>
             </Select>
           </div>

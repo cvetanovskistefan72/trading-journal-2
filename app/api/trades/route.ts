@@ -23,6 +23,7 @@ export async function GET(req: Request) {
   const sortDir = (searchParams.get("sortDir") ?? "desc") as "asc" | "desc";
   const search = searchParams.get("search")?.trim() ?? "";
   const strategyId = searchParams.get("strategyId") ?? "";
+  const direction = searchParams.get("direction") ?? "";
   const archivedParam = searchParams.get("archived");
   const archived = archivedParam === "true" ? true : false;
 
@@ -37,6 +38,7 @@ export async function GET(req: Request) {
   const where: Prisma.TradeWhereInput = { userId: user.id, archived };
   if (dateFrom || dateTo) where.date = dateFilter;
   if (strategyId) where.strategyId = strategyId;
+  if (direction) where.direction = { equals: direction, mode: "insensitive" };
   if (search) {
     where.OR = [
       { instrument: { contains: search, mode: "insensitive" } },
@@ -100,7 +102,7 @@ export async function POST(req: Request) {
     select: { dailyEditCount: true, editCountDate: true },
   });
   const isToday = freshUser?.editCountDate === today;
-  if (isToday && (freshUser?.dailyEditCount ?? 0) >= 50) {
+  if (isToday && (freshUser?.dailyEditCount ?? 0) >= 100) {
     return NextResponse.json({ error: "Daily trade limit reached (50 per day)" }, { status: 429 });
   }
   await prisma.user.update({

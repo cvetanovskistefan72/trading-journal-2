@@ -60,6 +60,7 @@ export type TradesParams = {
   sortDir?: "asc" | "desc";
   search?: string;
   strategyId?: string;
+  direction?: string;
   archived?: boolean;
 };
 

@@ -37,17 +37,26 @@ export function DrawdownChart() {
   const drawdown = data?.drawdown ?? [];
 
   const minDd = drawdown.length > 0 ? Math.min(...drawdown.map((d) => d.drawdown)) : 0;
+  const currentDd = drawdown.length > 0 ? drawdown[drawdown.length - 1].drawdown : 0;
 
   return (
     <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
       <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Drawdown</p>
-          {minDd < 0 && (
-            <p className="text-2xl font-bold tabular-nums mt-1" style={{ color: "var(--color-chart-2)" }}>
-              {minDd.toFixed(2)}%
+        <div className="flex gap-6">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Max Drawdown</p>
+            {minDd < 0 && (
+              <p className="text-2xl font-bold tabular-nums mt-1" style={{ color: "var(--color-chart-2)" }}>
+                {minDd.toFixed(2)}%
+              </p>
+            )}
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Current Drawdown</p>
+            <p className="text-2xl font-bold tabular-nums mt-1" style={{ color: currentDd < 0 ? "var(--color-chart-2)" : "var(--color-chart-1)" }}>
+              {currentDd.toFixed(2)}%
             </p>
-          )}
+          </div>
         </div>
         <PeriodFilter value={preset} onChange={setPreset} />
       </div>

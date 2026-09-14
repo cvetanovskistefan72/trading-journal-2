@@ -23,6 +23,7 @@ export type CalendarDay = { date: string; pnl: number; trades: number; wins: num
 export type TimeOfDayCell = { hour: number; day: string; avgPnl: number; trades: number; wins: number; losses: number; winRate: number };
 export type CumulativeRPoint = { date: string; tradeIndex: number; cumulativeR: number };
 export type TiltBucket = { label: string; trades: number; winRate: number; avgPnl: number };
+export type DayAvg = { day: string; avgPnl: number; tradingDays: number };
 
 export type AnalyticsData = {
   equity: EquityPoint[];
@@ -43,6 +44,8 @@ export type AnalyticsData = {
   timeOfDay: TimeOfDayCell[];
   cumulativeRCurve: CumulativeRPoint[];
   tiltMeter: TiltBucket[];
+  bestDay: DayAvg | null;
+  worstDay: DayAvg | null;
 };
 
 export function useAnalytics(from?: string) {

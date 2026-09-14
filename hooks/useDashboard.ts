@@ -26,6 +26,8 @@ export type DashboardData = {
   todayPnl: number;
   weekPnl: number;
   monthPnl: number;
+  lastMonthPnl: number;
+  lastMonthTrades: number;
   allTimePnl: number;
   weekTrades: number;
   monthTrades: number;

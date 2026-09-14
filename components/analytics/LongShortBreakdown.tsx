@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { DirectionBucket } from "@/hooks/useAnalytics";
 import { TrendingUp, TrendingDown } from "lucide-react";
@@ -9,13 +10,13 @@ function fmtUsd(v: number) {
   return (v >= 0 ? "+" : "-") + "$" + abs;
 }
 
-function DirectionCard({ bucket }: { bucket: DirectionBucket }) {
+function DirectionCard({ bucket, onClick }: { bucket: DirectionBucket; onClick: () => void }) {
   const isLong = bucket.direction === "long";
   const positive = bucket.pnl >= 0;
   const Icon = isLong ? TrendingUp : TrendingDown;
 
   return (
-    <div className="flex-1 rounded-xl border border-border bg-background p-5 space-y-4">
+    <div className="flex-1 rounded-xl border border-border bg-background p-5 space-y-4 cursor-pointer hover:border-muted-foreground/40 transition-colors" onClick={onClick}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -76,6 +77,7 @@ function DirectionCard({ bucket }: { bucket: DirectionBucket }) {
 }
 
 export function LongShortBreakdown() {
+  const router = useRouter();
   const { data, isLoading } = useAnalytics();
   const longShort = data?.longShort ?? [];
   const hasTrades = longShort.some((d) => d.trades > 0);
@@ -109,7 +111,7 @@ export function LongShortBreakdown() {
       ) : (
         <div className="flex gap-4">
           {longShort.map((bucket) => (
-            <DirectionCard key={bucket.direction} bucket={bucket} />
+            <DirectionCard key={bucket.direction} bucket={bucket} onClick={() => router.push(`/journal?direction=${bucket.direction}`)} />
           ))}
         </div>
       )}

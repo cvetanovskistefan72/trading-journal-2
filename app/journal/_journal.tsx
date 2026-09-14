@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Shuffle, ChevronLeft, ChevronRight } from "lucide-react";
@@ -44,7 +44,9 @@ export default function JournalPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
   const [strategyId, setStrategyId] = useState("");
+  const [direction, setDirection] = useState(searchParams.get("direction") ?? "");
 
   const [sortBy, setSortBy] = useState<"date" | "grade" | "pnl">("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
@@ -61,13 +63,13 @@ export default function JournalPage() {
   }, [density]);
 
   const params: TradesParams = {
-    page, limit, dateFrom, dateTo, search, strategyId, archived,
+    page, limit, dateFrom, dateTo, search, strategyId, direction, archived,
     sortBy: density === "cards" ? "date" : sortBy,
     sortDir: density === "cards" ? "desc" : sortDir,
   };
 
   const { data, isLoading, isPlaceholderData } = useQuery({
-    queryKey: ["trades", page, limit, dateFrom, dateTo, search, density === "cards" ? "date" : sortBy, density === "cards" ? "desc" : sortDir, strategyId, archived],
+    queryKey: ["trades", page, limit, dateFrom, dateTo, search, density === "cards" ? "date" : sortBy, density === "cards" ? "desc" : sortDir, strategyId, direction, archived],
     queryFn: () => getTrades(params),
     placeholderData: (prev) => prev,
   });
@@ -166,15 +168,16 @@ export default function JournalPage() {
     setPage(1);
   }
 
-  const clearFilters = useCallback(() => { setDateFrom(""); setDateTo(""); setSearch(""); setStrategyId(""); setPage(1); }, []);
-  const handleArchived = useCallback((v: boolean) => { setArchived(v); setDateFrom(""); setDateTo(""); setSearch(""); setStrategyId(""); setPage(1); }, []);
+  const clearFilters = useCallback(() => { setDateFrom(""); setDateTo(""); setSearch(""); setStrategyId(""); setDirection(""); setPage(1); }, []);
+  const handleArchived = useCallback((v: boolean) => { setArchived(v); setDateFrom(""); setDateTo(""); setSearch(""); setStrategyId(""); setDirection(""); setPage(1); }, []);
   const handleDateFrom = useCallback((v: string) => { setDateFrom(v); setPage(1); }, []);
   const handleDateTo = useCallback((v: string) => { setDateTo(v); setPage(1); }, []);
   const handleSearch = useCallback((v: string) => { setSearch(v); setPage(1); }, []);
   const handleStrategyId = useCallback((v: string) => { setStrategyId(v); setPage(1); }, []);
+  const handleDirection = useCallback((v: string) => { setDirection(v); setPage(1); }, []);
 
   const isSaving = creating || updating;
-  const hasFilters = !!dateFrom || !!dateTo || !!search || !!strategyId;
+  const hasFilters = !!dateFrom || !!dateTo || !!search || !!strategyId || !!direction;
 
   const meta: JournalMeta = {
     archived,
@@ -224,9 +227,10 @@ export default function JournalPage() {
 
         <TradeFilters
           dateFrom={dateFrom} dateTo={dateTo} search={search} strategyId={strategyId}
+          direction={direction}
           archived={archived} total={total} hasFilters={hasFilters} strategies={strategies}
           onDateFrom={handleDateFrom} onDateTo={handleDateTo} onSearch={handleSearch}
-          onStrategyId={handleStrategyId} onArchived={handleArchived} onClear={clearFilters}
+          onStrategyId={handleStrategyId} onDirection={handleDirection} onArchived={handleArchived} onClear={clearFilters}
         />
 
         {isLoading && !isPlaceholderData ? (

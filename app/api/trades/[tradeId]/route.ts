@@ -70,7 +70,7 @@ export async function PATCH(req: NextRequest, context: { params: Params }) {
     select: { dailyEditCount: true, editCountDate: true },
   });
   const isToday = freshUser?.editCountDate === today;
-  if (isToday && (freshUser?.dailyEditCount ?? 0) >= 50) {
+  if (isToday && (freshUser?.dailyEditCount ?? 0) >= 100) {
     return NextResponse.json({ error: "Daily edit limit reached (50 per day)" }, { status: 429 });
   }
   await prisma.user.update({

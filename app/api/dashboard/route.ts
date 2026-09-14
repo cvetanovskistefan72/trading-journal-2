@@ -18,6 +18,12 @@ function startOfWeek(d: Date) {
 function startOfMonth(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), 1);
 }
+function startOfLastMonth(d: Date) {
+  return new Date(d.getFullYear(), d.getMonth() - 1, 1);
+}
+function endOfLastMonth(d: Date) {
+  return new Date(d.getFullYear(), d.getMonth(), 0, 23, 59, 59, 999);
+}
 
 export async function GET(req: NextRequest) {
   const token = await getToken({ req });
@@ -27,13 +33,15 @@ export async function GET(req: NextRequest) {
   const todayStart = startOfDay(now);
   const weekStart = startOfWeek(now);
   const monthStart = startOfMonth(now);
+  const lastMonthStart = startOfLastMonth(now);
+  const lastMonthEnd = endOfLastMonth(now);
 
   // Pull last 90 days max (recent + mini heatmap only needs ~35 days)
   const from90 = new Date(now);
   from90.setDate(now.getDate() - 89);
   from90.setHours(0, 0, 0, 0);
 
-  const [allTrades, recentTrades, allTimePnlAgg] = await Promise.all([
+  const [allTrades, recentTrades, allTimePnlAgg, lastMonthAgg] = await Promise.all([
     prisma.trade.findMany({
       where: {
         userId: token.sub,
@@ -65,6 +73,11 @@ export async function GET(req: NextRequest) {
     prisma.trade.aggregate({
       where: { userId: token.sub, archived: false },
       _sum: { pnl: true },
+    }),
+    prisma.trade.aggregate({
+      where: { userId: token.sub, archived: false, date: { gte: lastMonthStart, lte: lastMonthEnd } },
+      _sum: { pnl: true },
+      _count: { _all: true },
     }),
   ]);
 
@@ -144,11 +157,15 @@ export async function GET(req: NextRequest) {
   const monthWinRate = monthDecided > 0 ? round2((monthWins / monthDecided) * 100) : null;
 
   const allTimePnl = round2(allTimePnlAgg._sum.pnl ?? 0);
+  const lastMonthPnl = round2(lastMonthAgg._sum.pnl ?? 0);
+  const lastMonthTrades = lastMonthAgg._count._all;
 
   return NextResponse.json({
     todayPnl: round2(todayPnl),
     weekPnl: round2(weekPnl),
     monthPnl: round2(monthPnl),
+    lastMonthPnl,
+    lastMonthTrades,
     allTimePnl,
     weekTrades,
     monthTrades,

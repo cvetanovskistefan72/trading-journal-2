@@ -1,7 +1,7 @@
 "use client";
 
 import { useDashboard } from "@/hooks/useDashboard";
-import { AlertTriangle, CheckCircle2, TrendingDown, Zap } from "lucide-react";
+import { AlertTriangle, BookOpen, CheckCircle2, TrendingDown, Zap } from "lucide-react";
 
 export function DisciplineBanner() {
   const { data, isLoading } = useDashboard();
@@ -73,6 +73,22 @@ export function DisciplineBanner() {
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
             Keep following your process. Don&apos;t increase size or deviate from your plan during a hot streak.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Journaling streak nudge — traded this week but nothing logged today
+  const todayPnl = data?.todayPnl;
+  if (weekTrades > 0 && todayPnl === 0 && monthTrades >= 5) {
+    return (
+      <div className="rounded-2xl border border-border bg-muted/20 px-5 py-4 flex items-start gap-3">
+        <BookOpen className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm font-semibold text-foreground">Keep your journal up to date</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            No trades logged today. Consistent journaling is what separates disciplined traders — even a no-trade day is worth noting.
           </p>
         </div>
       </div>

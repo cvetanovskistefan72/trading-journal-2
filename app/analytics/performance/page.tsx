@@ -20,6 +20,10 @@ import { CalendarHeatmap } from "@/components/analytics/CalendarHeatmap";
 import { TimeOfDayHeatmap } from "@/components/analytics/TimeOfDayHeatmap";
 import { CumulativeRCurve } from "@/components/analytics/CumulativeRCurve";
 import { TiltMeter } from "@/components/analytics/TiltMeter";
+import { BestWorstDay } from "@/components/analytics/BestWorstDay";
+import { TraderRadar } from "@/components/analytics/TraderRadar";
+import { CostOfMistakes } from "@/components/analytics/CostOfMistakes";
+import { InsightsCard } from "@/components/analytics/InsightsCard";
 
 export default function PerformancePage() {
   useEffect(() => {
@@ -39,11 +43,18 @@ export default function PerformancePage() {
         <p className="text-sm text-muted-foreground">All-time trading analytics across your journal.</p>
       </div>
 
+      <InsightsCard />
+
       <EquityCurve />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <SummaryStats />
         <StreakStats />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <BestWorstDay />
+        <TraderRadar />
       </div>
 
       <PnlByPeriod />
@@ -77,6 +88,7 @@ export default function PerformancePage() {
 
       <SessionBreakdown />
       <ConfluencePerformance />
+      <CostOfMistakes />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <InstrumentBreakdown />

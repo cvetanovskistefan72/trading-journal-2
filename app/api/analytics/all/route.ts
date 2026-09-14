@@ -394,6 +394,23 @@ export async function GET(req: NextRequest) {
     .map(([date, b]) => ({ date, pnl: round2(b.pnl), trades: b.trades, wins: b.wins, losses: b.losses }))
     .sort((a, b) => a.date.localeCompare(b.date));
 
+  // ── BEST / WORST TRADING DAY (by weekday average) ─────────────
+  type DowAvg = { pnl: number; count: number };
+  const dowAvgMap: Record<number, DowAvg> = {};
+  for (const [date, b] of calMap.entries()) {
+    const dow = new Date(date).getDay();
+    if (!dowAvgMap[dow]) dowAvgMap[dow] = { pnl: 0, count: 0 };
+    dowAvgMap[dow].pnl += b.pnl;
+    dowAvgMap[dow].count++;
+  }
+  const dowAverages = Object.entries(dowAvgMap).map(([dow, v]) => ({
+    day: DAYS[Number(dow)],
+    avgPnl: round2(v.pnl / v.count),
+    tradingDays: v.count,
+  }));
+  const bestDay = dowAverages.length > 0 ? dowAverages.reduce((a, b) => a.avgPnl > b.avgPnl ? a : b) : null;
+  const worstDay = dowAverages.length > 0 ? dowAverages.reduce((a, b) => a.avgPnl < b.avgPnl ? a : b) : null;
+
   // ── TIME-OF-DAY HEATMAP (hour 0–23 × Mon–Fri) ────────────────
   const TRADE_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
   type HourDowCell = { pnl: number; trades: number; wins: number; losses: number };
@@ -466,5 +483,5 @@ export async function GET(req: NextRequest) {
     avgPnl: b.trades > 0 ? round2(b.pnl / b.trades) : 0,
   }));
 
-  return NextResponse.json({ equity, summary, byWeekday, rMultiple, holdTime, bySession, byInstrument, longShort, winRateTrend, byGrade, streaks, drawdown, pnlDistribution, byConfluence, calendarHeatmap, timeOfDay, cumulativeRCurve, tiltMeter });
+  return NextResponse.json({ equity, summary, byWeekday, rMultiple, holdTime, bySession, byInstrument, longShort, winRateTrend, byGrade, streaks, drawdown, pnlDistribution, byConfluence, calendarHeatmap, timeOfDay, cumulativeRCurve, tiltMeter, bestDay, worstDay });
 }

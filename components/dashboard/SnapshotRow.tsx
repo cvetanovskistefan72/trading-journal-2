@@ -2,14 +2,28 @@
 
 import { cn } from "@/lib/utils";
 import { useDashboard } from "@/hooks/useDashboard";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, ArrowUp, ArrowDown } from "lucide-react";
 
 function fmtPnl(v: number) {
   const abs = "$" + Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   return (v >= 0 ? "+" : "-") + abs;
 }
 
-function Tile({ label, value, sub }: { label: string; value: number; sub?: string }) {
+function Delta({ current, previous }: { current: number; previous: number }) {
+  const diff = current - previous;
+  if (previous === 0 && diff === 0) return null;
+  const up = diff >= 0;
+  const Icon = up ? ArrowUp : ArrowDown;
+  return (
+    <span className="inline-flex items-center gap-0.5 text-[11px] font-semibold tabular-nums"
+      style={{ color: up ? "var(--color-chart-1)" : "var(--color-chart-2)" }}>
+      <Icon className="h-3 w-3" />
+      {fmtPnl(Math.abs(diff))} vs last month
+    </span>
+  );
+}
+
+function Tile({ label, value, sub, delta }: { label: string; value: number; sub?: string; delta?: React.ReactNode }) {
   const positive = value > 0;
   const negative = value < 0;
   const Icon = positive ? TrendingUp : negative ? TrendingDown : Minus;
@@ -30,7 +44,8 @@ function Tile({ label, value, sub }: { label: string; value: number; sub?: strin
         >
           {fmtPnl(value)}
         </p>
-        {sub && <p className="text-xs text-muted-foreground mt-1.5">{sub}</p>}
+        {delta && <div className="mt-1">{delta}</div>}
+        {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
       </div>
     </div>
   );
@@ -52,6 +67,7 @@ export function SnapshotRow() {
   const todayPnl = data?.todayPnl ?? 0;
   const weekPnl = data?.weekPnl ?? 0;
   const monthPnl = data?.monthPnl ?? 0;
+  const lastMonthPnl = data?.lastMonthPnl ?? 0;
   const allTimePnl = data?.allTimePnl ?? 0;
   const weekTrades = data?.weekTrades ?? 0;
   const monthTrades = data?.monthTrades ?? 0;
@@ -68,6 +84,7 @@ export function SnapshotRow() {
         label="This Month"
         value={monthPnl}
         sub={monthTrades > 0 ? `${monthTrades} trade${monthTrades !== 1 ? "s" : ""}` : "No trades yet"}
+        delta={<Delta current={monthPnl} previous={lastMonthPnl} />}
       />
       <Tile label="All Time" value={allTimePnl} />
     </div>
