@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, BookMarked } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -171,69 +171,74 @@ function StrategyCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
-  const visibleConfluences = strategy.confluences.slice(0, 4);
+  const visibleConfluences = strategy.confluences.slice(0, 5);
   const extraConfluences = strategy.confluences.length - visibleConfluences.length;
 
   return (
     <div
-      className="relative flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-all hover:border-border/80 cursor-pointer"
+      className="rounded-2xl border border-border bg-card p-6 flex flex-col gap-4 cursor-pointer hover:bg-muted/30 transition-colors"
       onClick={onClick}
     >
       {/* Header */}
-      <div className="flex items-start justify-between gap-2 px-5 pt-4 pb-3">
-        <div className="min-w-0">
-          <h3 className="font-semibold text-sm leading-tight truncate">{strategy.name}</h3>
-          {strategy.description ? (
-            <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{strategy.description}</p>
-          ) : (
-            <p className="text-xs text-muted-foreground/40 mt-1">No description</p>
-          )}
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 rounded-lg shrink-0 flex items-center justify-center bg-[color-mix(in_oklch,var(--color-chart-1)_10%,transparent)]">
+            <BookMarked className="h-4 w-4 text-[var(--color-chart-1)]" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="font-semibold text-sm leading-tight truncate">{strategy.name}</h3>
+            {strategy.description ? (
+              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{strategy.description}</p>
+            ) : (
+              <p className="text-xs text-muted-foreground/30 mt-0.5">No description</p>
+            )}
+          </div>
         </div>
         <div className="flex shrink-0 gap-0.5" onClick={(e) => e.stopPropagation()}>
-          <Button size="icon" variant="ghost" onClick={onEdit} className="h-7 w-7">
+          <button onClick={onEdit} className="cursor-pointer p-1.5 rounded hover:bg-muted text-muted-foreground transition-colors">
             <Pencil className="h-3.5 w-3.5" />
-          </Button>
-          <Button size="icon" variant="ghost" onClick={onDelete} className="h-7 w-7 text-destructive hover:text-destructive">
+          </button>
+          <button onClick={onDelete} className="cursor-pointer p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-[var(--color-chart-2)] transition-colors">
             <Trash2 className="h-3.5 w-3.5" />
-          </Button>
+          </button>
         </div>
       </div>
 
-      {/* Divider */}
-      <div className="mx-5 border-t border-border/50" />
-
-      {/* Confluences preview */}
-      <div className="px-5 py-4 flex-1">
+      {/* Confluences */}
+      <div className="flex-1">
         {strategy.confluences.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {visibleConfluences.map((c) => (
-              <span
-                key={c}
-                className="rounded-md border border-border bg-muted/50 px-2 py-0.5 text-xs font-medium truncate max-w-36"
-              >
+              <span key={c} className="rounded-full bg-[color-mix(in_oklch,var(--color-chart-1)_8%,transparent)] text-[var(--color-chart-1)] border border-[color-mix(in_oklch,var(--color-chart-1)_20%,transparent)] px-2.5 py-0.5 text-xs font-medium truncate max-w-40">
                 {c}
               </span>
             ))}
             {extraConfluences > 0 && (
-              <span className="rounded-md border border-dashed border-border px-2 py-0.5 text-xs text-muted-foreground">
+              <span className="rounded-full border border-dashed border-border px-2.5 py-0.5 text-xs text-muted-foreground">
                 +{extraConfluences}
               </span>
             )}
           </div>
         ) : (
-          <p className="text-xs text-muted-foreground/40 italic">No confluences</p>
+          <p className="text-xs text-muted-foreground/40 italic">No confluences added</p>
         )}
       </div>
 
-      {/* Footer stats */}
-      <div className="flex items-center gap-4 border-t border-border/50 px-5 py-2.5 bg-muted/20">
-        <span className="text-[11px] text-muted-foreground">
-          <span className="font-medium text-foreground">{strategy.confluences.length}</span> confluences
-        </span>
-        <span className="text-[11px] text-muted-foreground">
-          <span className="font-medium text-foreground">{strategy.questions.length}</span> post-trade q.
-        </span>
-        <span className="ml-auto text-[11px] text-muted-foreground/50">Click to view →</span>
+      {/* Footer */}
+      <div className="flex items-center gap-4 pt-3 border-t border-border">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-xs font-bold text-foreground">{strategy.confluences.length}</span>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
+            {strategy.confluences.length === 1 ? "Confluence" : "Confluences"}
+          </span>
+        </div>
+        <div className="flex flex-col gap-0.5">
+          <span className="text-xs font-bold text-foreground">{strategy.questions.length}</span>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
+            {strategy.questions.length === 1 ? "Question" : "Questions"}
+          </span>
+        </div>
+        <span className="ml-auto text-[11px] text-muted-foreground/40">View →</span>
       </div>
     </div>
   );
