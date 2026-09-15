@@ -24,6 +24,7 @@ import { BestWorstDay } from "@/components/analytics/BestWorstDay";
 import { TraderRadar } from "@/components/analytics/TraderRadar";
 import { CostOfMistakes } from "@/components/analytics/CostOfMistakes";
 import { InsightsCard } from "@/components/analytics/InsightsCard";
+import { GoalsProgress } from "@/components/analytics/GoalsProgress";
 
 export default function PerformancePage() {
   useEffect(() => {
@@ -44,6 +45,7 @@ export default function PerformancePage() {
       </div>
 
       <InsightsCard />
+      <GoalsProgress />
 
       <EquityCurve />
 

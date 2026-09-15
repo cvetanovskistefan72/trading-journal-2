@@ -8,6 +8,7 @@ export const routes = {
   analyticsDay: "/analytics/day",
   analyticsPerformance: "/analytics/performance",
   analyticsStrategies: "/analytics/strategies",
+  journalGoals: "/goals",
   journal: "/journal",
   adminUsers: "/admin/users",
   adminUsersCreate: "/admin/users/create",

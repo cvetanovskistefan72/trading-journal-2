@@ -7,5 +7,5 @@ export function cn(...inputs: ClassValue[]) {
 
 export function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
-  return pathname.startsWith(href);
+  return pathname === href || pathname.startsWith(href + "/");
 }

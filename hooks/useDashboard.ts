@@ -26,11 +26,14 @@ export type DashboardData = {
   todayPnl: number;
   weekPnl: number;
   monthPnl: number;
+  yearPnl: number;
   lastMonthPnl: number;
   lastMonthTrades: number;
   allTimePnl: number;
   weekTrades: number;
   monthTrades: number;
+  yearTrades: number;
+  weekWinRate: number | null;
   monthWinRate: number | null;
   streak: number;
   streakType: "win" | "loss" | null;

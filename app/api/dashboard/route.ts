@@ -18,6 +18,9 @@ function startOfWeek(d: Date) {
 function startOfMonth(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), 1);
 }
+function startOfYear(d: Date) {
+  return new Date(d.getFullYear(), 0, 1);
+}
 function startOfLastMonth(d: Date) {
   return new Date(d.getFullYear(), d.getMonth() - 1, 1);
 }
@@ -36,17 +39,14 @@ export async function GET(req: NextRequest) {
   const lastMonthStart = startOfLastMonth(now);
   const lastMonthEnd = endOfLastMonth(now);
 
-  // Pull last 90 days max (recent + mini heatmap only needs ~35 days)
-  const from90 = new Date(now);
-  from90.setDate(now.getDate() - 89);
-  from90.setHours(0, 0, 0, 0);
+  const yearStart = startOfYear(now);
 
   const [allTrades, recentTrades, allTimePnlAgg, lastMonthAgg] = await Promise.all([
     prisma.trade.findMany({
       where: {
         userId: token.sub,
         archived: false,
-        date: { gte: from90 },
+        date: { gte: yearStart },
       },
       select: {
         date: true,
@@ -81,12 +81,13 @@ export async function GET(req: NextRequest) {
     }),
   ]);
 
-  // Stats from 90-day window
   let todayPnl = 0;
   let weekPnl = 0;
   let monthPnl = 0;
+  let yearPnl = 0;
   let weekTrades = 0;
   let monthTrades = 0;
+  let yearTrades = 0;
 
   // Mini heatmap: last 35 calendar days keyed by date
   const heatmapMap = new Map<string, { pnl: number; trades: number; wins: number; losses: number }>();
@@ -98,6 +99,7 @@ export async function GET(req: NextRequest) {
     if (d >= todayStart) todayPnl += t.pnl;
     if (d >= weekStart) { weekPnl += t.pnl; weekTrades++; }
     if (d >= monthStart) { monthPnl += t.pnl; monthTrades++; }
+    yearPnl += t.pnl; yearTrades++;
 
     const cell = heatmapMap.get(key) ?? { pnl: 0, trades: 0, wins: 0, losses: 0 };
     cell.pnl += t.pnl;
@@ -147,13 +149,13 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Month win rate
-  const monthWins = allTrades.filter(
-    (t) => t.date >= monthStart && t.result === "win"
-  ).length;
-  const monthDecided = allTrades.filter(
-    (t) => t.date >= monthStart && (t.result === "win" || t.result === "loss")
-  ).length;
+  // Win rates
+  const weekWins = allTrades.filter((t) => t.date >= weekStart && t.result === "win").length;
+  const weekDecided = allTrades.filter((t) => t.date >= weekStart && (t.result === "win" || t.result === "loss")).length;
+  const weekWinRate = weekDecided > 0 ? round2((weekWins / weekDecided) * 100) : null;
+
+  const monthWins = allTrades.filter((t) => t.date >= monthStart && t.result === "win").length;
+  const monthDecided = allTrades.filter((t) => t.date >= monthStart && (t.result === "win" || t.result === "loss")).length;
   const monthWinRate = monthDecided > 0 ? round2((monthWins / monthDecided) * 100) : null;
 
   const allTimePnl = round2(allTimePnlAgg._sum.pnl ?? 0);
@@ -164,11 +166,14 @@ export async function GET(req: NextRequest) {
     todayPnl: round2(todayPnl),
     weekPnl: round2(weekPnl),
     monthPnl: round2(monthPnl),
+    yearPnl: round2(yearPnl),
     lastMonthPnl,
     lastMonthTrades,
     allTimePnl,
     weekTrades,
     monthTrades,
+    yearTrades,
+    weekWinRate,
     monthWinRate,
     streak,
     streakType,

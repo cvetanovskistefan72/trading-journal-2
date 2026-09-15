@@ -16,38 +16,38 @@ export const COLOR_THEMES: ColorTheme[] = [
   {
     id: "classic",
     label: "Classic",
-    win:       "oklch(0.72 0.18 152)",      // emerald
-    loss:      "oklch(0.704 0.191 22.216)", // red
-    breakeven: "oklch(0.828 0.189 84.429)", // amber
-    long:      "oklch(0.70 0.16 240)",      // blue
-    short:     "oklch(0.72 0.17 55)",       // orange
+    win:       "oklch(0.72 0.18 152)",   // emerald green
+    loss:      "oklch(0.62 0.22 25)",    // red
+    breakeven: "oklch(0.80 0.15 85)",    // amber
+    long:      "oklch(0.68 0.16 245)",   // blue
+    short:     "oklch(0.72 0.18 55)",    // orange
   },
   {
     id: "ocean",
     label: "Ocean",
-    win:       "oklch(0.75 0.15 195)",
-    loss:      "oklch(0.72 0.17 55)",
-    breakeven: "oklch(0.80 0.14 270)",
-    long:      "oklch(0.72 0.15 220)",
-    short:     "oklch(0.75 0.16 30)",
+    win:       "oklch(0.72 0.16 195)",   // teal
+    loss:      "oklch(0.65 0.20 15)",    // coral red
+    breakeven: "oklch(0.75 0.12 265)",   // slate blue
+    long:      "oklch(0.68 0.15 230)",   // deep blue
+    short:     "oklch(0.72 0.16 165)",   // seafoam
   },
   {
     id: "violet",
     label: "Violet",
-    win:       "oklch(0.70 0.18 290)",
-    loss:      "oklch(0.75 0.17 75)",
-    breakeven: "oklch(0.75 0.15 200)",
-    long:      "oklch(0.72 0.18 310)",
-    short:     "oklch(0.75 0.16 60)",
+    win:       "oklch(0.72 0.18 290)",   // violet
+    loss:      "oklch(0.62 0.22 25)",    // red (same as classic — clear loss signal)
+    breakeven: "oklch(0.72 0.14 200)",   // cyan
+    long:      "oklch(0.68 0.18 310)",   // purple
+    short:     "oklch(0.74 0.16 60)",    // yellow-orange
   },
   {
     id: "mono",
     label: "Mono",
-    win:       "oklch(0.85 0 0)",
-    loss:      "oklch(0.50 0 0)",
-    breakeven: "oklch(0.65 0 0)",
-    long:      "oklch(0.75 0 0)",
-    short:     "oklch(0.45 0 0)",
+    win:       "oklch(0.82 0 0)",        // light gray
+    loss:      "oklch(0.45 0 0)",        // dark gray
+    breakeven: "oklch(0.63 0 0)",        // mid gray
+    long:      "oklch(0.72 0 0)",        // gray
+    short:     "oklch(0.38 0 0)",        // darker gray
   },
 ];
 

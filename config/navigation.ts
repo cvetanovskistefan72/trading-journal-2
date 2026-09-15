@@ -4,6 +4,7 @@ import {
   CalendarDays,
   LayoutDashboard,
   PieChart,
+  Target,
   TrendingUp,
   Users,
 } from "lucide-react";
@@ -38,6 +39,11 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Journal",
     href: routes.journal,
     icon: BookOpen,
+  },
+  {
+    label: "Profit Goals",
+    href: routes.journalGoals,
+    icon: Target,
   },
 ];
 

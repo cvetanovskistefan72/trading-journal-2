@@ -12,6 +12,16 @@ enum Role {
   USER
 }
 
+enum GoalType {
+  MONTHLY_PROFIT
+  WEEKLY_PROFIT
+  YEARLY_PROFIT
+  MAX_DRAWDOWN
+  WIN_RATE
+  MONTHLY_TRADE_COUNT
+  WEEKLY_TRADE_COUNT
+}
+
 model User {
   id               String     @id @default(cuid())
   email            String     @unique
@@ -24,10 +34,23 @@ model User {
   resetTokenExpiry DateTime?
   disabled         Boolean    @default(false)
   testFlag         Boolean    @default(false)
-  dailyEditCount   Int        @default(0)
-  editCountDate    String?
-  strategies       Strategy[]
-  trades           Trade[]
+  dailyEditCount      Int        @default(0)
+  editCountDate       String?
+  strategies          Strategy[]
+  trades              Trade[]
+  goals               Goal[]
+}
+
+model Goal {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      GoalType
+  value     Float
+  createdAt DateTime @default(now())
+
+  @@unique([userId, type])
+  @@index([userId])
 }
 
 model Strategy {

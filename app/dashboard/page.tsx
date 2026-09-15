@@ -8,6 +8,7 @@ import { DisciplineBanner } from "@/components/dashboard/DisciplineBanner";
 import { QuickLinks } from "@/components/dashboard/QuickLinks";
 import { AddTradeButton } from "@/components/dashboard/AddTradeButton";
 import { EconomicCalendar } from "@/components/dashboard/EconomicCalendar";
+import { GoalsProgress } from "@/components/analytics/GoalsProgress";
 
 export default function DashboardPage() {
   return (
@@ -30,6 +31,9 @@ export default function DashboardPage() {
 
       {/* Economic calendar strip */}
       <EconomicCalendar />
+
+      {/* Monthly goals progress */}
+      <GoalsProgress />
 
       {/* Key stat tiles */}
       <StatTiles />
