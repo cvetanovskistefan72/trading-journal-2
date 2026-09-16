@@ -9,6 +9,7 @@ import {
   fmtPnl, toDateKey, buildCalendarGrid,
 } from "@/lib/calendar";
 import { DayDialog } from "@/components/calendar/DayDialog";
+
 import type { CalendarDay } from "@/types/calendar";
 
 import { getCalendar } from "@/services/analytics.service";
@@ -99,6 +100,7 @@ export default function CalendarPage() {
     setDialogOpen(true);
   }
 
+
   return (
     <main className="flex-1 px-4 py-6 sm:px-8 sm:py-8 space-y-5">
 
@@ -174,16 +176,16 @@ export default function CalendarPage() {
       {/* Grid */}
       <div className={cn("rounded-2xl border border-border bg-card overflow-hidden transition-opacity", isFetching && "opacity-60")}>
 
-        {/* Column headers: week # | Mon–Sun */}
-        <div className="grid grid-cols-[52px_repeat(7,1fr)] bg-muted/40 border-b border-border">
-          <div className="py-3 text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-widest text-center flex items-center justify-center gap-1">
-            <Calendar className="h-3 w-3" />
-          </div>
+        {/* Column headers: Mon–Sun | week summary */}
+        <div className="grid grid-cols-[repeat(7,1fr)_80px] bg-muted/40 border-b border-border">
           {DAY_LABELS.map((d, i) => (
             <div key={d} className={cn("py-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-widest text-center", i >= 5 && "text-muted-foreground/50")}>
               {d}
             </div>
           ))}
+          <div className="py-3 flex items-center justify-center border-l border-border/60">
+            <Calendar className="h-3 w-3 text-muted-foreground/40" />
+          </div>
         </div>
 
         {/* Rows */}
@@ -191,21 +193,7 @@ export default function CalendarPage() {
           const ws = weeklyStats[wi];
           const wn = getWeekNumber(year, month, wi, weeks);
           return (
-            <div key={wi} className="grid grid-cols-[52px_repeat(7,1fr)]">
-
-              {/* Week number column */}
-              <div className="border-b border-r border-border/60 flex flex-col items-center justify-center gap-1 bg-muted/30 py-3">
-                <span className="text-[9px] font-semibold text-muted-foreground/40 uppercase tracking-widest">Wk</span>
-                <span className="text-xs font-bold text-muted-foreground/60">{wn}</span>
-                {ws.count > 0 && (
-                  <span
-                    className="text-[10px] font-bold tabular-nums mt-0.5"
-                    style={{ color: ws.pnl > 0 ? "var(--color-chart-1)" : ws.pnl < 0 ? "var(--color-chart-2)" : "var(--color-chart-3)" }}
-                  >
-                    {fmtPnl(ws.pnl, true)}
-                  </span>
-                )}
-              </div>
+            <div key={wi} className="grid grid-cols-[repeat(7,1fr)_80px]">
 
               {/* Day cells */}
               {week.map((day, di) => {
@@ -216,7 +204,6 @@ export default function CalendarPage() {
                       key={di}
                       className={cn(
                         "min-h-[110px] border-b border-r border-border/60",
-                        di === 6 && "border-r-0",
                         isWeekend && "bg-muted/15"
                       )}
                     />
@@ -233,14 +220,12 @@ export default function CalendarPage() {
                     onClick={() => hasData && handleDayClick(key)}
                     className={cn(
                       "min-h-[110px] border-b border-r border-border/60 p-2.5 flex flex-col transition-all duration-150 group",
-                      di === 6 && "border-r-0",
                       isWeekend && !hasData && "bg-muted/15",
                       hasData && RESULT_BG[entry.result],
                       hasData && "cursor-pointer",
                     )}
                   >
-                    {/* Date number */}
-                    <div className="flex items-start justify-between mb-auto">
+                    <div className="flex items-start justify-between">
                       <span className={cn(
                         "text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full shrink-0 transition-colors",
                         isToday
@@ -256,30 +241,37 @@ export default function CalendarPage() {
                       )}
                     </div>
 
-                    {/* P&L + trades */}
                     {hasData && (
-                      <div className="mt-2 space-y-1">
-                        <p className={cn("text-sm font-bold tabular-nums leading-none", RESULT_TEXT[entry.result])}>
-                          {fmtPnl(entry.pnl, true)}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground leading-none">
-                          {entry.tradeCount} trade{entry.tradeCount !== 1 ? "s" : ""}
-                        </p>
-                        {/* Thin accent bar at bottom */}
-                        <div
-                          className="h-0.5 w-full rounded-full mt-1 opacity-60"
-                          style={{
-                            backgroundColor:
-                              entry.result === "win" ? "var(--color-chart-1)" :
-                              entry.result === "loss" ? "var(--color-chart-2)" :
-                              "var(--color-chart-3)"
-                          }}
-                        />
+                      <div className="mt-auto pt-2 space-y-0.5">
+                        <div className="h-0.5 w-full rounded-full opacity-60 mb-1" style={{
+                          backgroundColor: entry.result === "win" ? "var(--color-chart-1)" : entry.result === "loss" ? "var(--color-chart-2)" : "var(--color-chart-3)"
+                        }} />
+                        <div className="flex items-end justify-between gap-1">
+                          <p className="text-[10px] text-muted-foreground leading-none">{entry.tradeCount} trade{entry.tradeCount !== 1 ? "s" : ""}</p>
+                          <p className={cn("text-sm font-bold tabular-nums leading-none", RESULT_TEXT[entry.result])}>{fmtPnl(entry.pnl, true)}</p>
+                        </div>
                       </div>
                     )}
                   </div>
                 );
               })}
+
+              {/* Week summary column — right side */}
+              <div className="min-h-[110px] border-b border-l border-border/60 flex flex-col items-center justify-center gap-1 bg-muted/30 px-2 py-3">
+                <span className="text-[9px] font-semibold text-muted-foreground/40 uppercase tracking-widest">Wk {wn}</span>
+                {ws.count > 0 ? (
+                  <>
+                    <span className="text-xs font-bold tabular-nums" style={{ color: ws.pnl > 0 ? "var(--color-chart-1)" : ws.pnl < 0 ? "var(--color-chart-2)" : "var(--color-chart-3)" }}>
+                      {fmtPnl(ws.pnl, true)}
+                    </span>
+                    <span className="text-[9px] text-muted-foreground">{ws.count} trades</span>
+                    <span className="text-[9px] tabular-nums" style={{ color: "var(--color-chart-1)" }}>{ws.wins}W</span>
+                    <span className="text-[9px] tabular-nums" style={{ color: "var(--color-chart-2)" }}>{ws.losses}L</span>
+                  </>
+                ) : (
+                  <span className="text-[9px] text-muted-foreground/30">—</span>
+                )}
+              </div>
             </div>
           );
         })}
@@ -296,7 +288,7 @@ export default function CalendarPage() {
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full" style={{ backgroundColor: "var(--color-chart-3)" }} />Breakeven
         </div>
-        <div className="ml-auto text-[11px] text-muted-foreground/40">Click a day to view trades</div>
+        <div className="ml-auto text-[11px] text-muted-foreground/40">Click a day or week to view trades</div>
       </div>
 
       <DayDialog day={selectedDay} open={dialogOpen} onClose={() => setDialogOpen(false)} />
