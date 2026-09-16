@@ -6,6 +6,7 @@ import type { CalendarDay as HeatmapDay } from "@/hooks/useAnalytics";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayDialog } from "@/components/calendar/DayDialog";
 import type { CalendarDay } from "@/types/calendar";
+import { getCalendarDay } from "@/services/analytics.service";
 
 type TooltipState = { x: number; y: number; day: HeatmapDay } | null;
 
@@ -98,9 +99,8 @@ export function CalendarHeatmap() {
     setLoadingDay(true);
     setDialogOpen(true);
     try {
-      const res = await fetch(`/api/trades/calendar?date=${date}`);
-      const days: CalendarDay[] = await res.json();
-      setDialogDay(days[0] ?? null);
+      const day = await getCalendarDay(date);
+      setDialogDay((day as unknown as CalendarDay) ?? null);
     } finally {
       setLoadingDay(false);
     }

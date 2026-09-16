@@ -103,7 +103,7 @@ export async function POST(req: Request) {
   });
   const isToday = freshUser?.editCountDate === today;
   if (isToday && (freshUser?.dailyEditCount ?? 0) >= 100) {
-    return NextResponse.json({ error: "Daily trade limit reached (50 per day)" }, { status: 429 });
+    return NextResponse.json({ error: "Daily trade limit reached (100 per day)" }, { status: 429 });
   }
   await prisma.user.update({
     where: { id: user.id },

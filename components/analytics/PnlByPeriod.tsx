@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
 import { BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Cell, ReferenceLine, ResponsiveContainer } from "recharts";
 import { cn } from "@/lib/utils";
 import { PeriodFilter, fromDate, type PeriodPreset } from "@/components/analytics/PeriodFilter";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 type Bucket = { period: string; pnl: number; wins: number; losses: number };
 
@@ -45,11 +45,29 @@ export function PnlByPeriod() {
   const [preset, setPreset] = useState<PeriodPreset>("ALL");
   const from = fromDate(preset);
 
-  const { data = [], isLoading } = useQuery<Bucket[]>({
-    queryKey: ["analytics", "by-period", mode, from],
-    queryFn: () => fetch(`/api/analytics/by-period?mode=${mode}${from ? `&from=${from}` : ""}`).then((r) => r.json()),
-    staleTime: 60_000,
-  });
+  const { data: analytics, isLoading } = useAnalytics(from);
+
+  const data = useMemo<Bucket[]>(() => {
+    if (!analytics?.calendarHeatmap) return [];
+    const buckets = new Map<string, Bucket>();
+    for (const day of analytics.calendarHeatmap) {
+      let key: string;
+      if (mode === "monthly") {
+        key = day.date.slice(0, 7);
+      } else {
+        const d = new Date(day.date);
+        const jan4 = new Date(d.getFullYear(), 0, 4);
+        const week = Math.ceil(((d.getTime() - jan4.getTime()) / 86400000 + jan4.getDay() + 1) / 7);
+        key = `${d.getFullYear()}-W${String(week).padStart(2, "0")}`;
+      }
+      const b = buckets.get(key) ?? { period: key, pnl: 0, wins: 0, losses: 0 };
+      b.pnl = Math.round((b.pnl + day.pnl) * 100) / 100;
+      b.wins += day.wins;
+      b.losses += day.losses;
+      buckets.set(key, b);
+    }
+    return Array.from(buckets.values()).sort((a, b) => a.period.localeCompare(b.period));
+  }, [analytics, mode]);
 
   return (
     <div className="rounded-2xl border border-border bg-card p-6 space-y-4">

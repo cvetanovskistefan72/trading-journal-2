@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { getAnalytics } from "@/services/analytics.service";
 
 export type EquityPoint = { date: string; cumulative: number };
 export type Summary = {
@@ -51,7 +52,7 @@ export type AnalyticsData = {
 export function useAnalytics(from?: string) {
   return useQuery<AnalyticsData>({
     queryKey: ["analytics", "all", from],
-    queryFn: () => fetch(`/api/analytics/all${from ? `?from=${from}` : ""}`).then((r) => r.json()),
-    staleTime: 60_000,
+    queryFn: () => getAnalytics(from),
+    staleTime: 5 * 60_000,
   });
 }

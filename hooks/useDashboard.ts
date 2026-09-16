@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { getDashboard } from "@/services/dashboard.service";
 
 export type RecentTrade = {
   id: string;
@@ -44,7 +45,7 @@ export type DashboardData = {
 export function useDashboard() {
   return useQuery<DashboardData>({
     queryKey: ["dashboard"],
-    queryFn: () => fetch("/api/dashboard").then((r) => r.json()),
+    queryFn: getDashboard,
     staleTime: 30_000,
   });
 }

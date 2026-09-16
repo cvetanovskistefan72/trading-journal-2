@@ -9,8 +9,8 @@ function startOfDay(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 function startOfWeek(d: Date) {
-  const day = d.getDay(); // 0=Sun
-  const diff = day === 0 ? -6 : 1 - day; // Monday
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
   const mon = new Date(d);
   mon.setDate(d.getDate() + diff);
   return startOfDay(mon);
@@ -36,40 +36,12 @@ export async function GET(req: NextRequest) {
   const todayStart = startOfDay(now);
   const weekStart = startOfWeek(now);
   const monthStart = startOfMonth(now);
+  const yearStart = startOfYear(now);
   const lastMonthStart = startOfLastMonth(now);
   const lastMonthEnd = endOfLastMonth(now);
 
-  const yearStart = startOfYear(now);
-
-  const [allTrades, recentTrades, allTimePnlAgg, lastMonthAgg] = await Promise.all([
-    prisma.trade.findMany({
-      where: {
-        userId: token.sub,
-        archived: false,
-        date: { gte: yearStart },
-      },
-      select: {
-        date: true,
-        pnl: true,
-        result: true,
-      },
-      orderBy: { date: "asc" },
-    }),
-    prisma.trade.findMany({
-      where: { userId: token.sub, archived: false },
-      select: {
-        id: true,
-        date: true,
-        instrument: true,
-        direction: true,
-        pnl: true,
-        result: true,
-        grade: true,
-        strategy: { select: { name: true } },
-      },
-      orderBy: { date: "desc" },
-      take: 10,
-    }),
+  // Batch 1: DB does the aggregation — no rows transferred for all-time/last-month stats
+  const [allTimePnlAgg, lastMonthAgg, recentTrades, streakTrades] = await Promise.all([
     prisma.trade.aggregate({
       where: { userId: token.sub, archived: false },
       _sum: { pnl: true },
@@ -79,27 +51,44 @@ export async function GET(req: NextRequest) {
       _sum: { pnl: true },
       _count: { _all: true },
     }),
+    prisma.trade.findMany({
+      where: { userId: token.sub, archived: false },
+      select: {
+        id: true, date: true, instrument: true, direction: true,
+        pnl: true, result: true, grade: true,
+        strategy: { select: { name: true } },
+      },
+      orderBy: { date: "desc" },
+      take: 10,
+    }),
+    prisma.trade.findMany({
+      where: { userId: token.sub, archived: false, result: { in: ["win", "loss"] } },
+      select: { result: true },
+      orderBy: { date: "desc" },
+      take: 100,
+    }),
   ]);
 
-  let todayPnl = 0;
-  let weekPnl = 0;
-  let monthPnl = 0;
-  let yearPnl = 0;
-  let weekTrades = 0;
-  let monthTrades = 0;
-  let yearTrades = 0;
+  // Batch 2: current year trades only — for period stats + heatmap
+  const yearTrades = await prisma.trade.findMany({
+    where: { userId: token.sub, archived: false, date: { gte: yearStart } },
+    select: { date: true, pnl: true, result: true },
+    orderBy: { date: "asc" },
+  });
 
-  // Mini heatmap: last 35 calendar days keyed by date
+  // Compute period stats from year trades
+  let todayPnl = 0, weekPnl = 0, monthPnl = 0, yearPnl = 0;
+  let weekTradeCount = 0, monthTradeCount = 0, yearTradeCount = 0;
   const heatmapMap = new Map<string, { pnl: number; trades: number; wins: number; losses: number }>();
 
-  for (const t of allTrades) {
+  for (const t of yearTrades) {
     const d = t.date;
     const key = d.toISOString().slice(0, 10);
 
     if (d >= todayStart) todayPnl += t.pnl;
-    if (d >= weekStart) { weekPnl += t.pnl; weekTrades++; }
-    if (d >= monthStart) { monthPnl += t.pnl; monthTrades++; }
-    yearPnl += t.pnl; yearTrades++;
+    if (d >= weekStart)  { weekPnl += t.pnl; weekTradeCount++; }
+    if (d >= monthStart) { monthPnl += t.pnl; monthTradeCount++; }
+    yearPnl += t.pnl; yearTradeCount++;
 
     const cell = heatmapMap.get(key) ?? { pnl: 0, trades: 0, wins: 0, losses: 0 };
     cell.pnl += t.pnl;
@@ -109,8 +98,11 @@ export async function GET(req: NextRequest) {
     heatmapMap.set(key, cell);
   }
 
-  // Build 35-day heatmap array (last 35 days, oldest first)
-  const miniHeatmap: { date: string; pnl: number; trades: number; wins: number; losses: number; result: "win" | "loss" | "breakeven" | null }[] = [];
+  // 35-day mini heatmap
+  const miniHeatmap: {
+    date: string; pnl: number; trades: number;
+    wins: number; losses: number; result: "win" | "loss" | "breakeven" | null;
+  }[] = [];
   for (let i = 34; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(now.getDate() - i);
@@ -118,74 +110,56 @@ export async function GET(req: NextRequest) {
     const cell = heatmapMap.get(key);
     if (cell) {
       const pnl = round2(cell.pnl);
-      miniHeatmap.push({
-        date: key,
-        pnl,
-        trades: cell.trades,
-        wins: cell.wins,
-        losses: cell.losses,
-        result: pnl > 0 ? "win" : pnl < 0 ? "loss" : "breakeven",
-      });
+      miniHeatmap.push({ date: key, pnl, trades: cell.trades, wins: cell.wins, losses: cell.losses, result: pnl > 0 ? "win" : pnl < 0 ? "loss" : "breakeven" });
     } else {
       miniHeatmap.push({ date: key, pnl: 0, trades: 0, wins: 0, losses: 0, result: null });
     }
   }
 
-  // Streak — need all-time for accuracy
-  const allTimeStreak = await prisma.trade.findMany({
-    where: { userId: token.sub, archived: false, result: { in: ["win", "loss"] } },
-    select: { result: true },
-    orderBy: { date: "desc" },
-    take: 100,
-  });
-
+  // Streak from the small streak-only fetch (max 100 trades)
   let streak = 0;
   let streakType: "win" | "loss" | null = null;
-  if (allTimeStreak.length > 0) {
-    streakType = allTimeStreak[0].result as "win" | "loss";
-    for (const t of allTimeStreak) {
+  if (streakTrades.length > 0) {
+    streakType = streakTrades[0].result as "win" | "loss";
+    for (const t of streakTrades) {
       if (t.result === streakType) streak++;
       else break;
     }
   }
 
-  // Win rates
-  const weekWins = allTrades.filter((t) => t.date >= weekStart && t.result === "win").length;
-  const weekDecided = allTrades.filter((t) => t.date >= weekStart && (t.result === "win" || t.result === "loss")).length;
+  // Win rates from year trades
+  const weekWins    = yearTrades.filter(t => t.date >= weekStart  && t.result === "win").length;
+  const weekDecided = yearTrades.filter(t => t.date >= weekStart  && (t.result === "win" || t.result === "loss")).length;
   const weekWinRate = weekDecided > 0 ? round2((weekWins / weekDecided) * 100) : null;
 
-  const monthWins = allTrades.filter((t) => t.date >= monthStart && t.result === "win").length;
-  const monthDecided = allTrades.filter((t) => t.date >= monthStart && (t.result === "win" || t.result === "loss")).length;
+  const monthWins    = yearTrades.filter(t => t.date >= monthStart && t.result === "win").length;
+  const monthDecided = yearTrades.filter(t => t.date >= monthStart && (t.result === "win" || t.result === "loss")).length;
   const monthWinRate = monthDecided > 0 ? round2((monthWins / monthDecided) * 100) : null;
 
-  const allTimePnl = round2(allTimePnlAgg._sum.pnl ?? 0);
-  const lastMonthPnl = round2(lastMonthAgg._sum.pnl ?? 0);
-  const lastMonthTrades = lastMonthAgg._count._all;
-
   return NextResponse.json({
-    todayPnl: round2(todayPnl),
-    weekPnl: round2(weekPnl),
-    monthPnl: round2(monthPnl),
-    yearPnl: round2(yearPnl),
-    lastMonthPnl,
-    lastMonthTrades,
-    allTimePnl,
-    weekTrades,
-    monthTrades,
-    yearTrades,
+    todayPnl:       round2(todayPnl),
+    weekPnl:        round2(weekPnl),
+    monthPnl:       round2(monthPnl),
+    yearPnl:        round2(yearPnl),
+    allTimePnl:     round2(allTimePnlAgg._sum.pnl ?? 0),
+    lastMonthPnl:   round2(lastMonthAgg._sum.pnl ?? 0),
+    lastMonthTrades: lastMonthAgg._count._all,
+    weekTrades:     weekTradeCount,
+    monthTrades:    monthTradeCount,
+    yearTrades:     yearTradeCount,
     weekWinRate,
     monthWinRate,
     streak,
     streakType,
     miniHeatmap,
-    recentTrades: recentTrades.map((t) => ({
-      id: t.id,
-      date: t.date.toISOString().slice(0, 10),
-      instrument: t.instrument,
-      direction: t.direction,
-      pnl: round2(t.pnl),
-      result: t.result,
-      grade: t.grade,
+    recentTrades: recentTrades.map(t => ({
+      id:           t.id,
+      date:         t.date.toISOString().slice(0, 10),
+      instrument:   t.instrument,
+      direction:    t.direction,
+      pnl:          round2(t.pnl),
+      result:       t.result,
+      grade:        t.grade,
       strategyName: t.strategy?.name ?? "—",
     })),
   });

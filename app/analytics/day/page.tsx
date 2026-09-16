@@ -11,11 +11,7 @@ import {
 import { DayDialog } from "@/components/calendar/DayDialog";
 import type { CalendarDay } from "@/types/calendar";
 
-async function fetchCalendar(month: string): Promise<CalendarDay[]> {
-  const res = await fetch(`/api/trades/calendar?month=${month}`);
-  if (!res.ok) throw new Error("Failed to fetch calendar");
-  return res.json();
-}
+import { getCalendar } from "@/services/analytics.service";
 
 function getWeekNumber(year: number, month: number, weekIndex: number, weeks: (Date | null)[][]): number {
   const week = weeks[weekIndex];
@@ -39,7 +35,7 @@ export default function CalendarPage() {
 
   const { data = [], isFetching } = useQuery<CalendarDay[]>({
     queryKey: ["calendar", monthKey],
-    queryFn: () => fetchCalendar(monthKey),
+    queryFn: () => getCalendar(monthKey) as Promise<CalendarDay[]>,
     staleTime: 30_000,
     placeholderData: (prev) => prev,
   });

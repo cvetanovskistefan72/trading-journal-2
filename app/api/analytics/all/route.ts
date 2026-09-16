@@ -109,27 +109,25 @@ export async function GET(req: NextRequest) {
     return { date, cumulative: round2(cumulative) };
   });
 
-  // ── SUMMARY ───────────────────────────────────────────────────
-  const wins = trades.filter((t) => t.result === "win");
-  const losses = trades.filter((t) => t.result === "loss");
-  const totalPnl = trades.reduce((s, t) => s + t.pnl, 0);
-  const grossWin = wins.reduce((s, t) => s + t.pnl, 0);
-  const grossLoss = Math.abs(losses.reduce((s, t) => s + t.pnl, 0));
+  // ── SUMMARY (single pass) ─────────────────────────────────────
+  let totalPnl = 0, grossWin = 0, grossLoss = 0, winCount = 0, lossCount = 0, rSum = 0;
+  for (const t of trades) {
+    totalPnl += t.pnl;
+    if (t.result === "win") { winCount++; grossWin += t.pnl; }
+    else if (t.result === "loss") { lossCount++; grossLoss += Math.abs(t.pnl); }
+    if (t.riskAmount > 0) rSum += t.pnl / t.riskAmount;
+  }
   const profitFactor = grossLoss === 0 ? (grossWin > 0 ? 999 : 0) : grossWin / grossLoss;
-  const avgR = trades.length > 0
-    ? trades.reduce((s, t) => s + (t.riskAmount > 0 ? t.pnl / t.riskAmount : 0), 0) / trades.length
-    : 0;
-
   const summary = {
     total: trades.length,
-    wins: wins.length,
-    losses: losses.length,
-    winRate: trades.length > 0 ? (wins.length / trades.length) * 100 : 0,
+    wins: winCount,
+    losses: lossCount,
+    winRate: trades.length > 0 ? (winCount / trades.length) * 100 : 0,
     totalPnl: round2(totalPnl),
     profitFactor: round2(profitFactor),
-    avgWin: round2(wins.length > 0 ? grossWin / wins.length : 0),
-    avgLoss: round2(losses.length > 0 ? grossLoss / losses.length : 0),
-    avgR: round2(avgR),
+    avgWin: round2(winCount > 0 ? grossWin / winCount : 0),
+    avgLoss: round2(lossCount > 0 ? grossLoss / lossCount : 0),
+    avgR: round2(trades.length > 0 ? rSum / trades.length : 0),
   };
 
   // ── BY WEEKDAY ────────────────────────────────────────────────
@@ -483,5 +481,10 @@ export async function GET(req: NextRequest) {
     avgPnl: b.trades > 0 ? round2(b.pnl / b.trades) : 0,
   }));
 
-  return NextResponse.json({ equity, summary, byWeekday, rMultiple, holdTime, bySession, byInstrument, longShort, winRateTrend, byGrade, streaks, drawdown, pnlDistribution, byConfluence, calendarHeatmap, timeOfDay, cumulativeRCurve, tiltMeter, bestDay, worstDay });
+
+
+  return NextResponse.json(
+    { equity, summary, byWeekday, rMultiple, holdTime, bySession, byInstrument, longShort, winRateTrend, byGrade, streaks, drawdown, pnlDistribution, byConfluence, calendarHeatmap, timeOfDay, cumulativeRCurve, tiltMeter, bestDay, worstDay },
+    { headers: { "Cache-Control": "private, max-age=300, stale-while-revalidate=60" } }
+  );
 }
