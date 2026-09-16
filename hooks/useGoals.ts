@@ -8,6 +8,7 @@ export type Goal = {
   id: string;
   type: GoalType;
   value: number;
+  current: number;
 };
 
 export function useGoals() {

@@ -25,7 +25,6 @@ import { BestWorstDay } from "@/components/analytics/BestWorstDay";
 import { TraderRadar } from "@/components/analytics/TraderRadar";
 import { CostOfMistakes } from "@/components/analytics/CostOfMistakes";
 import { InsightsCard } from "@/components/analytics/InsightsCard";
-import { GoalsProgress } from "@/components/analytics/GoalsProgress";
 
 const STEPS = [
   "Fetching trades…",
@@ -115,8 +114,7 @@ export default function PerformancePage() {
       ) : (
         <>
           <Section visible={ready} delay={0}><InsightsCard /></Section>
-          <Section visible={ready} delay={200}><GoalsProgress /></Section>
-          <Section visible={ready} delay={400}><EquityCurve /></Section>
+          <Section visible={ready} delay={200}><EquityCurve /></Section>
 
           <Section visible={ready} delay={650}>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

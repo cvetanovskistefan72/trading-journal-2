@@ -7,6 +7,8 @@ import {
   Target,
   TrendingUp,
   Users,
+  CircleDot,
+  Activity,
 } from "lucide-react";
 
 import { Role } from "@prisma/client";
@@ -36,14 +38,17 @@ export const NAV_ITEMS: NavItem[] = [
     ],
   },
   {
+    label: "Goals",
+    icon: CircleDot,
+    children: [
+      { label: "Set Goals", href: routes.goalsSet, icon: Target },
+      { label: "Goals Progress", href: routes.goalsProgress, icon: Activity },
+    ],
+  },
+    {
     label: "Journal",
     href: routes.journal,
     icon: BookOpen,
-  },
-  {
-    label: "Profit Goals",
-    href: routes.journalGoals,
-    icon: Target,
   },
 ];
 
