@@ -45,49 +45,44 @@ export async function GET() {
   const yearStart  = startOfYear(now);
 
   const types = new Set(goals.map((g) => g.type));
+  const needsDD = types.has("MAX_DRAWDOWN");
 
-  // Only fetch what the active goals actually need
-  const needsWeek  = types.has("WEEKLY_PROFIT")  || types.has("WEEKLY_TRADE_COUNT");
-  const needsMonth = types.has("MONTHLY_PROFIT") || types.has("MONTHLY_TRADE_COUNT") || types.has("WIN_RATE");
-  const needsYear  = types.has("YEARLY_PROFIT");
-  const needsDD    = types.has("MAX_DRAWDOWN");
-  const needsWR    = types.has("WIN_RATE");
-
-  const [weekAgg, monthAgg, yearAgg, ddTrades] = await Promise.all([
-    needsWeek ? prisma.trade.aggregate({
-      where: { userId: user.id, archived: false, date: { gte: weekStart } },
-      _sum: { pnl: true }, _count: { _all: true },
-    }) : null,
-    needsMonth ? prisma.trade.aggregate({
-      where: { userId: user.id, archived: false, date: { gte: monthStart } },
-      _sum: { pnl: true }, _count: { _all: true },
-    }) : null,
-    needsYear ? prisma.trade.aggregate({
+  // 2 queries in parallel:
+  // 1. Year trades — covers week/month/year PnL, trade counts, win rate, drawdown
+  // 2. Pre-year trades (pnl only) — only if MAX_DRAWDOWN is set (need full history)
+  const [yearTrades, preYearTrades] = await Promise.all([
+    prisma.trade.findMany({
       where: { userId: user.id, archived: false, date: { gte: yearStart } },
-      _sum: { pnl: true },
-    }) : null,
+      select: { date: true, pnl: true, result: true },
+      orderBy: { date: "asc" },
+    }),
     needsDD ? prisma.trade.findMany({
-      where: { userId: user.id, archived: false },
+      where: { userId: user.id, archived: false, date: { lt: yearStart } },
       select: { pnl: true },
       orderBy: { date: "asc" },
     }) : null,
   ]);
 
-  // Win rate — all time
+  // Single pass over yearTrades for all stats
+  let weekPnl = 0, monthPnl = 0, yearPnl = 0;
+  let weekCount = 0, monthCount = 0;
   let allWins = 0, allDecided = 0;
-  if (needsWR) {
-    const [w, d] = await Promise.all([
-      prisma.trade.count({ where: { userId: user.id, archived: false, result: "win" } }),
-      prisma.trade.count({ where: { userId: user.id, archived: false, result: { in: ["win", "loss"] } } }),
-    ]);
-    allWins = w; allDecided = d;
+
+  for (const t of yearTrades) {
+    const d = t.date;
+    if (d >= weekStart)  { weekPnl += t.pnl; weekCount++; }
+    if (d >= monthStart) { monthPnl += t.pnl; monthCount++; }
+    yearPnl += t.pnl;
+    if (t.result === "win")  { allWins++; allDecided++; }
+    else if (t.result === "loss") allDecided++;
   }
 
-  // Current drawdown from year equity curve
+  // Drawdown — full history if needed
   let currentDrawdown = 0;
-  if (ddTrades) {
+  if (needsDD) {
+    const allTrades = [...(preYearTrades ?? []), ...yearTrades];
     let running = 0, peak = 0;
-    for (const t of ddTrades) {
+    for (const t of allTrades) {
       running += t.pnl;
       if (running > peak) peak = running;
       const dd = peak > 0 ? ((peak - running) / peak) * 100 : 0;
@@ -96,11 +91,11 @@ export async function GET() {
   }
 
   const current: Record<string, number> = {
-    WEEKLY_PROFIT:       weekAgg?._sum.pnl ?? 0,
-    MONTHLY_PROFIT:      monthAgg?._sum.pnl ?? 0,
-    YEARLY_PROFIT:       yearAgg?._sum.pnl ?? 0,
-    WEEKLY_TRADE_COUNT:  weekAgg?._count._all ?? 0,
-    MONTHLY_TRADE_COUNT: monthAgg?._count._all ?? 0,
+    WEEKLY_PROFIT:       weekPnl,
+    MONTHLY_PROFIT:      monthPnl,
+    YEARLY_PROFIT:       yearPnl,
+    WEEKLY_TRADE_COUNT:  weekCount,
+    MONTHLY_TRADE_COUNT: monthCount,
     WIN_RATE:            allDecided > 0 ? Math.round((allWins / allDecided) * 1000) / 10 : 0,
     MAX_DRAWDOWN:        Math.round(currentDrawdown * 100) / 100,
   };
