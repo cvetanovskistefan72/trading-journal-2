@@ -6,4 +6,6 @@ export type UserRow = {
   isActive: boolean;
   canResend: boolean;
   disabled: boolean;
+  dailyTradeLimit: number;
+  testFlag: boolean;
 };

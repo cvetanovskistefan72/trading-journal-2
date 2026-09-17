@@ -17,7 +17,7 @@ import { columns } from "./columns";
 
 export default function UsersPage() {
   const router = useRouter();
-  const [showActive, setShowActive] = useState(false);
+  const [showActive, setShowActive] = useState(true);
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["users"],

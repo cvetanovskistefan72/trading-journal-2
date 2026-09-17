@@ -10,12 +10,14 @@ declare module "next-auth" {
   interface User {
     id: string;
     role: Role;
+    testFlag: boolean;
   }
 
   interface Session {
     user: {
       id: string;
       role: Role;
+      testFlag: boolean;
       email?: string | null;
       name?: string | null;
     };
@@ -26,6 +28,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     role: Role;
+    testFlag: boolean;
     name?: string | null;
   }
 }
@@ -53,7 +56,10 @@ export const authOptions: NextAuthOptions = {
         );
         if (!limit.ok) return null;
 
-        const user = await prisma.user.findUnique({ where: { email } });
+        const user = await prisma.user.findUnique({
+          where: { email },
+          select: { id: true, email: true, name: true, password: true, role: true, disabled: true, testFlag: true },
+        });
         if (!user || !user.password) return null;
         if (user.disabled) return null;
 
@@ -68,6 +74,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           role: user.role,
+          testFlag: user.testFlag,
         };
       },
     }),
@@ -84,6 +91,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = user.role;
         token.name = user.name;
+        token.testFlag = user.testFlag;
       }
       return token;
     },
@@ -93,6 +101,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.role = token.role as Role;
         session.user.name = token.name;
+        session.user.testFlag = token.testFlag;
       }
       return session;
     },

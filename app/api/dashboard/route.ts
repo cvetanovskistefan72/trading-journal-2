@@ -69,26 +69,38 @@ export async function GET(req: NextRequest) {
     }),
   ]);
 
-  // Batch 2: current year trades only — for period stats + heatmap
-  const yearTrades = await prisma.trade.findMany({
-    where: { userId: token.sub, archived: false, date: { gte: yearStart } },
-    select: { date: true, pnl: true, result: true },
-    orderBy: { date: "asc" },
-  });
+  // 2 months back covers: today, week, month, last month, heatmap (35 days)
+  const twoMonthsStart = new Date(now);
+  twoMonthsStart.setMonth(twoMonthsStart.getMonth() - 2);
+  twoMonthsStart.setDate(1);
+  twoMonthsStart.setHours(0, 0, 0, 0);
 
-  // Compute period stats from year trades
-  let todayPnl = 0, weekPnl = 0, monthPnl = 0, yearPnl = 0;
-  let weekTradeCount = 0, monthTradeCount = 0, yearTradeCount = 0;
+  // Batch 2: recent trades (2 months) + year aggregate in parallel
+  const [recentPeriodTrades, yearAgg] = await Promise.all([
+    prisma.trade.findMany({
+      where: { userId: token.sub, archived: false, date: { gte: twoMonthsStart } },
+      select: { date: true, pnl: true, result: true },
+      orderBy: { date: "asc" },
+    }),
+    prisma.trade.aggregate({
+      where: { userId: token.sub, archived: false, date: { gte: yearStart } },
+      _sum: { pnl: true },
+      _count: { _all: true },
+    }),
+  ]);
+
+  // Compute period stats from 2-month trades
+  let todayPnl = 0, weekPnl = 0, monthPnl = 0;
+  let weekTradeCount = 0, monthTradeCount = 0;
   const heatmapMap = new Map<string, { pnl: number; trades: number; wins: number; losses: number }>();
 
-  for (const t of yearTrades) {
+  for (const t of recentPeriodTrades) {
     const d = t.date;
     const key = d.toISOString().slice(0, 10);
 
     if (d >= todayStart) todayPnl += t.pnl;
     if (d >= weekStart)  { weekPnl += t.pnl; weekTradeCount++; }
     if (d >= monthStart) { monthPnl += t.pnl; monthTradeCount++; }
-    yearPnl += t.pnl; yearTradeCount++;
 
     const cell = heatmapMap.get(key) ?? { pnl: 0, trades: 0, wins: 0, losses: 0 };
     cell.pnl += t.pnl;
@@ -97,6 +109,9 @@ export async function GET(req: NextRequest) {
     else if (t.result === "loss") cell.losses++;
     heatmapMap.set(key, cell);
   }
+
+  const yearPnl = yearAgg._sum.pnl ?? 0;
+  const yearTradeCount = yearAgg._count._all;
 
   // 35-day mini heatmap
   const miniHeatmap: {
@@ -116,7 +131,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Streak from the small streak-only fetch (max 100 trades)
+  // Streak
   let streak = 0;
   let streakType: "win" | "loss" | null = null;
   if (streakTrades.length > 0) {
@@ -127,13 +142,13 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Win rates from year trades
-  const weekWins    = yearTrades.filter(t => t.date >= weekStart  && t.result === "win").length;
-  const weekDecided = yearTrades.filter(t => t.date >= weekStart  && (t.result === "win" || t.result === "loss")).length;
+  // Win rates from 2-month trades
+  const weekWins    = recentPeriodTrades.filter(t => t.date >= weekStart  && t.result === "win").length;
+  const weekDecided = recentPeriodTrades.filter(t => t.date >= weekStart  && (t.result === "win" || t.result === "loss")).length;
   const weekWinRate = weekDecided > 0 ? round2((weekWins / weekDecided) * 100) : null;
 
-  const monthWins    = yearTrades.filter(t => t.date >= monthStart && t.result === "win").length;
-  const monthDecided = yearTrades.filter(t => t.date >= monthStart && (t.result === "win" || t.result === "loss")).length;
+  const monthWins    = recentPeriodTrades.filter(t => t.date >= monthStart && t.result === "win").length;
+  const monthDecided = recentPeriodTrades.filter(t => t.date >= monthStart && (t.result === "win" || t.result === "loss")).length;
   const monthWinRate = monthDecided > 0 ? round2((monthWins / monthDecided) * 100) : null;
 
   return NextResponse.json({

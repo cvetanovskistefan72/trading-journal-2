@@ -43,7 +43,7 @@ function StatRow({ icon, label, value, valueColor }: { icon: React.ReactNode; la
 }
 
 export default function TradeDetailPage() {
-  const { tradeId } = useParams<{ tradeId: string }>();
+  const { tradeId } = useParams<any>();
   const router = useRouter();
   const [lightbox, setLightbox] = useState<string | null>(null);
 

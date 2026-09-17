@@ -20,3 +20,13 @@ export async function resendUserEmail(userId: string) {
   const { data } = await axiosInstance.post(`/api/users/${userId}/resend`);
   return data;
 }
+
+export async function updateUserLimit(userId: string, dailyTradeLimit: number) {
+  const { data } = await axiosInstance.patch(`/api/users/${userId}`, { dailyTradeLimit });
+  return data;
+}
+
+export async function updateUserTestFlag(userId: string, testFlag: boolean) {
+  const { data } = await axiosInstance.patch(`/api/users/${userId}`, { testFlag });
+  return data;
+}

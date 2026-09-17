@@ -21,7 +21,7 @@ type FormData = { password: string; confirmPassword: string };
 function SetPasswordInner() {
   const router = useRouter();
   const params = useSearchParams();
-  const token = params.get("token");
+  const token = params?.get("token");
   const { register, handleSubmit } = useForm<FormData>();
 
   const { data, isLoading, error } = useQuery({

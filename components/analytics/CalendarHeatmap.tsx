@@ -99,7 +99,8 @@ export function CalendarHeatmap() {
     setLoadingDay(true);
     setDialogOpen(true);
     try {
-      const day = await getCalendarDay(date);
+      const result = await getCalendarDay(date);
+      const day = Array.isArray(result) ? result[0] : result;
       setDialogDay((day as unknown as CalendarDay) ?? null);
     } finally {
       setLoadingDay(false);

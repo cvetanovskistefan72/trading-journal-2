@@ -99,11 +99,15 @@ export async function POST(req: Request) {
   const today = new Date().toISOString().split("T")[0];
   const freshUser = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { dailyEditCount: true, editCountDate: true },
+    select: { dailyEditCount: true, editCountDate: true, dailyTradeLimit: true },
   });
   const isToday = freshUser?.editCountDate === today;
-  if (isToday && (freshUser?.dailyEditCount ?? 0) >= 100) {
-    return NextResponse.json({ error: "Daily trade limit reached (100 per day)" }, { status: 429 });
+  const effectiveLimit = freshUser?.dailyTradeLimit ?? 50;
+  if (isToday && (freshUser?.dailyEditCount ?? 0) >= effectiveLimit) {
+    return NextResponse.json(
+      { error: `Daily trade limit reached (${effectiveLimit} per day)` },
+      { status: 429 }
+    );
   }
   await prisma.user.update({
     where: { id: user.id },

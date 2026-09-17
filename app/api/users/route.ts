@@ -19,7 +19,7 @@ export async function GET() {
     prisma.user.findMany({
       where: { role: Role.USER },
       orderBy: { createdAt: "desc" },
-      select: { id: true, email: true, name: true, createdAt: true, disabled: true },
+      select: { id: true, email: true, name: true, createdAt: true, disabled: true, dailyTradeLimit: true, testFlag: true },
     }),
     prisma.user.findMany({
       where: { role: Role.USER, NOT: { password: "" } },
@@ -46,6 +46,8 @@ export async function GET() {
     isActive: activeSet.has(u.id),
     canResend: expiredSet.has(u.id),
     disabled: u.disabled,
+    dailyTradeLimit: u.dailyTradeLimit,
+    testFlag: u.testFlag,
   }));
 
   return NextResponse.json(mapped);

@@ -31,6 +31,7 @@ export default function JournalPage() {
   const queryClient = useQueryClient();
   const { data: session, status } = useSession();
   const isAdmin = status === "authenticated" && (session?.user as { role?: string })?.role === "ADMIN";
+  const canLogRandom = isAdmin || (status === "authenticated" && !!(session?.user as { testFlag?: boolean })?.testFlag);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Trade | null>(null);
@@ -46,7 +47,7 @@ export default function JournalPage() {
   const [search, setSearch] = useState("");
   const searchParams = useSearchParams();
   const [strategyId, setStrategyId] = useState("");
-  const [direction, setDirection] = useState(searchParams.get("direction") ?? "");
+  const [direction, setDirection] = useState(searchParams?.get("direction") ?? "");
 
   const [sortBy, setSortBy] = useState<"date" | "grade" | "pnl">("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
@@ -111,12 +112,12 @@ export default function JournalPage() {
 
   const randomMutation = useMutation({
     mutationFn: async () => {
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 100; i++) {
         await createTrade(buildRandomTrade(strategies));
         if (i < 9) await new Promise((r) => setTimeout(r, 300));
       }
     },
-    onSuccess: () => { toast.success("10 random trades logged"); invalidateAll(); },
+    onSuccess: () => { toast.success("Trades logged"); invalidateAll(); },
     onError: (e: Error) => toast.error(e.message || "Failed to log random trades"),
   });
 
@@ -206,7 +207,7 @@ export default function JournalPage() {
             <p className="text-sm text-muted-foreground mt-1">Log and review your trades.</p>
           </div>
           <div className="flex items-center gap-2">
-            {status === "authenticated" && isAdmin && (
+            {canLogRandom && (
               <Button variant="outline" onClick={() => randomMutation.mutate()} disabled={randomMutation.isPending || strategies.length === 0}>
                 <Shuffle className="h-4 w-4" />
                 {randomMutation.isPending ? "Logging..." : "Log Random"}

@@ -36,6 +36,7 @@ model User {
   testFlag         Boolean    @default(false)
   dailyEditCount      Int        @default(0)
   editCountDate       String?
+  dailyTradeLimit     Int        @default(50)
   strategies          Strategy[]
   trades              Trade[]
   goals               Goal[]
