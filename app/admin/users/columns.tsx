@@ -124,7 +124,7 @@ function LimitEditor({ row }: { row: UserRow }) {
         min={1}
         max={2000}
         value={value}
-        onChange={e => setValue(e.target.value)}
+        onChange={e => setValue(String(Math.min(2000, Math.max(1, Number(e.target.value)))))}
         onKeyDown={e => {
           if (e.key === "Enter") mutation.mutate(Number(value));
           if (e.key === "Escape") setEditing(false);
@@ -226,7 +226,7 @@ export const columns: ColumnDef<UserRow>[] = [
   {
     id: "dailyLimit",
     header: "Daily Limit",
-    cell: ({ row }) => <LimitEditor row={row.original} />,
+    cell: ({ row }) => row.original.testFlag ? <LimitEditor row={row.original} /> : <span className="text-muted-foreground/40 text-xs">—</span>,
   },
   {
     id: "actions",
