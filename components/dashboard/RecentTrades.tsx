@@ -17,7 +17,7 @@ export function RecentTrades() {
   const { data, isLoading } = useDashboard();
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-4 h-full">
+    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Recent Trades</p>
         <Link

@@ -3,7 +3,6 @@
 import { SnapshotRow } from "@/components/dashboard/SnapshotRow";
 import { StatTiles } from "@/components/dashboard/StatTiles";
 import { RecentTrades } from "@/components/dashboard/RecentTrades";
-import { MiniHeatmap } from "@/components/dashboard/MiniHeatmap";
 import { DisciplineBanner } from "@/components/dashboard/DisciplineBanner";
 import { QuickLinks } from "@/components/dashboard/QuickLinks";
 import { AddTradeButton } from "@/components/dashboard/AddTradeButton";
@@ -34,11 +33,7 @@ export default function DashboardPage() {
       {/* Key stat tiles */}
       <StatTiles />
 
-      {/* Recent trades + mini heatmap */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5">
-        <RecentTrades />
-        <MiniHeatmap />
-      </div>
+      <RecentTrades />
 
 
       {/* Quick links */}

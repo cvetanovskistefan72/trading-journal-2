@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
-import { createImagePreviewUrl } from "@/services/image-server.service";
 import type { CalendarTrade, CalendarDay } from "@/types/calendar";
 
 export async function GET(req: Request) {
@@ -51,29 +50,11 @@ export async function GET(req: Request) {
     orderBy: [{ date: "asc" }, { entryTime: "asc" }],
   });
 
-  const tradeIds = trades.map((t) => t.id);
-  const allImages = await prisma.image.findMany({
-    where: { entityType: "trade", entityId: { in: tradeIds } },
-    select: { id: true, entityId: true, thumbnailKey: true },
-  });
-  const imagesByTradeId = new Map<string, { id: string; thumbnailKey: string }[]>();
-  for (const img of allImages) {
-    const list = imagesByTradeId.get(img.entityId) ?? [];
-    list.push({ id: img.id, thumbnailKey: img.thumbnailKey });
-    imagesByTradeId.set(img.entityId, list);
-  }
-
   const byDate = new Map<string, { pnl: number; trades: CalendarTrade[] }>();
   for (const t of trades) {
     const key = t.date.toISOString().split("T")[0];
     const existing = byDate.get(key) ?? { pnl: 0, trades: [] };
     existing.pnl += t.pnl;
-    const images = await Promise.all(
-      (imagesByTradeId.get(t.id) ?? []).map(async (img) => ({
-        id: img.id,
-        thumbnailUrl: await createImagePreviewUrl(img.thumbnailKey),
-      })),
-    );
     existing.trades.push({
       id: t.id,
       instrument: t.instrument,
@@ -90,7 +71,6 @@ export async function GET(req: Request) {
       strategyName: t.strategy?.name ?? "—",
       notes: t.notes,
       confluences: t.confluences,
-      images,
     });
     byDate.set(key, existing);
   }
