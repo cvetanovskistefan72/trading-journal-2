@@ -105,7 +105,7 @@ export async function POST(req: Request) {
   const effectiveLimit = freshUser?.dailyTradeLimit ?? 50;
   if (isToday && (freshUser?.dailyEditCount ?? 0) >= effectiveLimit) {
     return NextResponse.json(
-      { error: `Daily trade limit reached (${effectiveLimit} per day)` },
+      { error: `Log limit reached (${effectiveLimit} per day)` },
       { status: 429 }
     );
   }

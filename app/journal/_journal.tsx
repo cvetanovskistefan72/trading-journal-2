@@ -112,9 +112,9 @@ export default function JournalPage() {
 
   const randomMutation = useMutation({
     mutationFn: async () => {
-      for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < 1000; i++) {
         await createTrade(buildRandomTrade(strategies));
-        if (i < 9) await new Promise((r) => setTimeout(r, 300));
+        await new Promise((r) => setTimeout(r, 100));
       }
     },
     onSuccess: () => { toast.success("Trades logged"); invalidateAll(); },
