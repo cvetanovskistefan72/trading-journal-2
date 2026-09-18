@@ -16,8 +16,10 @@ interface FFEvent {
 
 export async function POST(req: NextRequest) {
   const secret = req.headers.get("x-cron-secret");
-  if (secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const expected = process.env.CRON_SECRET;
+  console.log("[cron] secret match:", secret === expected, "env set:", !!expected);
+  if (secret !== expected) {
+    return NextResponse.json({ error: "Unauthorized", envSet: !!expected }, { status: 401 });
   }
 
   try {
