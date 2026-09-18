@@ -24,7 +24,7 @@ export function InstrumentBreakdown() {
   const maxAbs = Math.max(...instruments.map((i) => Math.abs(i.pnl)), 1);
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-5">
+    <div className="rounded-lg border border-border bg-card card-shadow p-6 space-y-5">
       <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
         P&amp;L by Instrument
       </p>

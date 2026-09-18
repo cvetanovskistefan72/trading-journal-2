@@ -62,41 +62,32 @@ export function StrategyDetailSheet({ strategy, onClose }: Props) {
                 {strategy.questions.length === 0 ? (
                   <p className="text-sm text-muted-foreground/50 italic">None added.</p>
                 ) : (
-                  <ol className="space-y-4">
+                  <div className="space-y-3">
                     {strategy.questions.map((q, i) => (
-                      <li key={q.id} className="flex items-start gap-3">
-                        <span className="shrink-0 flex h-5 w-5 items-center justify-center rounded border border-border text-xs text-muted-foreground font-mono mt-0.5">
-                          {i + 1}
-                        </span>
-                        <div className="flex-1 min-w-0 space-y-2">
-                          <div className="flex items-center gap-2 flex-wrap">
+                      <div key={q.id} className="rounded-lg border border-border bg-muted/20 px-4 py-3">
+                        <div className="flex items-start justify-between gap-2 mb-2.5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-muted-foreground/50 tabular-nums">{String(i + 1).padStart(2, "0")}</span>
                             <span className="text-sm font-medium">{q.text}</span>
-                            <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
-                              q.type === "multi"
-                                ? "bg-blue-500/10 text-blue-500"
-                                : "bg-primary/10 text-primary"
-                            }`}>
-                              {q.type === "multi" ? "Multi choice" : "Single choice"}
-                            </span>
                           </div>
-                          {q.options.length > 0 ? (
-                            <div className="flex flex-wrap gap-1.5">
-                              {q.options.map((opt) => (
-                                <span
-                                  key={opt}
-                                  className="rounded-md border border-border bg-background px-2.5 py-1 text-xs"
-                                >
-                                  {opt}
-                                </span>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="text-xs text-muted-foreground/50 italic">No options added.</p>
-                          )}
+                          <span className="shrink-0 text-[10px] font-semibold rounded px-1.5 py-0.5 bg-muted text-muted-foreground">
+                            {q.type === "multi" ? "Multi" : "Single"}
+                          </span>
                         </div>
-                      </li>
+                        {q.options.length > 0 ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {q.options.map((opt) => (
+                              <span key={opt} className="rounded-full bg-card border border-border px-2.5 py-0.5 text-xs text-muted-foreground">
+                                {opt}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-muted-foreground/40 italic">No options added.</p>
+                        )}
+                      </div>
                     ))}
-                  </ol>
+                  </div>
                 )}
               </section>
             </div>

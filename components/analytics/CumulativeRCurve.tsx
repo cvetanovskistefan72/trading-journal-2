@@ -37,7 +37,7 @@ export function CumulativeRCurve() {
   const zeroOffset = `${Math.round((maxVal / range) * 100)}%`;
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+    <div className="rounded-lg border border-border bg-card card-shadow p-6 space-y-4">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Cumulative R Curve</p>

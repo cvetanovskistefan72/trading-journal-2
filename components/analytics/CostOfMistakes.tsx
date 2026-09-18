@@ -38,7 +38,7 @@ export function CostOfMistakes() {
   })() : null;
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+    <div className="rounded-lg border border-border bg-card card-shadow p-6 space-y-4">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Cost of Mistakes</p>
@@ -55,7 +55,7 @@ export function CostOfMistakes() {
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             {/* Best setups */}
-            <div className="rounded-xl bg-[color-mix(in_oklch,var(--color-chart-1)_10%,transparent)] border border-[color-mix(in_oklch,var(--color-chart-1)_20%,transparent)] p-4 space-y-3">
+            <div className="rounded-lg bg-[color-mix(in_oklch,var(--color-chart-1)_10%,transparent)] border border-[color-mix(in_oklch,var(--color-chart-1)_20%,transparent)] p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-[var(--color-chart-1)] shrink-0" />
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Best Setups</p>
@@ -79,7 +79,7 @@ export function CostOfMistakes() {
             </div>
 
             {/* Worst setups */}
-            <div className="rounded-xl bg-[color-mix(in_oklch,var(--color-chart-2)_10%,transparent)] border border-[color-mix(in_oklch,var(--color-chart-2)_20%,transparent)] p-4 space-y-3">
+            <div className="rounded-lg bg-[color-mix(in_oklch,var(--color-chart-2)_10%,transparent)] border border-[color-mix(in_oklch,var(--color-chart-2)_20%,transparent)] p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-[var(--color-chart-2)] shrink-0" />
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Worst Setups</p>
@@ -104,7 +104,7 @@ export function CostOfMistakes() {
           </div>
 
           {/* Cost summary row */}
-          <div className="rounded-xl border border-border bg-background p-4 flex items-center justify-between gap-4">
+          <div className="rounded-lg border border-border bg-sidebar p-4 flex items-center justify-between gap-4">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Estimated Cost of Bad Setups</p>
               <p className="text-xs text-muted-foreground mt-0.5">{result.bottomTrades} trades on weak setups vs your best</p>

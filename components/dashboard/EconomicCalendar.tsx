@@ -51,7 +51,7 @@ export function EconomicCalendar() {
   const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
 
   return (
-    <div className="rounded-2xl border border-border bg-card overflow-hidden">
+    <div className="rounded-lg border border-border bg-card overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-border">
         <div className="flex items-center gap-3">

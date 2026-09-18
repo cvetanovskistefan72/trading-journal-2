@@ -40,7 +40,7 @@ export function TiltMeter() {
     : null;
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+    <div className="rounded-lg border border-border bg-card card-shadow p-6 space-y-4">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Tilt Meter</p>
@@ -85,7 +85,7 @@ export function TiltMeter() {
       {hasData && (
         <div className="grid grid-cols-4 gap-2">
           {tilt.map((b) => (
-            <div key={b.label} className="rounded-xl bg-muted/40 px-2 py-2 text-center">
+            <div key={b.label} className="rounded-lg bg-muted/40 px-2 py-2 text-center">
               <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-semibold leading-tight">{b.label.replace("After ", "")}</p>
               <p className="text-sm font-bold tabular-nums mt-1">{b.winRate}%</p>
               <p className="text-[9px] text-muted-foreground">{b.trades}T</p>

@@ -110,18 +110,18 @@ function generateInsights(data: AnalyticsData): Insight[] {
 
 const toneStyles: Record<Insight["tone"], { border: string; bg: string; icon: string }> = {
   positive: {
-    border: "border-[color-mix(in_oklch,var(--color-chart-1)_25%,transparent)]",
-    bg: "bg-[color-mix(in_oklch,var(--color-chart-1)_6%,transparent)]",
+    border: "border-[color-mix(in_oklch,var(--color-chart-1)_20%,transparent)]",
+    bg: "bg-[color-mix(in_oklch,var(--color-chart-1)_4%,transparent)]",
     icon: "text-[var(--color-chart-1)]",
   },
   negative: {
-    border: "border-[color-mix(in_oklch,var(--color-chart-2)_25%,transparent)]",
-    bg: "bg-[color-mix(in_oklch,var(--color-chart-2)_6%,transparent)]",
+    border: "border-[color-mix(in_oklch,var(--color-chart-2)_20%,transparent)]",
+    bg: "bg-[color-mix(in_oklch,var(--color-chart-2)_4%,transparent)]",
     icon: "text-[var(--color-chart-2)]",
   },
   warning: {
-    border: "border-[color-mix(in_oklch,var(--color-chart-3)_25%,transparent)]",
-    bg: "bg-[color-mix(in_oklch,var(--color-chart-3)_6%,transparent)]",
+    border: "border-[color-mix(in_oklch,var(--color-chart-3)_20%,transparent)]",
+    bg: "bg-[color-mix(in_oklch,var(--color-chart-3)_4%,transparent)]",
     icon: "text-[var(--color-chart-3)]",
   },
   neutral: {
@@ -137,7 +137,7 @@ export function InsightsCard() {
   const insights = data ? generateInsights(data) : [];
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+    <div className="rounded-lg border border-border bg-card card-shadow p-6 space-y-4">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Auto Insights</p>
@@ -149,7 +149,7 @@ export function InsightsCard() {
       {isLoading ? (
         <div className="space-y-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="rounded-xl border border-border bg-background p-4 animate-pulse h-20" />
+            <div key={i} className="rounded-lg border border-border bg-background p-4 animate-pulse h-20" />
           ))}
         </div>
       ) : insights.length === 0 ? (
@@ -162,7 +162,7 @@ export function InsightsCard() {
             const styles = toneStyles[insight.tone];
             const Icon = insight.icon;
             return (
-              <div key={i} className={cn("rounded-xl border p-4 flex gap-3", styles.border, styles.bg)}>
+              <div key={i} className={cn("rounded-lg border p-4 flex gap-3", styles.border, styles.bg)}>
                 <div className="shrink-0 mt-0.5">
                   <Icon className={cn("h-4 w-4", styles.icon)} />
                 </div>

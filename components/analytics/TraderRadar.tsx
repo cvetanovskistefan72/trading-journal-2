@@ -94,7 +94,7 @@ export function TraderRadar() {
   const overall = scores ? Math.round(scores.reduce((s, v) => s + v.score, 0) / scores.length) : null;
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+    <div className="rounded-lg border border-border bg-card card-shadow p-6 space-y-4">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Trader Profile</p>

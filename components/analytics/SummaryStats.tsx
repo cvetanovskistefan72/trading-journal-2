@@ -23,7 +23,7 @@ export function SummaryStats() {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border border-border bg-card p-6 h-56 flex items-center justify-center text-sm text-muted-foreground">
+      <div className="rounded-lg border border-border bg-card card-shadow p-6 h-56 flex items-center justify-center text-sm text-muted-foreground">
         Loading…
       </div>
     );
@@ -31,7 +31,7 @@ export function SummaryStats() {
 
   if (!summary || summary.total === 0) {
     return (
-      <div className="rounded-2xl border border-border bg-card p-6 h-56 flex items-center justify-center text-sm text-muted-foreground">
+      <div className="rounded-lg border border-border bg-card card-shadow p-6 h-56 flex items-center justify-center text-sm text-muted-foreground">
         No trades yet
       </div>
     );
@@ -45,7 +45,7 @@ export function SummaryStats() {
   ];
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+    <div className="rounded-lg border border-border bg-card card-shadow p-6 space-y-4">
       <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Performance Summary</p>
 
       <div className="flex items-center gap-6">

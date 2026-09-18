@@ -44,7 +44,7 @@ export function GradeDistribution() {
   const grades = ALL_GRADES.map((g) => raw.find((r) => r.grade === g) ?? EMPTY_GRADE(g));
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+    <div className="rounded-lg border border-border bg-card card-shadow p-6 space-y-4">
       <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Avg P&L by Grade</p>
 
       {isLoading ? (

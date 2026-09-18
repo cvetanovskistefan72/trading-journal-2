@@ -26,7 +26,7 @@ import { getStrategies } from "@/services/strategies.service";
 export default function JournalPage() {
   const router = useRouter();
   const density = useJournalDensity();
-  const limit = density === "cards" ? 9 : 10;
+  const limit = density === "cards" ? 12 : 10;
   const prevDensity = useRef(density);
   const queryClient = useQueryClient();
   const { data: session, status } = useSession();
@@ -226,32 +226,33 @@ export default function JournalPage() {
           <p className="text-sm text-amber-500">You need at least one strategy before logging trades.</p>
         )}
 
-        <TradeFilters
-          dateFrom={dateFrom} dateTo={dateTo} search={search} strategyId={strategyId}
-          direction={direction}
-          archived={archived} total={total} hasFilters={hasFilters} strategies={strategies}
-          onDateFrom={handleDateFrom} onDateTo={handleDateTo} onSearch={handleSearch}
-          onStrategyId={handleStrategyId} onDirection={handleDirection} onArchived={handleArchived} onClear={clearFilters}
-        />
+        {/* Filter + table unified card */}
+        <div className="rounded-lg border border-border bg-card card-shadow overflow-hidden">
+          <TradeFilters
+            dateFrom={dateFrom} dateTo={dateTo} search={search} strategyId={strategyId}
+            direction={direction}
+            archived={archived} total={total} hasFilters={hasFilters} strategies={strategies}
+            onDateFrom={handleDateFrom} onDateTo={handleDateTo} onSearch={handleSearch}
+            onStrategyId={handleStrategyId} onDirection={handleDirection} onArchived={handleArchived} onClear={clearFilters}
+          />
 
-        {isLoading && !isPlaceholderData ? (
-          <div className="flex items-center justify-center min-h-[300px]">
-            <Spinner />
-          </div>
-        ) : trades.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[300px] gap-3 text-center">
-            <p className="text-muted-foreground">
-              {archived ? "No archived trades." : hasFilters ? "No trades match your filters." : "No trades logged yet."}
-            </p>
-            {!hasFilters && !archived && strategies.length > 0 && (
-              <Button variant="outline" onClick={() => { setEditing(null); setDialogOpen(true); }}>
-                <Plus className="h-4 w-4" /> Log your first trade
-              </Button>
-            )}
-          </div>
-        ) : (
-          <>
-            {density === "cards" ? (
+          {isLoading && !isPlaceholderData ? (
+            <div className="flex items-center justify-center min-h-[300px]">
+              <Spinner />
+            </div>
+          ) : trades.length === 0 ? (
+            <div className="flex flex-col items-center justify-center min-h-[300px] gap-3 text-center">
+              <p className="text-muted-foreground">
+                {archived ? "No archived trades." : hasFilters ? "No trades match your filters." : "No trades logged yet."}
+              </p>
+              {!hasFilters && !archived && strategies.length > 0 && (
+                <Button variant="outline" onClick={() => { setEditing(null); setDialogOpen(true); }}>
+                  <Plus className="h-4 w-4" /> Log your first trade
+                </Button>
+              )}
+            </div>
+          ) : density === "cards" ? (
+            <div className="p-4">
               <TradeCards
                 trades={trades}
                 archived={archived}
@@ -262,53 +263,85 @@ export default function JournalPage() {
                 onArchive={(id) => archiveMutation.mutate(id)}
                 onRestore={(id) => restoreMutation.mutate(id)}
               />
-            ) : (
-              <DataTable
-                columns={journalColumns}
-                data={trades}
-                meta={meta as unknown as Record<string, unknown>}
-                isPlaceholderData={isPlaceholderData}
-                rowClassName={(trade) => trade.archived ? "opacity-60" : ""}
-                onRowClick={(trade) => { if (!trade.archived) router.push(`/journal/${trade.id}`); }}
-              />
-            )}
-
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">Page {page} of {totalPages}</p>
-                <div className="flex items-center gap-1">
-                  <Button variant="outline" size="icon" className="h-8 w-8"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1 || isPlaceholderData}>
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1)
-                    .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
-                    .reduce<(number | "...")[]>((acc, p, i, arr) => {
-                      if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
-                      acc.push(p);
-                      return acc;
-                    }, [])
-                    .map((p, i) =>
-                      p === "..." ? (
-                        <span key={`ellipsis-${i}`} className="px-1 text-muted-foreground text-sm">…</span>
-                      ) : (
-                        <Button key={p} variant={page === p ? "default" : "outline"}
-                          className="h-8 w-8" size="icon" onClick={() => setPage(p as number)}>
-                          {p}
-                        </Button>
-                      )
-                    )}
-                  <Button variant="outline" size="icon" className="h-8 w-8"
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={page === totalPages || isPlaceholderData}>
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
+            </div>
+          ) : (
+            <div className={isPlaceholderData ? "opacity-60 transition-opacity" : "transition-opacity"}>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[600px] text-sm">
+                  <thead className="border-b border-border bg-muted/40 text-muted-foreground">
+                    <tr>
+                      {journalColumns.map((col) => {
+                        const header = typeof col.header === "function"
+                          ? col.header({ table: { options: { meta } } } as any)
+                          : col.header;
+                        return (
+                          <th key={col.id ?? (col as any).accessorKey} className="px-4 py-3 text-left font-medium text-xs">
+                            {header as React.ReactNode}
+                          </th>
+                        );
+                      })}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {trades.map((trade) => (
+                      <tr
+                        key={trade.id}
+                        onClick={() => { if (!trade.archived) router.push(`/journal/${trade.id}`); }}
+                        className={`transition-colors cursor-pointer hover:bg-muted/30 ${trade.archived ? "opacity-60" : ""}`}
+                      >
+                        {journalColumns.map((col) => {
+                          const cell = typeof col.cell === "function"
+                            ? col.cell({ row: { original: trade, getValue: () => (trade as any)[(col as any).accessorKey] }, table: { options: { meta } } } as any)
+                            : null;
+                          return (
+                            <td key={col.id ?? (col as any).accessorKey} className="px-4 py-3 whitespace-nowrap">
+                              {cell as React.ReactNode}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            )}
-          </>
-        )}
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+              <p className="text-xs text-muted-foreground">Page {page} of {totalPages}</p>
+              <div className="flex items-center gap-1">
+                <Button variant="outline" size="icon" className="h-8 w-8"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1 || isPlaceholderData}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                  .reduce<(number | "...")[]>((acc, p, i, arr) => {
+                    if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
+                    acc.push(p);
+                    return acc;
+                  }, [])
+                  .map((p, i) =>
+                    p === "..." ? (
+                      <span key={`ellipsis-${i}`} className="px-1 text-muted-foreground text-sm">…</span>
+                    ) : (
+                      <Button key={p} variant={page === p ? "default" : "outline"}
+                        className="h-8 w-8" size="icon" onClick={() => setPage(p as number)}>
+                        {p}
+                      </Button>
+                    )
+                  )}
+                <Button variant="outline" size="icon" className="h-8 w-8"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages || isPlaceholderData}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <TradeDialog

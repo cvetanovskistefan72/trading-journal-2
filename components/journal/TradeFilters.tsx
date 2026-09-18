@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Search, X, Archive } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
@@ -33,144 +32,127 @@ export function TradeFilters({
 }: Props) {
   const [searchInput, setSearchInput] = useState(search);
 
-  // Debounce search — intentionally omit onSearch from deps to avoid re-firing on every parent render
   useEffect(() => {
     const t = setTimeout(() => onSearch(searchInput), 350);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchInput]);
 
-  // Sync if cleared externally
   useEffect(() => {
     if (!search) setSearchInput("");
   }, [search]);
 
   return (
-    <div className="rounded-xl border border-border bg-card">
-      <div className="flex flex-wrap items-end gap-3 px-4 py-3 border-b border-border/50">
+    <>
+      {/* Top bar — same bg as table header */}
+      <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 bg-muted/40 border-b border-border">
 
-        {/* Archived toggle */}
-        <div className="space-y-1">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">View</p>
-          <div className="flex rounded-lg border border-border overflow-hidden h-8">
-            <button
-              type="button"
-              onClick={() => onArchived(false)}
-              className={cn(
-                "px-3 text-xs font-medium transition-colors cursor-pointer",
-                !archived ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Active
-            </button>
-            <button
-              type="button"
-              onClick={() => onArchived(true)}
-              className={cn(
-                "px-3 text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 border-l border-border",
-                archived ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Archive className="h-3 w-3" />
-              Archived
-            </button>
-          </div>
+        {/* View toggle */}
+        <div className="flex rounded-md border border-border overflow-hidden h-7 shrink-0">
+          <button
+            type="button"
+            onClick={() => onArchived(false)}
+            className={cn(
+              "px-3 text-[11px] font-semibold transition-colors cursor-pointer",
+              !archived ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Active
+          </button>
+          <button
+            type="button"
+            onClick={() => onArchived(true)}
+            className={cn(
+              "px-3 text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1 border-l border-border",
+              archived ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Archive className="h-3 w-3" />
+            Archived
+          </button>
         </div>
 
-        {/* Search — hidden when archived */}
+        {/* Inline filters — always visible, hidden when archived */}
         {!archived && (
-          <div className="space-y-1 min-w-44 w-56">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Search</p>
-            <div className="relative">
+          <>
+            <div className="h-4 w-px bg-border shrink-0" />
+
+            {/* Search */}
+            <div className="relative w-48">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
               <Input
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Instrument, notes..."
-                className="h-8 pl-8 text-sm"
+                placeholder="Instrument, notes…"
+                className="h-7 pl-8 text-xs bg-background/60 border-border/60"
               />
             </div>
-          </div>
-        )}
 
-        {/* Strategy filter — hidden when archived */}
-        {!archived && strategies.length > 0 && (
-          <div className="space-y-1">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Strategy</p>
-            <Select value={strategyId || "__all__"} onValueChange={(v) => onStrategyId(v === "__all__" ? "" : v)}>
-              <SelectTrigger className="h-8 w-44 text-sm">
-                <SelectValue placeholder="All strategies" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__all__">All strategies</SelectItem>
-                {strategies.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+            {/* Strategy */}
+            {strategies.length > 0 && (
+              <Select value={strategyId || "__all__"} onValueChange={(v) => onStrategyId(v === "__all__" ? "" : v)}>
+                <SelectTrigger className="h-7 w-40 text-xs bg-background/60 border-border/60">
+                  <SelectValue placeholder="All strategies" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All strategies</SelectItem>
+                  {strategies.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
 
-        {/* Direction filter */}
-        {!archived && (
-          <div className="space-y-1">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Direction</p>
+            {/* Direction */}
             <Select value={direction || "__all__"} onValueChange={(v) => onDirection(v === "__all__" ? "" : v)}>
-              <SelectTrigger className="h-8 w-32 text-sm">
+              <SelectTrigger className="h-7 w-28 text-xs bg-background/60 border-border/60">
                 <SelectValue placeholder="All" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__all__">All</SelectItem>
+                <SelectItem value="__all__">All directions</SelectItem>
                 <SelectItem value="long">Long</SelectItem>
                 <SelectItem value="short">Short</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-        )}
 
-        {/* Date From — hidden when archived */}
-        {!archived && (
-          <div className="space-y-1">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">From</p>
+            <div className="h-4 w-px bg-border shrink-0" />
+
+            {/* Date range */}
             <Input
               type="date"
               value={dateFrom}
               onChange={(e) => onDateFrom(e.target.value)}
-              className="h-8 w-36 text-sm"
+              className="h-7 w-36 text-xs bg-background/60 border-border/60"
             />
-          </div>
-        )}
-
-        {/* Date To — hidden when archived */}
-        {!archived && (
-          <div className="space-y-1">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">To</p>
+            <span className="text-[10px] text-muted-foreground shrink-0">to</span>
             <Input
               type="date"
               value={dateTo}
               onChange={(e) => onDateTo(e.target.value)}
-              className="h-8 w-36 text-sm"
+              className="h-7 w-36 text-xs bg-background/60 border-border/60"
             />
-          </div>
+
+            {/* Clear */}
+            {hasFilters && (
+              <button
+                type="button"
+                onClick={onClear}
+                className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                <X className="h-3 w-3" />
+                Clear
+              </button>
+            )}
+          </>
         )}
 
-        {/* Clear */}
-        {hasFilters && !archived && (
-          <Button variant="ghost" size="sm" onClick={onClear} className="gap-1.5 self-end">
-            <X className="h-3.5 w-3.5" />
-            Clear
-          </Button>
-        )}
-      </div>
-
-      {/* Stats bar */}
-      <div className="flex items-center px-4 py-2">
-        <span className="text-xs text-muted-foreground">
-          <span className="font-semibold text-foreground">{total}</span>{" "}
+        {/* Trade count — right */}
+        <span className="ml-auto text-xs text-muted-foreground shrink-0">
+          <span className="font-semibold text-foreground tabular-nums">{total}</span>{" "}
           {archived ? "archived" : "active"} trade{total !== 1 ? "s" : ""}
           {hasFilters && !archived ? " found" : ""}
         </span>
       </div>
-    </div>
+    </>
   );
 }

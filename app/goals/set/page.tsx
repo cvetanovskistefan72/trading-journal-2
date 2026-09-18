@@ -143,7 +143,7 @@ function GoalModal({ open, onClose, availableTypes, editType, editCurrentValue }
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
           <Button onClick={submit} disabled={isPending}>Save goal</Button>
         </DialogFooter>
       </DialogContent>
@@ -176,7 +176,7 @@ export default function GoalsPage() {
           <div className="h-9 w-28 bg-muted rounded animate-pulse" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {[0, 1].map(i => <div key={i} className="h-28 bg-muted rounded-2xl animate-pulse" />)}
+          {[0, 1].map(i => <div key={i} className="h-28 bg-muted rounded-lg animate-pulse" />)}
         </div>
       </main>
     );
@@ -203,7 +203,7 @@ export default function GoalsPage() {
             const meta = GOAL_META[goal.type];
             const Icon = meta.icon;
             return (
-              <div key={goal.id} className="rounded-2xl border border-border bg-card p-6 flex flex-col gap-4">
+              <div key={goal.id} className="rounded-lg border border-border bg-card card-shadow p-6 flex flex-col gap-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[color-mix(in_oklch,var(--color-chart-1)_10%,transparent)]">

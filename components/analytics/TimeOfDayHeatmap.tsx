@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
-import type { TimeOfDayCell } from "@/hooks/useAnalytics";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 // Always show 6am–8pm regardless of data
@@ -27,12 +26,9 @@ function cellColor(avgPnl: number, maxAbs: number): { fill: string; opacity: num
   };
 }
 
-type TooltipState = { x: number; y: number; cell: TimeOfDayCell } | null;
-
 export function TimeOfDayHeatmap() {
   const { data, isLoading } = useAnalytics();
   const cells = data?.timeOfDay ?? [];
-  const [tooltip, setTooltip] = useState<TooltipState>(null);
 
   const maxAbs = useMemo(() => Math.max(...cells.map((c) => Math.abs(c.avgPnl)), 1), [cells]);
 
@@ -52,7 +48,7 @@ export function TimeOfDayHeatmap() {
   const svgH = LABEL_H + DAYS.length * (CELL_H + GAP);
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+    <div className="rounded-lg border border-border bg-card card-shadow p-6 space-y-4">
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Time of Day Performance</p>
         <p className="text-xs text-muted-foreground mt-0.5">Avg P&L by entry hour — Mon to Fri</p>
@@ -64,17 +60,6 @@ export function TimeOfDayHeatmap() {
         <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">No trades yet</div>
       ) : (
         <div className="overflow-x-auto">
-          {tooltip && (
-            <div
-              className="pointer-events-none fixed z-50 rounded-lg border border-border bg-card px-3 py-2 text-xs shadow-lg"
-              style={{ left: tooltip.x + 12, top: tooltip.y - 8, minWidth: 140 }}
-            >
-              <p className="font-semibold mb-1">{tooltip.cell.day} {fmtHour(tooltip.cell.hour)}</p>
-              <p>Avg P&L: <strong style={{ color: tooltip.cell.avgPnl >= 0 ? "var(--color-chart-1)" : "var(--color-chart-2)" }}>{fmtUsd(tooltip.cell.avgPnl)}</strong></p>
-              <p>Win rate: <strong>{tooltip.cell.winRate.toFixed(1)}%</strong></p>
-              <p className="text-muted-foreground mt-0.5">{tooltip.cell.trades} Trade{tooltip.cell.trades !== 1 ? "s" : ""} ({tooltip.cell.wins}W / {tooltip.cell.losses}L)</p>
-            </div>
-          )}
           <svg width={svgW} height={svgH} className="block">
 
             {/* Hour column headers (X axis) */}
@@ -130,14 +115,6 @@ export function TimeOfDayHeatmap() {
                           <text x={x + CELL_W / 2} y={y + CELL_H / 2 + 10} textAnchor="middle" fontSize={8} fill="var(--color-muted-foreground)" fontFamily="inherit">
                             {cell.trades}T · {cell.winRate.toFixed(0)}%
                           </text>
-                          {/* transparent hit area */}
-                          <rect
-                            x={x} y={y} width={CELL_W} height={CELL_H} rx={4} fill="transparent"
-                            style={{ cursor: "pointer" }}
-                            onMouseEnter={(e) => setTooltip({ x: e.clientX, y: e.clientY, cell })}
-                            onMouseMove={(e) => setTooltip({ x: e.clientX, y: e.clientY, cell })}
-                            onMouseLeave={() => setTooltip(null)}
-                          />
                         </>
                       )}
                     </g>

@@ -20,7 +20,7 @@ function StreakCard({
   bg: string;
 }) {
   return (
-    <div className="flex-1 rounded-xl border border-border bg-background p-4 flex flex-col gap-3">
+    <div className="flex-1 rounded-lg border border-border bg-sidebar p-4 flex flex-col gap-3">
       <div className={cn("flex items-center justify-center w-9 h-9 rounded-lg", bg)}>
         <Icon className={cn("h-4.5 w-4.5", color)} />
       </div>
@@ -42,13 +42,13 @@ export function StreakStats() {
   const isLossStreak = currentVal < 0;
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+    <div className="rounded-lg border border-border bg-card card-shadow p-6 space-y-4">
       <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Streak Tracker</p>
 
       {isLoading ? (
         <div className="flex gap-3">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="flex-1 rounded-xl border border-border bg-background p-4 space-y-3 animate-pulse">
+            <div key={i} className="flex-1 rounded-lg border border-border bg-sidebar p-4 space-y-3 animate-pulse">
               <div className="w-9 h-9 rounded-lg bg-muted" />
               <div className="space-y-1">
                 <div className="h-2.5 bg-muted rounded w-3/4" />

@@ -32,7 +32,7 @@ export function WeekdayPerformance() {
   const hasTrades = days.some((d) => d.trades > 0);
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+    <div className="rounded-lg border border-border bg-card card-shadow p-6 space-y-4">
       <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">P&L by Day of Week</p>
 
       {isLoading ? (

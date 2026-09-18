@@ -569,7 +569,7 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
           </div>
 
           <div className="flex justify-end gap-2 px-6 py-4 border-t border-border shrink-0">
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+            <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
               Cancel
             </Button>
             <Button type="submit" disabled={!canSubmit}>

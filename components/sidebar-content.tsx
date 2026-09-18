@@ -40,15 +40,18 @@ function NavLeaf({
       variant="ghost"
       onClick={onNavigate}
       className={cn(
-        "w-full justify-start gap-3 font-medium",
+        "w-full justify-start gap-3 h-9 text-sm font-medium rounded-lg transition-all duration-150 cursor-pointer",
         indent && "ml-4 w-[calc(100%-1rem)]",
         active
-          ? "bg-accent text-accent-foreground hover:bg-accent"
-          : "text-muted-foreground hover:text-foreground"
+          ? "bg-primary/10 text-primary hover:bg-primary/15 font-semibold"
+          : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
       )}
     >
       <Link href={item.href}>
-        <Icon className="h-4 w-4 shrink-0" />
+        {indent && (
+          <span className={cn("h-1 w-1 rounded-full shrink-0", active ? "bg-primary" : "bg-muted-foreground/40")} />
+        )}
+        <Icon className={cn("h-4 w-4 shrink-0", active ? "text-primary" : "", indent && "hidden")} />
         {item.label}
       </Link>
     </Button>
@@ -74,19 +77,19 @@ function NavGroup({
         variant="ghost"
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          "w-full justify-start gap-3 font-medium",
-          childActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+          "w-full justify-start gap-3 h-9 text-sm font-medium rounded-lg transition-all duration-150 cursor-pointer",
+          childActive ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
         )}
       >
-        <Icon className="h-4 w-4 shrink-0" />
+        <Icon className={cn("h-4 w-4 shrink-0", childActive && "text-primary")} />
         <span className="flex-1 text-left">{item.label}</span>
         <ChevronDown
-          className={cn("h-4 w-4 shrink-0 transition-transform", open && "rotate-180")}
+          className={cn("h-3.5 w-3.5 shrink-0 transition-transform duration-200 text-muted-foreground", open && "rotate-180")}
         />
       </Button>
 
       {open && item.children && (
-        <div className="mt-1 space-y-1">
+        <div className="mt-0.5 space-y-0.5">
           {item.children.map((child) => (
             <NavLeaf key={child.href} item={child} pathname={pathname} indent onNavigate={onNavigate} />
           ))}
@@ -106,7 +109,7 @@ function NavItems({
   onNavigate?: () => void;
 }) {
   return (
-    <nav className="flex-1 space-y-1 px-3 py-4">
+    <nav className="flex-1 space-y-0.5 px-3 py-4">
       {items.map((item) => {
         if (item.children) {
           return <NavGroup key={item.label} item={item} pathname={pathname} onNavigate={onNavigate} />;
@@ -127,6 +130,7 @@ function NavItems({
 function UserFooter({ email }: { email: string }) {
   const router = useRouter();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const initials = email.slice(0, 2).toUpperCase();
 
   return (
     <>
@@ -134,12 +138,12 @@ function UserFooter({ email }: { email: string }) {
       <div className="border-t border-border px-3 py-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="w-full justify-start gap-3 px-2">
-              <div className="h-8 w-8 shrink-0 rounded-full bg-accent flex items-center justify-center">
-                <UserRound className="h-4 w-4 text-muted-foreground" />
+            <Button variant="ghost" className="w-full justify-start gap-3 px-2 h-11 hover:bg-accent/60 rounded-lg transition-all duration-150 cursor-pointer">
+              <div className="h-8 w-8 shrink-0 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <span className="text-[11px] font-bold text-primary">{initials}</span>
               </div>
               <p className="flex-1 truncate text-xs text-left text-muted-foreground">{email}</p>
-              <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             </Button>
           </DropdownMenuTrigger>
 
@@ -181,9 +185,11 @@ export function SidebarContent({
 }) {
   return (
     <>
-      <div className="flex h-14 items-center gap-2 border-b border-border px-5">
-        <LineChart className="h-5 w-5 text-primary" />
-        <span className="flex-1 font-semibold tracking-tight">Trading Journal</span>
+      <div className="flex h-14 items-center gap-2.5 border-b border-border px-5">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary shadow-sm">
+          <LineChart className="h-4 w-4 text-primary-foreground" />
+        </div>
+        <span className="flex-1 font-semibold tracking-tight text-sm">Trading Journal</span>
         <span className="hidden md:block"><ThemeToggle /></span>
       </div>
       <NavItems items={items} pathname={pathname} onNavigate={onNavigate} />

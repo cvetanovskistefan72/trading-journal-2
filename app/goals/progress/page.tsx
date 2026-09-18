@@ -68,7 +68,7 @@ function GoalRow({ type, current, value }: { type: GoalType; current: number; va
   const status = getStatus(pct, INVERT[type]);
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-3">
+    <div className="rounded-lg border border-border bg-card card-shadow p-5 space-y-3">
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium text-foreground">{GOAL_LABEL[type]}</span>
         <span className={cn("text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full", STATUS_COLOR[status])}>
@@ -102,7 +102,7 @@ export default function GoalsProgressPage() {
           <div className="h-4 w-64 bg-muted rounded animate-pulse" />
         </div>
         <div className="space-y-4">
-          {[0, 1, 2].map(i => <div key={i} className="h-28 bg-muted rounded-2xl animate-pulse" />)}
+          {[0, 1, 2].map(i => <div key={i} className="h-28 bg-muted rounded-lg animate-pulse" />)}
         </div>
       </main>
     );
@@ -116,7 +116,7 @@ export default function GoalsProgressPage() {
       </div>
 
       {!goals || goals.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center gap-3 rounded-2xl border border-dashed border-border">
+        <div className="flex flex-col items-center justify-center py-16 text-center gap-3 rounded-lg border border-dashed border-border">
           <Target className="h-8 w-8 text-muted-foreground/40" />
           <p className="text-sm font-medium text-foreground">No goals configured</p>
           <p className="text-xs text-muted-foreground">Go to Set Goals to add your first target.</p>

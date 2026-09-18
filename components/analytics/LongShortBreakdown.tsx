@@ -16,7 +16,7 @@ function DirectionCard({ bucket, onClick }: { bucket: DirectionBucket; onClick: 
   const Icon = isLong ? TrendingUp : TrendingDown;
 
   return (
-    <div className="flex-1 rounded-xl border border-border bg-background p-5 space-y-4 cursor-pointer hover:border-muted-foreground/40 transition-colors" onClick={onClick}>
+    <div className="flex-1 rounded-lg border border-border bg-sidebar p-5 space-y-4 cursor-pointer hover:border-muted-foreground/40 transition-colors" onClick={onClick}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -83,13 +83,13 @@ export function LongShortBreakdown() {
   const hasTrades = longShort.some((d) => d.trades > 0);
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+    <div className="rounded-lg border border-border bg-card card-shadow p-6 space-y-4">
       <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Long vs Short</p>
 
       {isLoading ? (
         <div className="flex gap-4">
           {[0, 1].map((i) => (
-            <div key={i} className="flex-1 rounded-xl border border-border bg-background p-5 space-y-4 animate-pulse">
+            <div key={i} className="flex-1 rounded-lg border border-border bg-sidebar p-5 space-y-4 animate-pulse">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-muted" />
                 <div className="h-4 w-12 bg-muted rounded" />

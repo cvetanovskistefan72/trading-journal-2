@@ -40,7 +40,7 @@ export function DrawdownChart() {
   const currentDd = drawdown.length > 0 ? drawdown[drawdown.length - 1].drawdown : 0;
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+    <div className="rounded-lg border border-border bg-card card-shadow p-6 space-y-4">
       <div className="flex items-start justify-between">
         <div className="flex gap-6">
           <div>
@@ -77,9 +77,9 @@ export function DrawdownChart() {
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
             <XAxis dataKey="date" tickFormatter={fmtDate} tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} axisLine={false} tickLine={false} minTickGap={40} />
             <YAxis
-              tickFormatter={(v) => `${v}%`}
+              tickFormatter={(v) => `${parseFloat(v.toFixed(1))}%`}
               tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }}
-              axisLine={false} tickLine={false} width={52}
+              axisLine={false} tickLine={false} width={56}
               domain={[Math.min(minDd * 1.1, -1), 0]}
             />
             <ReferenceLine y={0} stroke="var(--color-border)" strokeWidth={1} />

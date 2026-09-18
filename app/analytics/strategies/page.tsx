@@ -176,14 +176,14 @@ function StrategyCard({
 
   return (
     <div
-      className="rounded-2xl border border-border bg-card p-6 flex flex-col gap-4 cursor-pointer hover:bg-muted/30 transition-colors"
+      className="rounded-lg border border-border bg-card card-shadow flex flex-col cursor-pointer hover:border-border/60 hover:shadow-md transition-all group overflow-hidden"
       onClick={onClick}
     >
       {/* Header */}
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-start justify-between gap-2 px-4 pt-4 pb-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-lg shrink-0 flex items-center justify-center bg-[color-mix(in_oklch,var(--color-chart-1)_10%,transparent)]">
-            <BookMarked className="h-4 w-4 text-[var(--color-chart-1)]" />
+          <div className="w-8 h-8 rounded-md shrink-0 flex items-center justify-center bg-[color-mix(in_oklch,var(--color-chart-1)_10%,transparent)]">
+            <BookMarked className="h-3.5 w-3.5 text-[var(--color-chart-1)]" />
           </div>
           <div className="min-w-0">
             <h3 className="font-semibold text-sm leading-tight truncate">{strategy.name}</h3>
@@ -194,7 +194,7 @@ function StrategyCard({
             )}
           </div>
         </div>
-        <div className="flex shrink-0 gap-0.5" onClick={(e) => e.stopPropagation()}>
+        <div className="flex shrink-0 gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
           <button onClick={onEdit} className="cursor-pointer p-1.5 rounded hover:bg-muted text-muted-foreground transition-colors">
             <Pencil className="h-3.5 w-3.5" />
           </button>
@@ -205,40 +205,30 @@ function StrategyCard({
       </div>
 
       {/* Confluences */}
-      <div className="flex-1">
-        {strategy.confluences.length > 0 ? (
-          <div className="flex flex-wrap gap-1.5">
-            {visibleConfluences.map((c) => (
-              <span key={c} className="rounded-full bg-[color-mix(in_oklch,var(--color-chart-1)_8%,transparent)] text-[var(--color-chart-1)] border border-[color-mix(in_oklch,var(--color-chart-1)_20%,transparent)] px-2.5 py-0.5 text-xs font-medium truncate max-w-40">
-                {c}
-              </span>
-            ))}
-            {extraConfluences > 0 && (
-              <span className="rounded-full border border-dashed border-border px-2.5 py-0.5 text-xs text-muted-foreground">
-                +{extraConfluences}
-              </span>
-            )}
-          </div>
-        ) : (
-          <p className="text-xs text-muted-foreground/40 italic">No confluences added</p>
-        )}
-      </div>
+      {strategy.confluences.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 px-4 pb-3">
+          {visibleConfluences.map((c) => (
+            <span key={c} className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground truncate max-w-40">
+              {c}
+            </span>
+          ))}
+          {extraConfluences > 0 && (
+            <span className="rounded-full border border-dashed border-border px-2.5 py-0.5 text-xs text-muted-foreground">
+              +{extraConfluences}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Footer */}
-      <div className="flex items-center gap-4 pt-3 border-t border-border">
-        <div className="flex flex-col gap-0.5">
-          <span className="text-xs font-bold text-foreground">{strategy.confluences.length}</span>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
-            {strategy.confluences.length === 1 ? "Confluence" : "Confluences"}
-          </span>
-        </div>
-        <div className="flex flex-col gap-0.5">
-          <span className="text-xs font-bold text-foreground">{strategy.questions.length}</span>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
-            {strategy.questions.length === 1 ? "Question" : "Questions"}
-          </span>
-        </div>
-        <span className="ml-auto text-[11px] text-muted-foreground/40">View →</span>
+      <div className="flex items-center gap-4 px-4 py-2.5 border-t border-border bg-muted/20 mt-auto">
+        <span className="text-xs text-muted-foreground">
+          <span className="font-semibold text-foreground">{strategy.confluences.length}</span> {strategy.confluences.length === 1 ? "confluence" : "confluences"}
+        </span>
+        <span className="text-xs text-muted-foreground">
+          <span className="font-semibold text-foreground">{strategy.questions.length}</span> {strategy.questions.length === 1 ? "question" : "questions"}
+        </span>
+        <span className="ml-auto text-[11px] text-muted-foreground/40 group-hover:text-muted-foreground transition-colors">View →</span>
       </div>
     </div>
   );

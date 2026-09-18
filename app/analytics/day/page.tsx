@@ -111,25 +111,25 @@ export default function CalendarPage() {
           <p className="text-sm text-muted-foreground">Click any trading day to see your trades</p>
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <button onClick={prevMonth} disabled={isFetching} className="p-2 rounded-lg border border-border hover:bg-accent transition-colors text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed">
+        <div className="flex items-center gap-1 rounded-lg border border-border bg-card card-shadow overflow-hidden">
+          <button onClick={prevMonth} disabled={isFetching} className="p-2 hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed border-r border-border cursor-pointer">
             <ChevronLeft className="h-4 w-4" />
           </button>
           <select
             value={month}
             onChange={e => setMonth(Number(e.target.value))}
-            className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
+            className="px-3 py-1.5 text-sm font-medium bg-card focus:outline-none cursor-pointer border-r border-border"
           >
             {MONTHS.map((name, i) => <option key={i} value={i + 1}>{name}</option>)}
           </select>
           <select
             value={year}
             onChange={e => setYear(Number(e.target.value))}
-            className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
+            className="px-3 py-1.5 text-sm font-medium bg-card focus:outline-none cursor-pointer"
           >
             {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
-          <button onClick={nextMonth} disabled={isFetching} className="p-2 rounded-lg border border-border hover:bg-accent transition-colors text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed">
+          <button onClick={nextMonth} disabled={isFetching} className="p-2 hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed border-l border-border cursor-pointer">
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
@@ -138,23 +138,23 @@ export default function CalendarPage() {
       {/* Monthly summary bar */}
       {totalTrades > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="rounded-xl border border-border bg-card px-4 py-3">
+          <div className="rounded-lg border border-border bg-card card-shadow px-4 py-3">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">Net P&amp;L</p>
             <p className="text-xl font-bold tabular-nums" style={{ color: totalPnl >= 0 ? "var(--color-chart-1)" : "var(--color-chart-2)" }}>
               {fmtPnl(totalPnl)}
             </p>
           </div>
-          <div className="rounded-xl border border-border bg-card px-4 py-3">
+          <div className="rounded-lg border border-border bg-card card-shadow px-4 py-3">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">Total Trades</p>
             <p className="text-xl font-bold tabular-nums text-foreground">{totalTrades}</p>
           </div>
-          <div className="rounded-xl border border-border bg-card px-4 py-3">
+          <div className="rounded-lg border border-border bg-card card-shadow px-4 py-3">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">Day Win Rate</p>
             <p className="text-xl font-bold tabular-nums" style={{ color: "var(--color-chart-1)" }}>
               {dayWinRate !== null ? `${dayWinRate}%` : "—"}
             </p>
           </div>
-          <div className="rounded-xl border border-border bg-card px-4 py-3">
+          <div className="rounded-lg border border-border bg-card card-shadow px-4 py-3">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">Days</p>
             <div className="flex items-center gap-3 mt-0.5">
               <span className="flex items-center gap-1 text-sm font-bold" style={{ color: "var(--color-chart-1)" }}>
@@ -174,7 +174,7 @@ export default function CalendarPage() {
       )}
 
       {/* Grid */}
-      <div className={cn("rounded-2xl border border-border bg-card overflow-hidden transition-opacity", isFetching && "opacity-60")}>
+      <div className={cn("rounded-lg border border-border bg-card card-shadow overflow-hidden transition-opacity", isFetching && "opacity-60")}>
 
         {/* Column headers: Mon–Sun | week summary */}
         <div className="grid grid-cols-[repeat(7,1fr)_80px] bg-muted/40 border-b border-border">

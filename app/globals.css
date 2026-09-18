@@ -54,8 +54,9 @@
  * Colors are in oklch(L C H) — lightness 0..1, chroma 0..~0.4, hue in degrees.
  */
 :root {
+  --amber: oklch(0.6 0.17 70);
   /* Light mode is the fallback — dark mode below is the primary experience. */
-  --background: oklch(1 0 0);
+  --background: oklch(0.96 0.002 286);
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.141 0.005 285.823);
@@ -79,7 +80,7 @@
   --chart-3: oklch(0.6 0.118 184.704);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.577 0.245 27.325);
-  --radius: 0.625rem;
+  --radius: 0.5rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.141 0.005 285.823);
   --sidebar-primary: oklch(0.21 0.006 285.885);
@@ -91,10 +92,11 @@
 }
 
 .dark {
+  --amber: oklch(0.78 0.17 70);
   /* Zinc dark palette — deep neutral surfaces, emerald primary, red destructive. */
-  --background: oklch(0.22 0.005 285.823);
+  --background: oklch(0.16 0.005 285.823);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.28 0.006 285.885);
+  --card: oklch(0.23 0.006 285.885);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.28 0.006 285.885);
   --popover-foreground: oklch(0.985 0 0);
@@ -108,7 +110,7 @@
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --success: oklch(0.72 0.18 152);
-  --border: oklch(1 0 0 / 12%);
+  --border: oklch(1 0 0 / 9%);
   --input: oklch(1 0 0 / 18%);
   --ring: oklch(0.552 0.016 285.938);
   --chart-1: oklch(0.72 0.18 152);
@@ -116,7 +118,7 @@
   --chart-3: oklch(0.828 0.189 84.429);
   --chart-4: oklch(0.696 0.17 162.48);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.24 0.006 285.885);
+  --sidebar: oklch(0.20 0.006 285.885);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.72 0.18 152);
   --sidebar-primary-foreground: oklch(0.141 0.005 285.823);
@@ -136,5 +138,14 @@
   html {
     @apply font-sans;
     scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  .card-shadow {
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.07), 0 1px 2px -1px rgb(0 0 0 / 0.07);
+  }
+  .dark .card-shadow {
+    box-shadow: 0 2px 8px 0 rgb(0 0 0 / 0.5), 0 1px 2px -1px rgb(0 0 0 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.04);
   }
 }

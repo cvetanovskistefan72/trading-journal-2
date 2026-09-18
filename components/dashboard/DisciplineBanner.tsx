@@ -3,110 +3,86 @@
 import { useDashboard } from "@/hooks/useDashboard";
 import { AlertTriangle, BookOpen, CheckCircle2, TrendingDown, Zap } from "lucide-react";
 
+function Banner({
+  icon: Icon,
+  title,
+  body,
+  color,
+}: {
+  icon: React.ElementType;
+  title: string;
+  body: string;
+  color: "red" | "amber" | "green" | "neutral";
+}) {
+  const styles = {
+    red:     { border: "color-mix(in oklch, var(--chart-2) 20%, transparent)", bg: "color-mix(in oklch, var(--chart-2) 4%, transparent)", text: "var(--color-chart-2)" },
+    amber:   { border: "color-mix(in oklch, var(--amber) 20%, transparent)",   bg: "color-mix(in oklch, var(--amber) 4%, transparent)",   text: "var(--amber)" },
+    green:   { border: "color-mix(in oklch, var(--chart-1) 20%, transparent)", bg: "color-mix(in oklch, var(--chart-1) 4%, transparent)", text: "var(--color-chart-1)" },
+    neutral: { border: "var(--border)", bg: "var(--card)", text: "var(--color-muted-foreground)" },
+  }[color];
+
+  return (
+    <div
+      className="rounded-lg border px-4 py-3.5 flex items-start gap-3 card-shadow"
+      style={{ borderColor: styles.border, backgroundColor: styles.bg }}
+    >
+      <Icon className="h-4 w-4 shrink-0 mt-0.5" style={{ color: styles.text }} />
+      <div>
+        <p className="text-sm font-semibold" style={{ color: styles.text }}>{title}</p>
+        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{body}</p>
+      </div>
+    </div>
+  );
+}
+
 export function DisciplineBanner() {
   const { data, isLoading } = useDashboard();
 
   if (isLoading) return null;
 
-  const streak = data?.streak ?? 0;
-  const streakType = data?.streakType;
-  const weekTrades = data?.weekTrades ?? 0;
+  const streak      = data?.streak     ?? 0;
+  const streakType  = data?.streakType;
+  const weekTrades  = data?.weekTrades  ?? 0;
   const monthTrades = data?.monthTrades ?? 0;
+  const todayPnl    = data?.todayPnl;
 
-  // Loss streak ≥ 3 — highest priority warning
   if (streakType === "loss" && streak >= 3) {
     return (
-      <div className="rounded-2xl border px-5 py-4 flex items-start gap-3"
-        style={{
-          borderColor: "color-mix(in oklch, var(--chart-2) 30%, transparent)",
-          backgroundColor: "color-mix(in oklch, var(--chart-2) 5%, transparent)",
-        }}
-      >
-        <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "var(--color-chart-2)" }} />
-        <div>
-          <p className="text-sm font-semibold" style={{ color: "var(--color-chart-2)" }}>
-            {streak}-loss streak — consider stepping back
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Review your last {streak} trades before continuing. Emotional trading after consecutive losses increases risk.
-          </p>
-        </div>
-      </div>
+      <Banner icon={AlertTriangle} color="red"
+        title={`${streak}-loss streak — consider stepping back`}
+        body={`Review your last ${streak} trades before continuing. Emotional trading after consecutive losses increases risk.`} />
     );
   }
 
-  // Overtrading — more than 25 trades in a week is unusually high
   if (weekTrades >= 25) {
     return (
-      <div className="rounded-2xl border px-5 py-4 flex items-start gap-3"
-        style={{
-          borderColor: "color-mix(in oklch, var(--chart-3) 30%, transparent)",
-          backgroundColor: "color-mix(in oklch, var(--chart-3) 5%, transparent)",
-        }}
-      >
-        <Zap className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "var(--color-chart-3)" }} />
-        <div>
-          <p className="text-sm font-semibold" style={{ color: "var(--color-chart-3)" }}>
-            High trade volume this week ({weekTrades} trades)
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            You&apos;ve logged significantly more trades than usual. Make sure each setup meets your criteria.
-          </p>
-        </div>
-      </div>
+      <Banner icon={Zap} color="amber"
+        title={`High trade volume this week (${weekTrades} trades)`}
+        body="You've logged significantly more trades than usual. Make sure each setup meets your criteria." />
     );
   }
 
-  // Win streak ≥ 3 — positive reinforcement
   if (streakType === "win" && streak >= 3) {
     return (
-      <div className="rounded-2xl border px-5 py-4 flex items-start gap-3"
-        style={{
-          borderColor: "color-mix(in oklch, var(--chart-1) 30%, transparent)",
-          backgroundColor: "color-mix(in oklch, var(--chart-1) 5%, transparent)",
-        }}
-      >
-        <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "var(--color-chart-1)" }} />
-        <div>
-          <p className="text-sm font-semibold" style={{ color: "var(--color-chart-1)" }}>
-            {streak}-win streak — great trading!
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Keep following your process. Don&apos;t increase size or deviate from your plan during a hot streak.
-          </p>
-        </div>
-      </div>
+      <Banner icon={CheckCircle2} color="green"
+        title={`${streak}-win streak — great trading!`}
+        body="Keep following your process. Don't increase size or deviate from your plan during a hot streak." />
     );
   }
 
-  // Journaling streak nudge — traded this week but nothing logged today
-  const todayPnl = data?.todayPnl;
   if (weekTrades > 0 && todayPnl === 0 && monthTrades >= 5) {
     return (
-      <div className="rounded-2xl border border-border bg-muted/20 px-5 py-4 flex items-start gap-3">
-        <BookOpen className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-        <div>
-          <p className="text-sm font-semibold text-foreground">Keep your journal up to date</p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            No trades logged today. Consistent journaling is what separates disciplined traders — even a no-trade day is worth noting.
-          </p>
-        </div>
-      </div>
+      <Banner icon={BookOpen} color="neutral"
+        title="Keep your journal up to date"
+        body="No trades logged today. Consistent journaling is what separates disciplined traders — even a no-trade day is worth noting." />
     );
   }
 
-  // Quiet week — no trades at all and month has some history
   if (weekTrades === 0 && monthTrades > 0) {
     return (
-      <div className="rounded-2xl border border-border bg-muted/20 px-5 py-4 flex items-start gap-3">
-        <TrendingDown className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-        <div>
-          <p className="text-sm font-semibold text-foreground">No trades logged this week</p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Patience is part of the process — only trade when your setup is there.
-          </p>
-        </div>
-      </div>
+      <Banner icon={TrendingDown} color="neutral"
+        title="No trades logged this week"
+        body="Patience is part of the process — only trade when your setup is there." />
     );
   }
 

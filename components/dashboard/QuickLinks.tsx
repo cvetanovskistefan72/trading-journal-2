@@ -17,7 +17,7 @@ export function QuickLinks() {
         <Link
           key={href}
           href={href}
-          className="rounded-2xl border border-border bg-card p-4 flex flex-col gap-2 hover:bg-accent/50 transition-colors group"
+          className="rounded-lg border border-border bg-card p-4 flex flex-col gap-2 hover:bg-accent/50 transition-colors group"
         >
           <Icon className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
           <div>

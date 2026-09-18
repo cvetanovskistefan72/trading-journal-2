@@ -23,7 +23,7 @@ export function MobileTopBar() {
   const email = session.user.email ?? "";
 
   return (
-    <div className="md:hidden shrink-0 flex h-14 items-center gap-3 border-b border-border bg-background px-4">
+    <div className="md:hidden shrink-0 flex h-14 items-center gap-3 border-b border-border bg-card px-4">
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon">

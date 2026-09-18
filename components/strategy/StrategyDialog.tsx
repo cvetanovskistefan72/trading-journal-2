@@ -241,121 +241,123 @@ export function StrategyDialog({ open, onClose, onSubmit, loading, initial }: Pr
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-lg max-h-[90vh] flex flex-col gap-0 p-0 overflow-hidden">
+        <DialogHeader className="px-6 pt-5 pb-4 border-b border-border shrink-0">
           <DialogTitle>{initial ? "Edit strategy" : "New strategy"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onValid)} className="space-y-5 py-2">
-          {/* Name */}
-          <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              placeholder="e.g. Break & Retest"
-              {...register("name", { required: true })}
-              className={errors.name ? "border-destructive" : ""}
-            />
-            {errors.name && (
-              <p className="text-xs text-destructive">Name is required</p>
-            )}
-          </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">
-              Description{" "}
-              <span className="text-muted-foreground text-xs">(optional)</span>
-            </Label>
-            <Textarea
-              id="description"
-              placeholder="Describe the setup rules..."
-              rows={3}
-              {...register("description")}
-            />
-          </div>
-
-          {/* Confluences */}
-          <div className="space-y-2">
-            <Label>Confluences</Label>
-            <div className="flex gap-2">
+        <form onSubmit={handleSubmit(onValid)} className="flex flex-col flex-1 min-h-0">
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+            {/* Name */}
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
               <Input
-                placeholder="e.g. Trend aligned"
-                {...register("confluenceInput")}
-                ref={(el) => {
-                  register("confluenceInput").ref(el);
-                  confluenceInputRef.current = el;
-                }}
-                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addConfluence())}
+                id="name"
+                placeholder="e.g. Break & Retest"
+                {...register("name", { required: true })}
+                className={errors.name ? "border-destructive" : ""}
               />
-              <Button type="button" variant="outline" size="icon" onClick={addConfluence}>
-                <Plus className="h-4 w-4" />
-              </Button>
+              {errors.name && (
+                <p className="text-xs text-destructive">Name is required</p>
+              )}
             </div>
-            {confluences.length > 0 && (
-              <div className="flex flex-wrap gap-2 pt-1">
-                {confluences.map((c) => (
-                  <span
-                    key={c}
-                    className="flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs font-medium"
-                  >
-                    {c}
-                    <button
-                      type="button"
-                      onClick={() => removeConfluence(c)}
-                      className="text-muted-foreground hover:text-foreground cursor-pointer"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                ))}
+
+            {/* Description */}
+            <div className="space-y-2">
+              <Label htmlFor="description">
+                Description{" "}
+                <span className="text-muted-foreground text-xs">(optional)</span>
+              </Label>
+              <Textarea
+                id="description"
+                placeholder="Describe the setup rules..."
+                rows={3}
+                {...register("description")}
+              />
+            </div>
+
+            {/* Confluences */}
+            <div className="space-y-2">
+              <Label>Confluences</Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="e.g. Trend aligned"
+                  {...register("confluenceInput")}
+                  ref={(el) => {
+                    register("confluenceInput").ref(el);
+                    confluenceInputRef.current = el;
+                  }}
+                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addConfluence())}
+                />
+                <Button type="button" variant="outline" size="icon" onClick={addConfluence}>
+                  <Plus className="h-4 w-4" />
+                </Button>
               </div>
-            )}
-          </div>
-
-          {/* Questions */}
-          <div className="space-y-2">
-            <Label>
-              Post-trade questions{" "}
-              <span className="text-muted-foreground text-xs">(optional)</span>
-            </Label>
-            <div className="flex gap-2">
-              <Input
-                placeholder="e.g. Did you follow your plan?"
-                {...register("questionInput")}
-                ref={(el) => {
-                  register("questionInput").ref(el);
-                  questionInputRef.current = el;
-                }}
-                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addQuestion())}
-              />
-              <Button type="button" variant="outline" size="icon" onClick={addQuestion}>
-                <Plus className="h-4 w-4" />
-              </Button>
+              {confluences.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {confluences.map((c) => (
+                    <span
+                      key={c}
+                      className="flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs font-medium"
+                    >
+                      {c}
+                      <button
+                        type="button"
+                        onClick={() => removeConfluence(c)}
+                        className="text-muted-foreground hover:text-foreground cursor-pointer"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-            {questions.length > 0 && (
-              <ul className="space-y-2 pt-1">
-                {questions.map((q, i) => (
-                  <QuestionEditor
-                    key={q.id}
-                    question={q}
-                    index={i}
-                    onChange={updateQuestion}
-                    onRemove={() => removeQuestion(q.id)}
-                  />
-                ))}
-              </ul>
-            )}
+
+            {/* Questions */}
+            <div className="space-y-2">
+              <Label>
+                Post-trade questions{" "}
+                <span className="text-muted-foreground text-xs">(optional)</span>
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="e.g. Did you follow your plan?"
+                  {...register("questionInput")}
+                  ref={(el) => {
+                    register("questionInput").ref(el);
+                    questionInputRef.current = el;
+                  }}
+                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addQuestion())}
+                />
+                <Button type="button" variant="outline" size="icon" onClick={addQuestion}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              {questions.length > 0 && (
+                <ul className="space-y-2 pt-1">
+                  {questions.map((q, i) => (
+                    <QuestionEditor
+                      key={q.id}
+                      question={q}
+                      index={i}
+                      onChange={updateQuestion}
+                      onRemove={() => removeQuestion(q.id)}
+                    />
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+          <div className="flex justify-end gap-2 px-6 py-4 border-t border-border shrink-0">
+            <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
               Cancel
             </Button>
             <Button type="submit" disabled={loading || confluences.length === 0}>
               {loading ? "Saving..." : initial ? "Save changes" : "Create"}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

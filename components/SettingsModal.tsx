@@ -192,7 +192,7 @@ export function SettingsModal({ open, onClose }: { open: boolean; onClose: () =>
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-[95vw] sm:max-w-2xl p-0 gap-0 overflow-hidden">
         <DialogTitle className="sr-only">Settings</DialogTitle>
-        <div className="flex h-full min-h-96">
+        <div className="flex h-[520px]">
           {/* Left nav */}
           <div className="flex flex-col w-10 sm:w-48 shrink-0 border-r border-border bg-muted/20 p-1 sm:p-3 gap-0.5">
             <p className="hidden sm:block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-2 py-2">Settings</p>

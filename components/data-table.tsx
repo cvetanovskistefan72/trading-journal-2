@@ -35,7 +35,7 @@ export function DataTable<TData>({
   });
 
   return (
-    <div className={cn("rounded-xl border border-border overflow-hidden transition-opacity", isPlaceholderData && "opacity-60")}>
+    <div className={cn("rounded-lg border border-border bg-card card-shadow overflow-hidden transition-opacity", isPlaceholderData && "opacity-60")}>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[600px] text-sm">
           <thead className="border-b border-border bg-muted/40 text-muted-foreground">

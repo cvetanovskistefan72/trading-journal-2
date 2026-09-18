@@ -42,7 +42,7 @@ export function RMultipleDistribution() {
   const hasTrades = rMultiple.some((d) => d.count > 0);
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+    <div className="rounded-lg border border-border bg-card card-shadow p-6 space-y-4">
       <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
         R-Multiple Distribution
       </p>

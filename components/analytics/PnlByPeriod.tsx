@@ -70,7 +70,7 @@ export function PnlByPeriod() {
   }, [analytics, mode]);
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+    <div className="rounded-lg border border-border bg-card card-shadow p-6 space-y-4">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Net P&L by Period</p>
         <div className="flex items-center gap-2">

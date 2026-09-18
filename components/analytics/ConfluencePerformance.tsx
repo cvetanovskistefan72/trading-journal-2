@@ -31,7 +31,7 @@ export function ConfluencePerformance() {
   const chartHeight = Math.max(220, confluences.length * 44);
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+    <div className="rounded-lg border border-border bg-card card-shadow p-6 space-y-4">
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Confluence Performance</p>
         <p className="text-xs text-muted-foreground mt-0.5">Avg R per confluence tag, sorted best to worst</p>

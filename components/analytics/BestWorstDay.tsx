@@ -16,7 +16,7 @@ function DayCard({ day, type }: { day: DayAvg; type: "best" | "worst" }) {
   const chartVar = isBest ? 4 : 5;
 
   return (
-    <div className="flex-1 rounded-xl border border-border bg-background p-5 flex flex-col justify-center space-y-4">
+    <div className="flex-1 rounded-lg border border-border bg-sidebar p-5 flex flex-col justify-center space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -79,13 +79,13 @@ export function BestWorstDay() {
   const { bestDay, worstDay } = data ?? {};
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 flex flex-col gap-4 justify-center">
+    <div className="rounded-lg border border-border bg-card card-shadow p-6 flex flex-col gap-4 justify-center">
       <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Best &amp; Worst Trading Day</p>
 
       {isLoading ? (
         <div className="flex gap-4">
           {[0, 1].map((i) => (
-            <div key={i} className="flex-1 rounded-xl border border-border bg-background p-5 space-y-4 animate-pulse">
+            <div key={i} className="flex-1 rounded-lg border border-border bg-sidebar p-5 space-y-4 animate-pulse">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-muted" />
                 <div className="h-4 w-16 bg-muted rounded" />
