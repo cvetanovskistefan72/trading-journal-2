@@ -1,46 +1,33 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-const FF_THIS_WEEK = "https://nfs.faireconomy.media/ff_calendar_thisweek.json";
-const FF_NEXT_WEEK = "https://nfs.faireconomy.media/ff_calendar_nextweek.json";
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const country = searchParams.get("country") ?? "USD";
+  const dateParam = searchParams.get("date");
 
-interface FFEvent {
-  title: string;
-  country: string;
-  date: string;
-  impact: string;
-  forecast: string;
-  previous: string;
-  actual: string;
-}
+  // Default to today in ET (where US market events are scheduled)
+  const todayET = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+  const targetDateStr = dateParam ?? todayET;
+  const targetDate = new Date(targetDateStr);
 
-export async function GET() {
+  const start = new Date(targetDate);
+  start.setUTCHours(0, 0, 0, 0);
+  const end = new Date(targetDate);
+  end.setUTCHours(23, 59, 59, 999);
+
   try {
-    const [thisWeekRes, nextWeekRes] = await Promise.all([
-      fetch(FF_THIS_WEEK, { next: { revalidate: 600 } }),
-      fetch(FF_NEXT_WEEK, { next: { revalidate: 600 } }),
-    ]);
+    const events = await prisma.economicEvent.findMany({
+      where: {
+        country,
+        date: { gte: start, lte: end },
+      },
+      orderBy: { date: "asc" },
+    });
 
-    const [thisWeek, nextWeek]: [FFEvent[], FFEvent[]] = await Promise.all([
-      thisWeekRes.ok ? thisWeekRes.json() : [],
-      nextWeekRes.ok ? nextWeekRes.json() : [],
-    ]);
-
-    const allEvents: FFEvent[] = [...thisWeek, ...nextWeek];
-
-    // Filter to USD events that fall on today (in local server time)
-    const todayStr = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
-
-    const todayUSD = allEvents
-      .filter((ev) => {
-        if (ev.country !== "USD") return false;
-        const evDateStr = new Date(ev.date).toISOString().slice(0, 10);
-        return evDateStr === todayStr;
-      })
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-    return NextResponse.json(todayUSD);
+    return NextResponse.json(events);
   } catch (err) {
-    console.error("[economic-calendar] fetch failed:", err);
+    console.error("[economic-calendar] read failed:", err);
     return NextResponse.json([], { status: 200 });
   }
 }

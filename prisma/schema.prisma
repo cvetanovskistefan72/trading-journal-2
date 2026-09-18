@@ -112,3 +112,22 @@ model Image {
 
   @@index([entityType, entityId])
 }
+
+model EconomicEvent {
+  id        String   @id @default(cuid())
+  title     String
+  country   String
+  date      DateTime
+  impact    String
+  forecast  String?
+  previous  String?
+  actual    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([date, title, country])
+  @@index([date, country])
+  @@index([country])
+  @@index([impact])
+  @@index([date])
+}
