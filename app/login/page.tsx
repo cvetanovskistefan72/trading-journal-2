@@ -81,7 +81,7 @@ export default function LoginPage() {
             />
           </div>
 
-          <Button type="submit" size="lg" className="w-full" disabled={loading}>
+          <Button type="submit" size="lg" className="w-full" style={{ backgroundColor: "oklch(0.72 0.18 152)", color: "white" }} disabled={loading}>
             {loading ? "Signing in..." : "Sign in"}
           </Button>
         </form>

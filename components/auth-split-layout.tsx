@@ -40,8 +40,8 @@ export function AuthSplitLayout({ children }: { children: React.ReactNode }) {
 
             {/* Logo */}
             <div className="flex items-center gap-2.5">
-              <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10">
-                <LineChart className="h-3.5 w-3.5 text-primary" />
+              <div className="flex items-center justify-center w-7 h-7 rounded-lg" style={{ backgroundColor: "oklch(0.72 0.18 152 / 0.15)" }}>
+                <LineChart className="h-3.5 w-3.5" style={{ color: "oklch(0.72 0.18 152)" }} />
               </div>
               <span className="text-sm font-semibold tracking-tight text-foreground">Trading Journal</span>
             </div>

@@ -56,7 +56,7 @@ export default function ForgotPasswordPage() {
             />
           </div>
 
-          <Button type="submit" size="lg" className="w-full" disabled={mutation.isPending}>
+          <Button type="submit" size="lg" className="w-full" style={{ backgroundColor: "oklch(0.72 0.18 152)", color: "white" }} disabled={mutation.isPending}>
             {mutation.isPending ? "Sending..." : "Send reset link"}
           </Button>
 
