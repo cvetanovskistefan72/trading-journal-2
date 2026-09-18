@@ -29,12 +29,12 @@ function Tile({ label, value, sub, delta }: { label: string; value: number; sub?
   const valueColor = positive ? "var(--color-chart-1)" : negative ? "var(--color-chart-2)" : undefined;
 
   return (
-    <div className="rounded-lg border border-border bg-card card-shadow px-5 py-4 flex flex-col gap-2 min-w-0 min-h-[110px]">
+    <div className="rounded-lg border border-border bg-card card-shadow px-5 py-4 flex flex-col gap-4 min-w-0">
       <div className="flex items-center justify-between">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">{label}</p>
         <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/25" />
       </div>
-      <div className="mt-auto flex flex-col gap-1">
+      <div className="flex flex-col gap-1">
         <p
           className={cn("text-2xl font-bold tabular-nums leading-none truncate", !positive && !negative && "text-muted-foreground/50")}
           style={valueColor ? { color: valueColor } : undefined}
@@ -53,7 +53,7 @@ export function SnapshotRow() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-4">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="rounded-lg border border-border bg-card min-h-[110px] animate-pulse" />
         ))}
@@ -66,17 +66,12 @@ export function SnapshotRow() {
   const monthPnl     = data?.monthPnl     ?? 0;
   const lastMonthPnl = data?.lastMonthPnl ?? 0;
   const allTimePnl   = data?.allTimePnl   ?? 0;
-  const weekTrades   = data?.weekTrades   ?? 0;
-  const monthTrades  = data?.monthTrades  ?? 0;
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-4">
       <Tile label="Today"      value={todayPnl} />
-      <Tile label="This Week"  value={weekPnl}
-        sub={weekTrades > 0 ? `${weekTrades} trade${weekTrades !== 1 ? "s" : ""}` : "No trades yet"} />
-      <Tile label="This Month" value={monthPnl}
-        sub={monthTrades > 0 ? `${monthTrades} trade${monthTrades !== 1 ? "s" : ""}` : "No trades yet"}
-        delta={<Delta current={monthPnl} previous={lastMonthPnl} />} />
+      <Tile label="This Week"  value={weekPnl} />
+      <Tile label="This Month" value={monthPnl} delta={<Delta current={monthPnl} previous={lastMonthPnl} />} />
       <Tile label="All Time"   value={allTimePnl} />
     </div>
   );

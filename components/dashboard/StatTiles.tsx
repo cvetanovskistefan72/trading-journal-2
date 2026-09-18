@@ -19,12 +19,12 @@ function Tile({
   valueColor?: string;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-card card-shadow px-5 py-4 flex flex-col gap-2 min-w-0 min-h-[110px]">
+    <div className="rounded-lg border border-border bg-card card-shadow px-5 py-4 flex flex-col gap-3 min-w-0">
       <div className="flex items-center justify-between">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 truncate pr-2">{label}</p>
         <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/25" />
       </div>
-      <div className="mt-auto flex flex-col gap-1">
+      <div className="flex flex-col gap-1">
         <p className={cn("text-2xl font-bold tabular-nums leading-none", valueColor ?? "text-foreground")}>
           {value}
         </p>
