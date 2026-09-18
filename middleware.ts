@@ -15,7 +15,7 @@ export async function middleware(req: NextRequest) {
 
   const isApi = pathname.startsWith("/api");
   const isAuthApi = pathname.startsWith("/api/auth");
-  const isPublicApi = pathname === "/api/keepalive";
+  const isPublicApi = pathname === "/api/keepalive" || pathname === "/api/cron/economic-calendar";
   const isPublicPage = PUBLIC_PAGES.has(pathname);
 
   const token = await getToken({ req });
