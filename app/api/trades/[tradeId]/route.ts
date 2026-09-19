@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { getActiveAccount } from "@/lib/getActiveAccount";
 import { gradeToOrder } from "@/app/api/trades/route";
 import { deleteImageObject } from "@/services/image-server.service";
 
@@ -11,8 +12,11 @@ export async function GET(_req: NextRequest, context: { params: Params }) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const accountId = await getActiveAccount(user.id);
+  if (!accountId) return NextResponse.json({ error: "No account found" }, { status: 404 });
+
   const trade = await prisma.trade.findFirst({
-    where: { id: tradeId, userId: user.id },
+    where: { id: tradeId, accountId },
     include: { strategy: true },
   });
   if (!trade) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -30,9 +34,10 @@ export async function DELETE(_req: NextRequest, context: { params: Params }) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const trade = await prisma.trade.findFirst({
-    where: { id: tradeId, userId: user.id },
-  });
+  const accountId = await getActiveAccount(user.id);
+  if (!accountId) return NextResponse.json({ error: "No account found" }, { status: 404 });
+
+  const trade = await prisma.trade.findFirst({ where: { id: tradeId, accountId } });
   if (!trade) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   if (!trade.archived) {
@@ -61,20 +66,24 @@ export async function PATCH(req: NextRequest, context: { params: Params }) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const trade = await prisma.trade.findFirst({ where: { id: tradeId, userId: user.id } });
+  const accountId = await getActiveAccount(user.id);
+  if (!accountId) return NextResponse.json({ error: "No account found" }, { status: 404 });
+
+  const trade = await prisma.trade.findFirst({ where: { id: tradeId, accountId } });
   if (!trade) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const today = new Date().toISOString().split("T")[0];
-  const freshUser = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { dailyEditCount: true, editCountDate: true },
+  const freshAccount = await prisma.account.findUnique({
+    where: { id: accountId },
+    select: { dailyEditCount: true, editCountDate: true, dailyTradeLimit: true },
   });
-  const isToday = freshUser?.editCountDate === today;
-  if (isToday && (freshUser?.dailyEditCount ?? 0) >= 100) {
-    return NextResponse.json({ error: "Daily edit limit reached (100 per day)" }, { status: 429 });
+  const isToday = freshAccount?.editCountDate === today;
+  const effectiveLimit = freshAccount?.dailyTradeLimit ?? 50;
+  if (isToday && (freshAccount?.dailyEditCount ?? 0) >= effectiveLimit) {
+    return NextResponse.json({ error: `Daily edit limit reached (${effectiveLimit} per day)` }, { status: 429 });
   }
-  await prisma.user.update({
-    where: { id: user.id },
+  await prisma.account.update({
+    where: { id: accountId },
     data: { editCountDate: today, dailyEditCount: isToday ? { increment: 1 } : 1 },
   });
 
@@ -86,7 +95,6 @@ export async function PATCH(req: NextRequest, context: { params: Params }) {
     removedImageIds, addedImageKeys,
   } = body;
 
-  // Delete removed images from B2 + DB
   if (Array.isArray(removedImageIds) && removedImageIds.length > 0) {
     const imagesToRemove = await prisma.image.findMany({
       where: { id: { in: removedImageIds }, entityType: "trade", entityId: tradeId },
@@ -100,7 +108,6 @@ export async function PATCH(req: NextRequest, context: { params: Params }) {
     await prisma.image.deleteMany({ where: { id: { in: removedImageIds } } });
   }
 
-  // Save newly uploaded image keys to DB
   if (Array.isArray(addedImageKeys) && addedImageKeys.length > 0) {
     await prisma.image.createMany({
       data: addedImageKeys.map(({ imageKey, thumbnailKey }: { imageKey: string; thumbnailKey: string }) => ({

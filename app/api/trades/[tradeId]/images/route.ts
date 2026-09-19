@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { getActiveAccount } from "@/lib/getActiveAccount";
 
 export async function POST(
   req: NextRequest,
@@ -10,6 +11,9 @@ export async function POST(
 ) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const accountId = await getActiveAccount(user.id);
+  if (!accountId) return NextResponse.json({ error: "No account found" }, { status: 404 });
 
   try {
     const { tradeId } = await params;
@@ -20,7 +24,7 @@ export async function POST(
     }
 
     const trade = await prisma.trade.findFirst({
-      where: { id: tradeId, userId: user.id },
+      where: { id: tradeId, accountId },
       select: { id: true },
     });
 

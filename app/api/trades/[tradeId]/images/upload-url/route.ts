@@ -3,6 +3,7 @@ import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { getActiveAccount } from "@/lib/getActiveAccount";
 import {
   createImageKeys,
   createImageUploadUrl,
@@ -18,11 +19,14 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const accountId = await getActiveAccount(token.sub);
+  if (!accountId) return NextResponse.json({ error: "No account found" }, { status: 404 });
+
   try {
     const { tradeId } = await params;
 
     const trade = await prisma.trade.findFirst({
-      where: { id: tradeId, userId: token.sub },
+      where: { id: tradeId, accountId },
       select: { id: true },
     });
 

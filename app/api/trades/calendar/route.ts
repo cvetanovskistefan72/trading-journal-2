@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { getActiveAccount } from "@/lib/getActiveAccount";
 import type { CalendarTrade, CalendarDay } from "@/types/calendar";
 
 export async function GET(req: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const accountId = await getActiveAccount(user.id);
+  if (!accountId) return NextResponse.json({ error: "No account found" }, { status: 404 });
 
   const { searchParams } = new URL(req.url);
   const month = searchParams.get("month"); // YYYY-MM
@@ -26,7 +30,7 @@ export async function GET(req: Request) {
 
   const trades = await prisma.trade.findMany({
     where: {
-      userId: user.id,
+      accountId,
       archived: false,
       date: { gte: from, lte: to },
     },

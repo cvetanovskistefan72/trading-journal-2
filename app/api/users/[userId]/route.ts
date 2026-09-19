@@ -11,20 +11,18 @@ export async function PATCH(req: NextRequest, context: { params: Params }) {
   if (admin instanceof NextResponse) return admin;
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
+  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   const body = await req.json().catch(() => ({}));
 
+  // dailyTradeLimit now lives on Account — update all accounts for this user
   if (typeof body.dailyTradeLimit === "number") {
     const limit = Math.max(1, Math.min(2000, Math.round(body.dailyTradeLimit)));
-    const updated = await prisma.user.update({
-      where: { id: userId },
+    await prisma.account.updateMany({
+      where: { userId },
       data: { dailyTradeLimit: limit },
-      select: { id: true, dailyTradeLimit: true },
     });
-    return NextResponse.json(updated);
+    return NextResponse.json({ id: userId, dailyTradeLimit: limit });
   }
 
   if (typeof body.testFlag === "boolean") {

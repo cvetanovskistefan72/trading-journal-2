@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { getActiveAccount } from "@/lib/getActiveAccount";
 
 type Params = Promise<{ strategyId: string }>;
 
-async function getOwnedStrategy(strategyId: string, userId: string) {
-  return prisma.strategy.findFirst({ where: { id: strategyId, userId } });
+async function getOwnedStrategy(strategyId: string, accountId: string) {
+  return prisma.strategy.findFirst({ where: { id: strategyId, accountId } });
 }
 
 export async function GET(_req: NextRequest, context: { params: Params }) {
@@ -13,7 +14,10 @@ export async function GET(_req: NextRequest, context: { params: Params }) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const strategy = await getOwnedStrategy(strategyId, user.id);
+  const accountId = await getActiveAccount(user.id);
+  if (!accountId) return NextResponse.json({ error: "No account found" }, { status: 404 });
+
+  const strategy = await getOwnedStrategy(strategyId, accountId);
   if (!strategy) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   return NextResponse.json(strategy);
@@ -24,7 +28,10 @@ export async function PATCH(req: NextRequest, context: { params: Params }) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const existing = await getOwnedStrategy(strategyId, user.id);
+  const accountId = await getActiveAccount(user.id);
+  if (!accountId) return NextResponse.json({ error: "No account found" }, { status: 404 });
+
+  const existing = await getOwnedStrategy(strategyId, accountId);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const { name, description, confluences, questions } = await req.json();
@@ -55,7 +62,10 @@ export async function DELETE(_req: NextRequest, context: { params: Params }) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const existing = await getOwnedStrategy(strategyId, user.id);
+  const accountId = await getActiveAccount(user.id);
+  if (!accountId) return NextResponse.json({ error: "No account found" }, { status: 404 });
+
+  const existing = await getOwnedStrategy(strategyId, accountId);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const tradeCount = await prisma.trade.count({ where: { strategyId } });

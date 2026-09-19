@@ -34,30 +34,42 @@ model User {
   resetTokenExpiry DateTime?
   disabled         Boolean    @default(false)
   testFlag         Boolean    @default(false)
-  dailyEditCount      Int        @default(0)
-  editCountDate       String?
-  dailyTradeLimit     Int        @default(50)
-  strategies          Strategy[]
-  trades              Trade[]
-  goals               Goal[]
+  accounts         Account[]
+}
+
+model Account {
+  id              String     @id @default(cuid())
+  userId          String
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  dailyTradeLimit Int        @default(50)
+  dailyEditCount  Int        @default(0)
+  editCountDate   String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @default(now()) @updatedAt
+  strategies      Strategy[]
+  trades          Trade[]
+  goals           Goal[]
+
+  @@index([userId])
 }
 
 model Goal {
   id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
   type      GoalType
   value     Float
   createdAt DateTime @default(now())
 
-  @@unique([userId, type])
-  @@index([userId])
+  @@unique([accountId, type])
+  @@index([accountId])
 }
 
 model Strategy {
   id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId   String
+  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
   name        String
   description String?
   confluences String[]
@@ -66,13 +78,13 @@ model Strategy {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
 
-  @@index([userId])
+  @@index([accountId])
 }
 
 model Trade {
   id          String       @id @default(cuid())
-  userId      String
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId   String
+  account     Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
   strategyId  String
   strategy    Strategy     @relation(fields: [strategyId], references: [id])
   date        DateTime     @db.Date
@@ -94,11 +106,11 @@ model Trade {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @default(now()) @updatedAt
 
-  @@index([userId])
-  @@index([userId, archived])
-  @@index([userId, date])
-  @@index([userId, gradeOrder])
-  @@index([userId, pnl])
+  @@index([accountId])
+  @@index([accountId, archived])
+  @@index([accountId, date])
+  @@index([accountId, gradeOrder])
+  @@index([accountId, pnl])
   @@index([strategyId])
 }
 

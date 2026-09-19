@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getActiveAccount } from "@/lib/getActiveAccount";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -32,6 +33,9 @@ export async function GET(req: NextRequest) {
   const token = await getToken({ req });
   if (!token?.sub) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const accountId = await getActiveAccount(token.sub);
+  if (!accountId) return NextResponse.json({ error: "No account found" }, { status: 404 });
+
   const now = new Date();
   const todayStart = startOfDay(now);
   const weekStart = startOfWeek(now);
@@ -44,12 +48,12 @@ export async function GET(req: NextRequest) {
   const [allTimePnlAgg, recentTrades, periodTrades] = await Promise.all([
     // 1. All-time sum — aggregate only, zero rows transferred
     prisma.trade.aggregate({
-      where: { userId: token.sub, archived: false },
+      where: { accountId, archived: false },
       _sum: { pnl: true },
     }),
     // 2. Last 10 trades for the recent trades table
     prisma.trade.findMany({
-      where: { userId: token.sub, archived: false },
+      where: { accountId, archived: false },
       select: {
         id: true, date: true, instrument: true, direction: true,
         pnl: true, result: true, grade: true,
@@ -60,7 +64,7 @@ export async function GET(req: NextRequest) {
     }),
     // 3. Last month + this month trades — covers today/week/month/lastMonth/streak/winRate/year
     prisma.trade.findMany({
-      where: { userId: token.sub, archived: false, date: { gte: lastMonthStart } },
+      where: { accountId, archived: false, date: { gte: lastMonthStart } },
       select: { date: true, pnl: true, result: true },
       orderBy: { date: "asc" },
     }),

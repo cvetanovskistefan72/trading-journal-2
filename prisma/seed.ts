@@ -22,11 +22,14 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email },
-    update: {},
+    update: { password: hashed },
     create: {
       email,
       password: hashed,
       role: Role.ADMIN,
+      accounts: {
+        create: { name: "Default" },
+      },
     },
   });
 

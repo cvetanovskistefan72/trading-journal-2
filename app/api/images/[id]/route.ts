@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { getActiveAccount } from "@/lib/getActiveAccount";
 import { b2 } from "@/lib/b2";
 import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
@@ -25,7 +26,9 @@ export async function GET(
   if (!image) return NextResponse.json({ error: "Image not found" }, { status: 404 });
 
   if (image.entityType === "trade") {
-    const trade = await prisma.trade.findFirst({ where: { id: image.entityId, userId: user.id } });
+    const accountId = await getActiveAccount(user.id);
+    if (!accountId) return NextResponse.json({ error: "Image not found" }, { status: 404 });
+    const trade = await prisma.trade.findFirst({ where: { id: image.entityId, accountId } });
     if (!trade) return NextResponse.json({ error: "Image not found" }, { status: 404 });
   }
 

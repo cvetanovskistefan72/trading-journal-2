@@ -19,7 +19,7 @@ export async function GET() {
     prisma.user.findMany({
       where: { role: Role.USER },
       orderBy: { createdAt: "desc" },
-      select: { id: true, email: true, name: true, createdAt: true, disabled: true, dailyTradeLimit: true, testFlag: true },
+      select: { id: true, email: true, name: true, createdAt: true, disabled: true, testFlag: true, accounts: { select: { dailyTradeLimit: true }, orderBy: { createdAt: "asc" as const }, take: 1 } },
     }),
     prisma.user.findMany({
       where: { role: Role.USER, NOT: { password: "" } },
@@ -46,7 +46,7 @@ export async function GET() {
     isActive: activeSet.has(u.id),
     canResend: expiredSet.has(u.id),
     disabled: u.disabled,
-    dailyTradeLimit: u.dailyTradeLimit,
+    dailyTradeLimit: u.accounts[0]?.dailyTradeLimit ?? 50,
     testFlag: u.testFlag,
   }));
 
@@ -93,6 +93,7 @@ export async function POST(req: Request) {
       role: Role.USER,
       resetToken: hashed,
       resetTokenExpiry: new Date(Date.now() + INVITE_TTL_MS),
+      accounts: { create: { name: "Default" } },
     },
     select: { id: true, email: true, name: true, role: true, createdAt: true },
   });

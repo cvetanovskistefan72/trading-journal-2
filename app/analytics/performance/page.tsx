@@ -58,7 +58,7 @@ export default function PerformancePage() {
   const { data, isLoading, isFetching } = useAnalytics();
   const isWaiting = isLoading || isFetching;
   const [progress, setProgress] = useState(0);
-  const [ready, setReady] = useState(false);
+  const [showCharts, setShowCharts] = useState(false);
 
   useEffect(() => {
     if (window.location.hash) {
@@ -72,10 +72,10 @@ export default function PerformancePage() {
   useEffect(() => {
     if (!isWaiting) {
       setProgress(100);
-      setTimeout(() => setReady(true), 300);
-      return;
+      const t = setTimeout(() => setShowCharts(true), 300);
+      return () => clearTimeout(t);
     }
-    setReady(false);
+    setShowCharts(false);
     setProgress(0);
     const steps = [
       { target: 15, delay: 100 },
@@ -87,6 +87,10 @@ export default function PerformancePage() {
     const timers = steps.map(s => setTimeout(() => setProgress(s.target), s.delay));
     return () => timers.forEach(clearTimeout);
   }, [isWaiting]);
+
+  // Force hide charts the moment a new fetch begins (handles mid-visit invalidation)
+  const ready = showCharts && !isWaiting;
+
 
   return (
     <main className="flex-1 px-4 py-6 sm:px-8 sm:py-8 space-y-5">

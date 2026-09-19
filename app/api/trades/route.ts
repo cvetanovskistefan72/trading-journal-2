@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { getActiveAccount } from "@/lib/getActiveAccount";
 import { Prisma } from "@prisma/client";
 
 const GRADE_ORDER = ["B", "B+", "A-", "A", "A+", "A+++"];
@@ -13,6 +14,9 @@ export function gradeToOrder(grade: string): number {
 export async function GET(req: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const accountId = await getActiveAccount(user.id);
+  if (!accountId) return NextResponse.json({ error: "No account found" }, { status: 404 });
 
   const { searchParams } = new URL(req.url);
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"));
@@ -35,7 +39,7 @@ export async function GET(req: Request) {
     dateFilter.lte = to;
   }
 
-  const where: Prisma.TradeWhereInput = { userId: user.id, archived };
+  const where: Prisma.TradeWhereInput = { accountId, archived };
   if (dateFrom || dateTo) where.date = dateFilter;
   if (strategyId) where.strategyId = strategyId;
   if (direction) where.direction = { equals: direction, mode: "insensitive" };
@@ -72,13 +76,16 @@ export async function GET(req: Request) {
     total,
     page,
     totalPages: Math.ceil(total / limit),
-    limit: limit,
+    limit,
   });
 }
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const accountId = await getActiveAccount(user.id);
+  if (!accountId) return NextResponse.json({ error: "No account found" }, { status: 404 });
 
   const body = await req.json();
   const {
@@ -93,30 +100,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  const strategy = await prisma.strategy.findFirst({ where: { id: strategyId, userId: user.id } });
+  const strategy = await prisma.strategy.findFirst({ where: { id: strategyId, accountId } });
   if (!strategy) return NextResponse.json({ error: "Strategy not found" }, { status: 404 });
 
   const today = new Date().toISOString().split("T")[0];
-  const freshUser = await prisma.user.findUnique({
-    where: { id: user.id },
+  const freshAccount = await prisma.account.findUnique({
+    where: { id: accountId },
     select: { dailyEditCount: true, editCountDate: true, dailyTradeLimit: true },
   });
-  const isToday = freshUser?.editCountDate === today;
-  const effectiveLimit = freshUser?.dailyTradeLimit ?? 50;
-  if (isToday && (freshUser?.dailyEditCount ?? 0) >= effectiveLimit) {
+  const isToday = freshAccount?.editCountDate === today;
+  const effectiveLimit = freshAccount?.dailyTradeLimit ?? 50;
+  if (isToday && (freshAccount?.dailyEditCount ?? 0) >= effectiveLimit) {
     return NextResponse.json(
       { error: `Log limit reached (${effectiveLimit} per day)` },
       { status: 429 }
     );
   }
-  await prisma.user.update({
-    where: { id: user.id },
+  await prisma.account.update({
+    where: { id: accountId },
     data: { editCountDate: today, dailyEditCount: isToday ? { increment: 1 } : 1 },
   });
 
   const trade = await prisma.trade.create({
     data: {
-      userId: user.id,
+      accountId,
       strategyId,
       date: new Date(date),
       instrument,

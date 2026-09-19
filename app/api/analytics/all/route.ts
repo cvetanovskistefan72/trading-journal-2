@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getActiveAccount } from "@/lib/getActiveAccount";
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const R_BUCKETS = ["< -2R", "-2R to -1R", "-1R to 0R", "0R to 1R", "1R to 2R", "2R to 3R", "> 3R"] as const;
@@ -45,13 +46,16 @@ export async function GET(req: NextRequest) {
   const token = await getToken({ req });
   if (!token?.sub) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const accountId = await getActiveAccount(token.sub);
+  if (!accountId) return NextResponse.json({ error: "No account found" }, { status: 404 });
+
   const { searchParams } = req.nextUrl;
   const from = searchParams.get("from");
 
   // ONE query — all fields needed for every chart
   const trades = await prisma.trade.findMany({
     where: {
-      userId: token.sub,
+      accountId,
       archived: false,
       ...(from ? { date: { gte: new Date(from) } } : {}),
     },

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { getActiveAccount } from "@/lib/getActiveAccount";
 import { GoalType } from "@prisma/client";
 
 const VALID_TYPES = Object.values(GoalType);
@@ -30,8 +31,11 @@ export async function GET() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const accountId = await getActiveAccount(user.id);
+  if (!accountId) return NextResponse.json({ error: "No account found" }, { status: 404 });
+
   const goals = await prisma.goal.findMany({
-    where: { userId: user.id },
+    where: { accountId },
     select: { id: true, type: true, value: true },
   });
 
@@ -47,23 +51,19 @@ export async function GET() {
   const types = new Set(goals.map((g) => g.type));
   const needsDD = types.has("MAX_DRAWDOWN");
 
-  // 2 queries in parallel:
-  // 1. Year trades — covers week/month/year PnL, trade counts, win rate, drawdown
-  // 2. Pre-year trades (pnl only) — only if MAX_DRAWDOWN is set (need full history)
   const [yearTrades, preYearTrades] = await Promise.all([
     prisma.trade.findMany({
-      where: { userId: user.id, archived: false, date: { gte: yearStart } },
+      where: { accountId, archived: false, date: { gte: yearStart } },
       select: { date: true, pnl: true, result: true },
       orderBy: { date: "asc" },
     }),
     needsDD ? prisma.trade.findMany({
-      where: { userId: user.id, archived: false, date: { lt: yearStart } },
+      where: { accountId, archived: false, date: { lt: yearStart } },
       select: { pnl: true },
       orderBy: { date: "asc" },
     }) : null,
   ]);
 
-  // Single pass over yearTrades for all stats
   let weekPnl = 0, monthPnl = 0, yearPnl = 0;
   let weekCount = 0, monthCount = 0;
   let allWins = 0, allDecided = 0;
@@ -77,7 +77,6 @@ export async function GET() {
     else if (t.result === "loss") allDecided++;
   }
 
-  // Drawdown — full history if needed
   let currentDrawdown = 0;
   if (needsDD) {
     const allTrades = [...(preYearTrades ?? []), ...yearTrades];
@@ -107,6 +106,9 @@ export async function POST(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const accountId = await getActiveAccount(user.id);
+  if (!accountId) return NextResponse.json({ error: "No account found" }, { status: 404 });
+
   const body = await req.json();
   const { type, value } = body;
 
@@ -114,9 +116,9 @@ export async function POST(req: NextRequest) {
   if (typeof value !== "number" || value <= 0) return NextResponse.json({ error: "Invalid value" }, { status: 400 });
 
   const goal = await prisma.goal.upsert({
-    where: { userId_type: { userId: user.id, type } },
+    where: { accountId_type: { accountId, type } },
     update: { value },
-    create: { userId: user.id, type, value },
+    create: { accountId, type, value },
     select: { id: true, type: true, value: true },
   });
 
@@ -127,10 +129,13 @@ export async function DELETE(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const accountId = await getActiveAccount(user.id);
+  if (!accountId) return NextResponse.json({ error: "No account found" }, { status: 404 });
+
   const { type } = await req.json();
   if (!VALID_TYPES.includes(type)) return NextResponse.json({ error: "Invalid goal type" }, { status: 400 });
 
-  await prisma.goal.deleteMany({ where: { userId: user.id, type } });
+  await prisma.goal.deleteMany({ where: { accountId, type } });
 
   return NextResponse.json({ ok: true });
 }
