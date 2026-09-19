@@ -31,11 +31,14 @@ export function buildRandomTrade(strategies: Strategy[]): CreateTradeInput {
 
   // Spread trades across the past 2 years only
   const daysOffset = Math.floor(Math.random() * 365 * 2);
-  const d = new Date();
+  const today = new Date();
+  const d = new Date(today);
   d.setDate(d.getDate() - daysOffset);
-  // Skip weekends
-  if (d.getDay() === 0) d.setDate(d.getDate() + 1);
-  if (d.getDay() === 6) d.setDate(d.getDate() - 1);
+  // Skip weekends — always move backward so we never exceed today
+  if (d.getDay() === 0) d.setDate(d.getDate() - 2); // Sun → Fri
+  if (d.getDay() === 6) d.setDate(d.getDate() - 1); // Sat → Fri
+  // Safety clamp — never exceed today
+  if (d > today) d.setTime(today.getTime());
 
   const confluences = strategy.confluences.length > 0
     ? strategy.confluences.slice(0, Math.floor(Math.random() * strategy.confluences.length) + 1)
