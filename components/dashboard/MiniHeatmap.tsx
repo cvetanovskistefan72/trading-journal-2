@@ -22,7 +22,8 @@ const GAP = 5;
 const DOW_W = 18;
 
 export function MiniHeatmap() {
-  const { data, isLoading } = useDashboard();
+  const { data, isLoading: _loading, isFetching } = useDashboard();
+  const isLoading = _loading || isFetching;
   const [tooltip, setTooltip] = useState<TooltipState>(null);
 
   const cells = data?.miniHeatmap ?? [];

@@ -55,7 +55,8 @@ function AnalyticsLoader({ progress }: { progress: number }) {
 }
 
 export default function PerformancePage() {
-  const { data, isLoading } = useAnalytics();
+  const { data, isLoading, isFetching } = useAnalytics();
+  const isWaiting = isLoading || isFetching;
   const [progress, setProgress] = useState(0);
   const [ready, setReady] = useState(false);
 
@@ -69,7 +70,7 @@ export default function PerformancePage() {
   }, []);
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isWaiting) {
       setProgress(100);
       setTimeout(() => setReady(true), 300);
       return;
@@ -85,7 +86,7 @@ export default function PerformancePage() {
     ];
     const timers = steps.map(s => setTimeout(() => setProgress(s.target), s.delay));
     return () => timers.forEach(clearTimeout);
-  }, [isLoading]);
+  }, [isWaiting]);
 
   return (
     <main className="flex-1 px-4 py-6 sm:px-8 sm:py-8 space-y-5">

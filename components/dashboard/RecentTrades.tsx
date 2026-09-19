@@ -14,7 +14,8 @@ function fmtDate(iso: string) {
 }
 
 export function RecentTrades() {
-  const { data, isLoading } = useDashboard();
+  const { data, isLoading: _loading, isFetching } = useDashboard();
+  const isLoading = _loading || isFetching;
 
   return (
     <div className="rounded-lg border border-border bg-card p-6 space-y-4">

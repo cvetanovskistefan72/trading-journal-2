@@ -92,7 +92,8 @@ function GoalRow({ type, current, value }: { type: GoalType; current: number; va
 }
 
 export default function GoalsProgressPage() {
-  const { data: goals, isLoading } = useGoals();
+  const { data: goals, isLoading: _loading, isFetching } = useGoals();
+  const isLoading = _loading || isFetching;
 
   if (isLoading) {
     return (

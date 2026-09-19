@@ -37,7 +37,8 @@ function Tile({
 type Period = "month" | "week";
 
 export function StatTiles() {
-  const { data, isLoading } = useDashboard();
+  const { data, isLoading: _loading, isFetching } = useDashboard();
+  const isLoading = _loading || isFetching;
   const [period, setPeriod] = useState<Period>("month");
 
   if (isLoading) {

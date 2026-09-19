@@ -36,7 +36,8 @@ function Banner({
 }
 
 export function DisciplineBanner() {
-  const { data, isLoading } = useDashboard();
+  const { data, isLoading: _loading, isFetching } = useDashboard();
+  const isLoading = _loading || isFetching;
 
   if (isLoading) return null;
 

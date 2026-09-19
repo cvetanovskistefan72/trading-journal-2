@@ -152,7 +152,8 @@ function GoalModal({ open, onClose, availableTypes, editType, editCurrentValue }
 }
 
 export default function GoalsPage() {
-  const { data: goals, isLoading } = useGoals();
+  const { data: goals, isLoading: _loading, isFetching } = useGoals();
+  const isLoading = _loading || isFetching;
   const { mutate: deleteGoal } = useDeleteGoal();
   const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState<{ type: GoalType; value: number } | null>(null);

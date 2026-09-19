@@ -49,7 +49,8 @@ function Tile({ label, value, sub, delta }: { label: string; value: number; sub?
 }
 
 export function SnapshotRow() {
-  const { data, isLoading } = useDashboard();
+  const { data, isLoading: _loading, isFetching } = useDashboard();
+  const isLoading = _loading || isFetching;
 
   if (isLoading) {
     return (
