@@ -3,8 +3,7 @@
 import {
   BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Cell, ReferenceLine, ResponsiveContainer,
 } from "recharts";
-import { useAnalytics } from "@/hooks/useAnalytics";
-import type { ConfluenceBucket } from "@/hooks/useAnalytics";
+import type { AnalyticsData, ConfluenceBucket } from "@/hooks/useAnalytics";
 
 const tooltipStyle = {
   background: "var(--color-card)", border: "1px solid var(--color-border)",
@@ -25,8 +24,7 @@ function ConfTooltip({ active, payload }: { active?: boolean; payload?: { payloa
   );
 }
 
-export function ConfluencePerformance() {
-  const { data, isLoading } = useAnalytics();
+export function ConfluencePerformance({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const confluences = data?.byConfluence ?? [];
   const chartHeight = Math.max(220, confluences.length * 44);
 

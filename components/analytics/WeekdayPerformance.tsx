@@ -1,8 +1,7 @@
 "use client";
 
 import { BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Cell, ReferenceLine, ResponsiveContainer } from "recharts";
-import { useAnalytics } from "@/hooks/useAnalytics";
-import type { DayBucket } from "@/hooks/useAnalytics";
+import type { AnalyticsData, DayBucket } from "@/hooks/useAnalytics";
 
 function fmtUsd(v: number) {
   return (v >= 0 ? "+" : "-") + "$" + Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -26,8 +25,7 @@ function DayTooltip({ active, payload }: { active?: boolean; payload?: { payload
   );
 }
 
-export function WeekdayPerformance() {
-  const { data, isLoading } = useAnalytics();
+export function WeekdayPerformance({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const days = data?.byWeekday ?? [];
   const hasTrades = days.some((d) => d.trades > 0);
 

@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Cell, ReferenceLine, ResponsiveContainer } from "recharts";
 import { cn } from "@/lib/utils";
 import { PeriodFilter, fromDate, type PeriodPreset } from "@/components/analytics/PeriodFilter";
-import { useAnalytics } from "@/hooks/useAnalytics";
+import type { AnalyticsData } from "@/hooks/useAnalytics";
 
 type Bucket = { period: string; pnl: number; wins: number; losses: number };
 
@@ -40,17 +40,15 @@ function fmtPeriodLabel(period: string) {
   return new Date(Number(year), Number(month) - 1).toLocaleDateString("en-US", { month: "short", year: "2-digit" });
 }
 
-export function PnlByPeriod() {
+export function PnlByPeriod({ data: analytics, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const [mode, setMode] = useState<"monthly" | "weekly">("monthly");
   const [preset, setPreset] = useState<PeriodPreset>("ALL");
   const from = fromDate(preset);
 
-  const { data: analytics, isLoading } = useAnalytics(from);
-
   const data = useMemo<Bucket[]>(() => {
     if (!analytics?.calendarHeatmap) return [];
     const buckets = new Map<string, Bucket>();
-    for (const day of analytics.calendarHeatmap) {
+    for (const day of analytics.calendarHeatmap.filter((d) => !from || d.date >= from)) {
       let key: string;
       if (mode === "monthly") {
         key = day.date.slice(0, 7);

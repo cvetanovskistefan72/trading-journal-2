@@ -3,7 +3,6 @@
 import {
   Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip,
 } from "recharts";
-import { useAnalytics } from "@/hooks/useAnalytics";
 import type { AnalyticsData } from "@/hooks/useAnalytics";
 
 function clamp(v: number, min: number, max: number) {
@@ -87,9 +86,7 @@ function CustomAngleAxis({ x, y, cx, cy, payload }: { x: number; y: number; cx: 
   );
 }
 
-export function TraderRadar() {
-  const { data, isLoading } = useAnalytics();
-
+export function TraderRadar({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const scores = data && data.summary.total > 0 ? computeScores(data) : null;
   const overall = scores ? Math.round(scores.reduce((s, v) => s + v.score, 0) / scores.length) : null;
 

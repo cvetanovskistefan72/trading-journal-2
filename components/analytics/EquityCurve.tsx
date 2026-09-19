@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { TrendingUp, TrendingDown } from "lucide-react";
-import { useAnalytics } from "@/hooks/useAnalytics";
+import type { AnalyticsData } from "@/hooks/useAnalytics";
 import { PeriodFilter, fromDate, type PeriodPreset } from "@/components/analytics/PeriodFilter";
 
 function fmtDate(d: string) {
@@ -31,11 +31,10 @@ function EquityTooltip({ active, payload, label }: { active?: boolean; payload?:
   );
 }
 
-export function EquityCurve() {
+export function EquityCurve({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const [preset, setPreset] = useState<PeriodPreset>("ALL");
   const from = fromDate(preset);
-  const { data, isLoading } = useAnalytics(from);
-  const equity = data?.equity ?? [];
+  const equity = (data?.equity ?? []).filter((e) => !from || e.date >= from);
 
   const last = equity[equity.length - 1];
   const isUp = (last?.cumulative ?? 0) >= 0;
@@ -74,7 +73,7 @@ export function EquityCurve() {
         <div className="h-56 flex items-center justify-center text-sm text-muted-foreground">Not enough data yet</div>
       ) : (
         <ResponsiveContainer width="100%" height={220}>
-          <AreaChart data={equity} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+          <AreaChart data={equity} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="equityGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="var(--color-chart-1)" stopOpacity={0.25} />
@@ -93,7 +92,7 @@ export function EquityCurve() {
             <XAxis dataKey="date" tickFormatter={fmtDate} tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} axisLine={false} tickLine={false} minTickGap={40} />
             <YAxis tickFormatter={(v) => `$${v}`} tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} axisLine={false} tickLine={false} width={56} />
             <Tooltip content={<EquityTooltip />} cursor={{ stroke: "var(--color-border)", strokeWidth: 1 }} />
-            <Area type="monotoneX" dataKey="cumulative" stroke="url(#equityStroke)" strokeWidth={2} fill="url(#equityGrad)" dot={false} activeDot={{ r: 4, strokeWidth: 0 }} />
+            <Area type="monotoneX" dataKey="cumulative" stroke="url(#equityStroke)" strokeWidth={2} fill="url(#equityGrad)" dot={false} activeDot={{ r: 4, strokeWidth: 0 }} isAnimationActive={false} />
           </AreaChart>
         </ResponsiveContainer>
       )}

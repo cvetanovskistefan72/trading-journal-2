@@ -1,6 +1,6 @@
 "use client";
 
-import { useAnalytics } from "@/hooks/useAnalytics";
+import type { AnalyticsData } from "@/hooks/useAnalytics";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -8,8 +8,7 @@ function fmtUsd(v: number) {
   return (v >= 0 ? "+" : "-") + "$" + Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export function CostOfMistakes() {
-  const { data, isLoading } = useAnalytics();
+export function CostOfMistakes({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
 
   const result = data ? (() => {
     const conf = data.byConfluence;

@@ -41,7 +41,7 @@ function AnalyticsLoader({ progress }: { progress: number }) {
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
       <div className="space-y-2 text-center">
         <p className="text-sm font-medium text-foreground">{step}</p>
-        <p className="text-xs text-muted-foreground">This only happens once — results are cached</p>
+        <p className="text-xs text-muted-foreground">Hang tight while we crunch your data…</p>
       </div>
       <div className="w-72 h-1.5 rounded-full bg-muted overflow-hidden">
         <div
@@ -54,23 +54,8 @@ function AnalyticsLoader({ progress }: { progress: number }) {
   );
 }
 
-function Section({ children, delay, visible }: { children: React.ReactNode; delay: number; visible: boolean }) {
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    if (!visible) { setShow(false); return; }
-    const t = setTimeout(() => setShow(true), delay);
-    return () => clearTimeout(t);
-  }, [visible, delay]);
-
-  return (
-    <div className={`transition-all duration-500 ${show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"}`}>
-      {show && children}
-    </div>
-  );
-}
-
 export default function PerformancePage() {
-  const { isLoading } = useAnalytics();
+  const { data, isLoading } = useAnalytics();
   const [progress, setProgress] = useState(0);
   const [ready, setReady] = useState(false);
 
@@ -113,71 +98,55 @@ export default function PerformancePage() {
         <AnalyticsLoader progress={progress} />
       ) : (
         <>
-          <Section visible={ready} delay={0}><InsightsCard /></Section>
-          <Section visible={ready} delay={200}><EquityCurve /></Section>
+          <InsightsCard data={data} isLoading={isLoading} />
+          <EquityCurve data={data} isLoading={isLoading} />
 
-          <Section visible={ready} delay={650}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <SummaryStats />
-              <StreakStats />
-            </div>
-          </Section>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <SummaryStats data={data} isLoading={isLoading} />
+            <StreakStats data={data} isLoading={isLoading} />
+          </div>
 
-          <Section visible={ready} delay={900}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <BestWorstDay />
-              <TraderRadar />
-            </div>
-          </Section>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <BestWorstDay data={data} isLoading={isLoading} />
+            <TraderRadar data={data} isLoading={isLoading} />
+          </div>
 
-          <Section visible={ready} delay={1150}><PnlByPeriod /></Section>
+          <PnlByPeriod data={data} isLoading={isLoading} />
 
-          <Section visible={ready} delay={1400}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <CalendarHeatmap />
-              <DrawdownChart />
-            </div>
-          </Section>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <CalendarHeatmap data={data} isLoading={isLoading} />
+            <DrawdownChart data={data} isLoading={isLoading} />
+          </div>
 
-          <Section visible={ready} delay={1650}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <WeekdayPerformance />
-              <RMultipleDistribution />
-            </div>
-          </Section>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <WeekdayPerformance data={data} isLoading={isLoading} />
+            <RMultipleDistribution data={data} isLoading={isLoading} />
+          </div>
 
-          <Section visible={ready} delay={1900}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <LongShortBreakdown />
-              <WinRateTrend />
-            </div>
-          </Section>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <LongShortBreakdown data={data} isLoading={isLoading} />
+            <WinRateTrend data={data} isLoading={isLoading} />
+          </div>
 
-          <Section visible={ready} delay={2150}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <PnlDistribution />
-              <GradeDistribution />
-            </div>
-          </Section>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <PnlDistribution data={data} isLoading={isLoading} />
+            <GradeDistribution data={data} isLoading={isLoading} />
+          </div>
 
-          <Section visible={ready} delay={2400}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <TimeOfDayHeatmap />
-              <CumulativeRCurve />
-            </div>
-          </Section>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <TimeOfDayHeatmap data={data} isLoading={isLoading} />
+            <CumulativeRCurve data={data} isLoading={isLoading} />
+          </div>
 
-          <Section visible={ready} delay={2650}><TiltMeter /></Section>
-          <Section visible={ready} delay={2900}><SessionBreakdown /></Section>
-          <Section visible={ready} delay={3150}><ConfluencePerformance /></Section>
-          <Section visible={ready} delay={3400}><CostOfMistakes /></Section>
+          <TiltMeter data={data} isLoading={isLoading} />
+          <SessionBreakdown data={data} isLoading={isLoading} />
+          <ConfluencePerformance data={data} isLoading={isLoading} />
+          <CostOfMistakes data={data} isLoading={isLoading} />
 
-          <Section visible={ready} delay={3650}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <InstrumentBreakdown />
-              <HoldTimeChart />
-            </div>
-          </Section>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <InstrumentBreakdown data={data} isLoading={isLoading} />
+            <HoldTimeChart data={data} isLoading={isLoading} />
+          </div>
         </>
       )}
     </main>

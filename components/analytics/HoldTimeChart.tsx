@@ -3,8 +3,7 @@
 import {
   BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Cell, ReferenceLine, ResponsiveContainer,
 } from "recharts";
-import { useAnalytics } from "@/hooks/useAnalytics";
-import type { HoldBucket } from "@/hooks/useAnalytics";
+import type { AnalyticsData, HoldBucket } from "@/hooks/useAnalytics";
 
 function fmtUsd(v: number) {
   const abs = Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -29,8 +28,7 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: { valu
   );
 }
 
-export function HoldTimeChart() {
-  const { data, isLoading } = useAnalytics();
+export function HoldTimeChart({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const holdTime = data?.holdTime ?? [];
   const hasTrades = holdTime.some((d) => d.trades > 0);
 

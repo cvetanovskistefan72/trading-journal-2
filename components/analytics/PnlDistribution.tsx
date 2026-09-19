@@ -1,8 +1,7 @@
 "use client";
 
 import { BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Cell, ReferenceLine, ResponsiveContainer } from "recharts";
-import { useAnalytics } from "@/hooks/useAnalytics";
-import type { PnlHistBucket } from "@/hooks/useAnalytics";
+import type { AnalyticsData, PnlHistBucket } from "@/hooks/useAnalytics";
 
 const tooltipStyle = {
   background: "var(--color-card)", border: "1px solid var(--color-border)",
@@ -29,8 +28,7 @@ function HistTooltip({ active, payload }: { active?: boolean; payload?: { payloa
   );
 }
 
-export function PnlDistribution() {
-  const { data, isLoading } = useAnalytics();
+export function PnlDistribution({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const hist = data?.pnlDistribution ?? [];
   const hasTrades = hist.some((b) => b.count > 0);
 

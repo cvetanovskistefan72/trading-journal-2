@@ -3,8 +3,7 @@
 import {
   BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Cell, LabelList, ResponsiveContainer,
 } from "recharts";
-import { useAnalytics } from "@/hooks/useAnalytics";
-import type { RBucket } from "@/hooks/useAnalytics";
+import type { AnalyticsData, RBucket } from "@/hooks/useAnalytics";
 
 function fmtUsd(v: number) {
   return (v >= 0 ? "+" : "-") + "$" + Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -36,8 +35,7 @@ function bucketColor(bucket: string): string {
   return "var(--color-chart-2)";
 }
 
-export function RMultipleDistribution() {
-  const { data, isLoading } = useAnalytics();
+export function RMultipleDistribution({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const rMultiple = data?.rMultiple ?? [];
   const hasTrades = rMultiple.some((d) => d.count > 0);
 

@@ -4,8 +4,7 @@ import {
   AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip,
   ReferenceLine, ResponsiveContainer,
 } from "recharts";
-import { useAnalytics } from "@/hooks/useAnalytics";
-import type { WinRatePoint } from "@/hooks/useAnalytics";
+import type { AnalyticsData, WinRatePoint } from "@/hooks/useAnalytics";
 
 const WINDOW = 20;
 
@@ -35,8 +34,7 @@ function WinRateTooltip({ active, payload }: { active?: boolean; payload?: { pay
   );
 }
 
-export function WinRateTrend() {
-  const { data, isLoading } = useAnalytics();
+export function WinRateTrend({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const trend = data?.winRateTrend ?? [];
 
   const last = trend[trend.length - 1];

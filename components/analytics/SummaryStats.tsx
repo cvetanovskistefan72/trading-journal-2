@@ -2,7 +2,7 @@
 
 import { PieChart, Pie, Cell } from "recharts";
 import { cn } from "@/lib/utils";
-import { useAnalytics } from "@/hooks/useAnalytics";
+import type { AnalyticsData } from "@/hooks/useAnalytics";
 
 function fmtUsd(v: number) {
   return (v >= 0 ? "+" : "") + "$" + Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -17,8 +17,7 @@ function StatBox({ label, value, color }: { label: string; value: string; color?
   );
 }
 
-export function SummaryStats() {
-  const { data, isLoading } = useAnalytics();
+export function SummaryStats({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const summary = data?.summary;
 
   if (isLoading) {

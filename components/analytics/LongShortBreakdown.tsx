@@ -1,8 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useAnalytics } from "@/hooks/useAnalytics";
-import type { DirectionBucket } from "@/hooks/useAnalytics";
+import type { AnalyticsData, DirectionBucket } from "@/hooks/useAnalytics";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
 function fmtUsd(v: number) {
@@ -76,9 +75,8 @@ function DirectionCard({ bucket, onClick }: { bucket: DirectionBucket; onClick: 
   );
 }
 
-export function LongShortBreakdown() {
+export function LongShortBreakdown({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const router = useRouter();
-  const { data, isLoading } = useAnalytics();
   const longShort = data?.longShort ?? [];
   const hasTrades = longShort.some((d) => d.trades > 0);
 

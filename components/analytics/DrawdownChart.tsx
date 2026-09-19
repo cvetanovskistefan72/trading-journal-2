@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, ReferenceLine, ResponsiveContainer } from "recharts";
-import { useAnalytics } from "@/hooks/useAnalytics";
-import type { DrawdownPoint } from "@/hooks/useAnalytics";
+import type { AnalyticsData, DrawdownPoint } from "@/hooks/useAnalytics";
 import { PeriodFilter, fromDate, type PeriodPreset } from "@/components/analytics/PeriodFilter";
 
 function fmtDate(d: string) {
@@ -30,11 +29,10 @@ function DrawdownTooltip({ active, payload, label }: { active?: boolean; payload
   );
 }
 
-export function DrawdownChart() {
+export function DrawdownChart({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const [preset, setPreset] = useState<PeriodPreset>("ALL");
   const from = fromDate(preset);
-  const { data, isLoading } = useAnalytics(from);
-  const drawdown = data?.drawdown ?? [];
+  const drawdown = (data?.drawdown ?? []).filter((d) => !from || d.date >= from);
 
   const minDd = drawdown.length > 0 ? Math.min(...drawdown.map((d) => d.drawdown)) : 0;
   const currentDd = drawdown.length > 0 ? drawdown[drawdown.length - 1].drawdown : 0;

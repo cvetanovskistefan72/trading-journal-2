@@ -1,7 +1,6 @@
 "use client";
 
-import { useAnalytics } from "@/hooks/useAnalytics";
-import type { DayAvg } from "@/hooks/useAnalytics";
+import type { AnalyticsData, DayAvg } from "@/hooks/useAnalytics";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
 function fmtUsd(v: number) {
@@ -74,8 +73,7 @@ function DayCard({ day, type }: { day: DayAvg; type: "best" | "worst" }) {
   );
 }
 
-export function BestWorstDay() {
-  const { data, isLoading } = useAnalytics();
+export function BestWorstDay({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const { bestDay, worstDay } = data ?? {};
 
   return (

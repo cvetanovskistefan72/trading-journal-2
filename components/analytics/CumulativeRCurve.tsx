@@ -2,7 +2,7 @@
 
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import { TrendingUp, TrendingDown } from "lucide-react";
-import { useAnalytics } from "@/hooks/useAnalytics";
+import type { AnalyticsData } from "@/hooks/useAnalytics";
 
 const tooltipStyle = {
   background: "var(--color-card)", border: "1px solid var(--color-border)",
@@ -23,8 +23,7 @@ function RTooltip({ active, payload }: { active?: boolean; payload?: { value: nu
   );
 }
 
-export function CumulativeRCurve() {
-  const { data, isLoading } = useAnalytics();
+export function CumulativeRCurve({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const curve = data?.cumulativeRCurve ?? [];
 
   const last = curve[curve.length - 1];

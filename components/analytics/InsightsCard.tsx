@@ -1,6 +1,5 @@
 "use client";
 
-import { useAnalytics } from "@/hooks/useAnalytics";
 import type { AnalyticsData } from "@/hooks/useAnalytics";
 import { TrendingUp, TrendingDown, Clock, Target, Zap, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -131,9 +130,7 @@ const toneStyles: Record<Insight["tone"], { border: string; bg: string; icon: st
   },
 };
 
-export function InsightsCard() {
-  const { data, isLoading } = useAnalytics();
-
+export function InsightsCard({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const insights = data ? generateInsights(data) : [];
 
   return (
@@ -149,7 +146,7 @@ export function InsightsCard() {
       {isLoading ? (
         <div className="space-y-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="rounded-lg border border-border bg-background p-4 animate-pulse h-20" />
+            <div key={i} className="rounded-lg border border-border bg-muted/50 p-4 animate-pulse h-20" />
           ))}
         </div>
       ) : insights.length === 0 ? (

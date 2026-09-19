@@ -3,8 +3,7 @@
 import {
   BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Cell, ReferenceLine, ResponsiveContainer,
 } from "recharts";
-import { useAnalytics } from "@/hooks/useAnalytics";
-import type { GradeBucket } from "@/hooks/useAnalytics";
+import type { AnalyticsData, GradeBucket } from "@/hooks/useAnalytics";
 import { cn } from "@/lib/utils";
 
 function fmtUsd(v: number) {
@@ -37,8 +36,7 @@ const EMPTY_GRADE = (grade: string): GradeBucket => ({
   grade, trades: 0, wins: 0, losses: 0, winRate: 0, pnl: 0, avgPnl: 0, avgR: 0,
 });
 
-export function GradeDistribution() {
-  const { data, isLoading } = useAnalytics();
+export function GradeDistribution({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const raw = data?.byGrade ?? [];
 
   const grades = ALL_GRADES.map((g) => raw.find((r) => r.grade === g) ?? EMPTY_GRADE(g));

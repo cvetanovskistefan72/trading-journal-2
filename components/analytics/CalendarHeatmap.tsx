@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useAnalytics } from "@/hooks/useAnalytics";
-import type { CalendarDay as HeatmapDay } from "@/hooks/useAnalytics";
+import type { AnalyticsData, CalendarDay as HeatmapDay } from "@/hooks/useAnalytics";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayDialog } from "@/components/calendar/DayDialog";
 import type { CalendarDay } from "@/types/calendar";
@@ -60,8 +59,7 @@ function buildYearGrid(year: number, dayMap: Map<string, HeatmapDay>) {
   return { weeks, monthPositions };
 }
 
-export function CalendarHeatmap() {
-  const { data, isLoading } = useAnalytics();
+export function CalendarHeatmap({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const calDays = data?.calendarHeatmap ?? [];
 
   const dayMap = useMemo(() => new Map(calDays.map((d) => [d.date, d])), [calDays]);

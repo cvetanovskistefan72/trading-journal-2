@@ -1,6 +1,6 @@
 "use client";
 
-import { useAnalytics } from "@/hooks/useAnalytics";
+import type { AnalyticsData } from "@/hooks/useAnalytics";
 import { cn } from "@/lib/utils";
 
 function fmtPnl(v: number) {
@@ -13,8 +13,7 @@ const EMPTY_INSTRUMENT = (instrument: string) => ({
   instrument, pnl: 0, trades: 0, wins: 0, losses: 0, winRate: 0, avgR: 0,
 });
 
-export function InstrumentBreakdown() {
-  const { data, isLoading } = useAnalytics();
+export function InstrumentBreakdown({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const raw = data?.byInstrument ?? [];
 
   const instruments = ALL_INSTRUMENTS.map(

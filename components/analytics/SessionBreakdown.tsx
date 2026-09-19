@@ -1,7 +1,6 @@
 "use client";
 
-import { useAnalytics } from "@/hooks/useAnalytics";
-import type { SessionBucket } from "@/hooks/useAnalytics";
+import type { AnalyticsData, SessionBucket } from "@/hooks/useAnalytics";
 
 function fmtUsd(v: number) {
   const abs = Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -68,8 +67,7 @@ const EMPTY_BUCKET = (session: string): SessionBucket => ({
   avgR: 0,
 });
 
-export function SessionBreakdown() {
-  const { data, isLoading } = useAnalytics();
+export function SessionBreakdown({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const sessions = data?.bySession ?? [];
 
   // Always show all 3 sessions — fill missing ones with zeroes

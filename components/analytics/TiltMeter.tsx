@@ -1,7 +1,7 @@
 "use client";
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, ReferenceLine } from "recharts";
-import { useAnalytics } from "@/hooks/useAnalytics";
+import type { AnalyticsData } from "@/hooks/useAnalytics";
 
 function fmtUsd(v: number) {
   return (v >= 0 ? "+" : "-") + "$" + Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -27,8 +27,7 @@ function TiltTooltip({ active, payload, label }: { active?: boolean; payload?: {
   );
 }
 
-export function TiltMeter() {
-  const { data, isLoading } = useAnalytics();
+export function TiltMeter({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const tilt = data?.tiltMeter ?? [];
   const hasData = tilt.some((b) => b.trades > 0);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useAnalytics } from "@/hooks/useAnalytics";
+import type { AnalyticsData } from "@/hooks/useAnalytics";
 import { Flame, TrendingDown, Trophy, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,8 +33,7 @@ function StreakCard({
   );
 }
 
-export function StreakStats() {
-  const { data, isLoading } = useAnalytics();
+export function StreakStats({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const streaks = data?.streaks;
 
   const currentVal = streaks?.current ?? 0;

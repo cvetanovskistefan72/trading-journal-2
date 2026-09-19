@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useAnalytics } from "@/hooks/useAnalytics";
+import type { AnalyticsData } from "@/hooks/useAnalytics";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 // Always show 6am–8pm regardless of data
@@ -26,8 +26,7 @@ function cellColor(avgPnl: number, maxAbs: number): { fill: string; opacity: num
   };
 }
 
-export function TimeOfDayHeatmap() {
-  const { data, isLoading } = useAnalytics();
+export function TimeOfDayHeatmap({ data, isLoading }: { data: AnalyticsData | undefined; isLoading: boolean }) {
   const cells = data?.timeOfDay ?? [];
 
   const maxAbs = useMemo(() => Math.max(...cells.map((c) => Math.abs(c.avgPnl)), 1), [cells]);
