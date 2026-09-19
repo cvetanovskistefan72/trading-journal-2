@@ -100,6 +100,7 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
   const exitTime = watch("exitTime");
   const exitDate = watch("exitDate");
   const tradeDate = watch("date");
+  const todayStr = new Date().toLocaleDateString("en-CA");
 
   const pnlNum = parseFloat(pnlValue);
   const result: TradeResult | null = isNaN(pnlNum) || pnlValue === "" ? null : pnlToResult(pnlNum);
@@ -320,7 +321,7 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Entry</Label>
-                <Input id="date" type="date" {...register("date", { required: true })} />
+                <Input id="date" type="date" max={todayStr} {...register("date", { required: true })} />
                 <Input id="entryTime" type="time" {...register("entryTime", { required: true })} />
               </div>
               <div className="space-y-2">
@@ -335,6 +336,7 @@ export function TradeDialog({ open, onClose, onSubmit, loading, strategies, init
                     type="date"
                     {...register("exitDate")}
                     min={tradeDate}
+                    max={todayStr}
                     className="w-full"
                   />
                   {exitDate && exitDate !== tradeDate && (

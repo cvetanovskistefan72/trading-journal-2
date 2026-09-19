@@ -62,12 +62,12 @@ function DayCard({ day, type }: { day: DayAvg; type: "best" | "worst" }) {
       {/* Stat row */}
       <div className="grid grid-cols-2 gap-3 pt-1 border-t border-border">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-0.5">Day</p>
-          <p className="text-sm font-bold tabular-nums">{day.day}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-0.5">Day</p>
+          <p className="text-base font-bold tabular-nums">{day.day}</p>
         </div>
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-0.5">Sessions</p>
-          <p className="text-sm font-bold tabular-nums">{day.tradingDays}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-0.5">Sessions</p>
+          <p className="text-base font-bold tabular-nums">{day.tradingDays}</p>
         </div>
       </div>
     </div>

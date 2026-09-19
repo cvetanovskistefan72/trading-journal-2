@@ -258,18 +258,18 @@ export default function CalendarPage() {
 
               {/* Week summary column — right side */}
               <div className="min-h-[110px] border-b border-l border-border/60 flex flex-col items-center justify-center gap-1 bg-muted/30 px-2 py-3">
-                <span className="text-[9px] font-semibold text-muted-foreground/40 uppercase tracking-widest">Wk {wn}</span>
+                <span className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-widest">Wk {wn}</span>
                 {ws.count > 0 ? (
                   <>
-                    <span className="text-xs font-bold tabular-nums" style={{ color: ws.pnl > 0 ? "var(--color-chart-1)" : ws.pnl < 0 ? "var(--color-chart-2)" : "var(--color-chart-3)" }}>
+                    <span className="text-sm font-bold tabular-nums" style={{ color: ws.pnl > 0 ? "var(--color-chart-1)" : ws.pnl < 0 ? "var(--color-chart-2)" : "var(--color-chart-3)" }}>
                       {fmtPnl(ws.pnl, true)}
                     </span>
-                    <span className="text-[9px] text-muted-foreground">{ws.count} trades</span>
-                    <span className="text-[9px] tabular-nums" style={{ color: "var(--color-chart-1)" }}>{ws.wins}W</span>
-                    <span className="text-[9px] tabular-nums" style={{ color: "var(--color-chart-2)" }}>{ws.losses}L</span>
+                    <span className="text-[11px] text-muted-foreground">{ws.count} trades</span>
+                    <span className="text-[11px] font-semibold tabular-nums" style={{ color: "var(--color-chart-1)" }}>{ws.wins}W</span>
+                    <span className="text-[11px] font-semibold tabular-nums" style={{ color: "var(--color-chart-2)" }}>{ws.losses}L</span>
                   </>
                 ) : (
-                  <span className="text-[9px] text-muted-foreground/30">—</span>
+                  <span className="text-[10px] text-muted-foreground/30">—</span>
                 )}
               </div>
             </div>

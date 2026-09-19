@@ -41,7 +41,7 @@ function NavLeaf({
         indent && "ml-5 w-[calc(100%-1.25rem)] pl-2 h-8",
         active
           ? "bg-primary/8 text-primary font-semibold"
-          : "font-medium text-muted-foreground/70 hover:text-foreground hover:bg-white/4"
+          : "font-medium text-foreground/70 hover:text-foreground hover:bg-white/4"
       )}
     >
       {active && !indent && (
@@ -50,7 +50,7 @@ function NavLeaf({
       {indent ? (
         <span className={cn("h-[5px] w-[5px] rounded-full shrink-0", active ? "bg-primary" : "bg-muted-foreground/25")} />
       ) : (
-        <Icon className={cn("h-[15px] w-[15px] shrink-0", active ? "text-primary" : "text-muted-foreground/50")} />
+        <Icon className={cn("h-[15px] w-[15px] shrink-0", active ? "text-primary" : "text-foreground/50")} />
       )}
       {item.label}
     </Link>
@@ -76,10 +76,10 @@ function NavGroup({
         onClick={() => setOpen((o) => !o)}
         className={cn(
           "w-full flex items-center gap-3 h-9 px-3 text-sm font-medium rounded-lg transition-all duration-150 cursor-pointer select-none",
-          childActive ? "text-foreground" : "text-muted-foreground/70 hover:text-foreground hover:bg-white/4"
+          childActive ? "text-foreground" : "text-foreground/70 hover:text-foreground hover:bg-white/4"
         )}
       >
-        <Icon className={cn("h-[15px] w-[15px] shrink-0", childActive ? "text-primary" : "text-muted-foreground/50")} />
+        <Icon className={cn("h-[15px] w-[15px] shrink-0", childActive ? "text-primary" : "text-foreground/50")} />
         <span className="flex-1 text-left">{item.label}</span>
         <ChevronDown
           className={cn("h-3 w-3 shrink-0 transition-transform duration-200 text-muted-foreground/30", open && "rotate-180")}
