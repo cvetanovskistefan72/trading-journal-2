@@ -72,6 +72,7 @@ export default function JournalPage() {
     queryClient.invalidateQueries({ queryKey: ["analytics"] });
     queryClient.invalidateQueries({ queryKey: ["calendar"] });
     queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    queryClient.invalidateQueries({ queryKey: ["goals"] });
   }
 
 

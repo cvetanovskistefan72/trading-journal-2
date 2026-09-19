@@ -27,6 +27,7 @@ export function AddTradeButton() {
       queryClient.invalidateQueries({ queryKey: ["analytics"] });
       queryClient.invalidateQueries({ queryKey: ["calendar"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
       setOpen(false);
     },
     onError: () => toast.error("Failed to log trade"),

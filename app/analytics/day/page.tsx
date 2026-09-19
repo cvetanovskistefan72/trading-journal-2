@@ -14,7 +14,7 @@ import type { CalendarDay } from "@/types/calendar";
 
 import { getCalendar } from "@/services/analytics.service";
 
-function getWeekNumber(year: number, month: number, weekIndex: number, weeks: (Date | null)[][]): number {
+function getWeekNumber(_year: number, _month: number, weekIndex: number, weeks: (Date | null)[][]): number {
   const week = weeks[weekIndex];
   const firstDate = week.find(Boolean) as Date;
   const d = new Date(firstDate);
@@ -37,7 +37,7 @@ export default function CalendarPage() {
   const { data = [], isFetching } = useQuery<CalendarDay[]>({
     queryKey: ["calendar", monthKey],
     queryFn: () => getCalendar(monthKey) as Promise<CalendarDay[]>,
-    staleTime: 30_000,
+    staleTime: 0,
     placeholderData: (prev) => prev,
   });
 

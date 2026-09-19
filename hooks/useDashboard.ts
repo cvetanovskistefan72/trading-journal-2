@@ -46,6 +46,6 @@ export function useDashboard() {
   return useQuery<DashboardData>({
     queryKey: ["dashboard"],
     queryFn: getDashboard,
-    staleTime: 30_000,
+    staleTime: 0,
   });
 }

@@ -15,7 +15,7 @@ export function useGoals() {
   return useQuery<Goal[]>({
     queryKey: ["goals"],
     queryFn: getGoals,
-    staleTime: 60_000,
+    staleTime: 0,
   });
 }
 

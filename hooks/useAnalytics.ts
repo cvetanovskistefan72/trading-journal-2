@@ -53,6 +53,6 @@ export function useAnalytics(from?: string) {
   return useQuery<AnalyticsData>({
     queryKey: ["analytics", "all", from],
     queryFn: () => getAnalytics(from),
-    staleTime: 5 * 60_000,
+    staleTime: 0,
   });
 }
