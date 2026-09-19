@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -12,12 +12,9 @@ import { Spinner } from "@/components/ui/spinner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { TradeDialog } from "@/components/journal/TradeDialog";
 import { TradeFilters } from "@/components/journal/TradeFilters";
-import { DataTable } from "@/components/data-table";
-import { TradeCards } from "@/components/journal/TradeCards";
 import { RateLimitDialog } from "@/components/journal/RateLimitDialog";
 import { journalColumns } from "./columns";
 import type { JournalMeta } from "./columns";
-import { useJournalDensity } from "@/hooks/useJournalDensity";
 import { getTrades, getTrade, createTrade, updateTrade, deleteTrade, archiveTrade, restoreTrade, uploadTradeImage, saveTradeImageKeys } from "@/services/trades.service";
 import { buildRandomTrade } from "@/lib/random-trade";
 import type { TradesParams, Trade, CreateTradeInput } from "@/types/trade";
@@ -25,9 +22,7 @@ import { getStrategies } from "@/services/strategies.service";
 
 export default function JournalPage() {
   const router = useRouter();
-  const density = useJournalDensity();
-  const limit = density === "cards" ? 12 : 10;
-  const prevDensity = useRef(density);
+  const limit = 10;
   const queryClient = useQueryClient();
   const { data: session, status } = useSession();
   const isAdmin = status === "authenticated" && (session?.user as { role?: string })?.role === "ADMIN";
@@ -52,25 +47,13 @@ export default function JournalPage() {
   const [sortBy, setSortBy] = useState<"date" | "grade" | "pnl">("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
-  useEffect(() => {
-    if (prevDensity.current !== density) {
-      prevDensity.current = density;
-      setPage(1);
-      setDateFrom("");
-      setDateTo("");
-      setSearch("");
-      setStrategyId("");
-    }
-  }, [density]);
-
   const params: TradesParams = {
     page, limit, dateFrom, dateTo, search, strategyId, direction, archived,
-    sortBy: density === "cards" ? "date" : sortBy,
-    sortDir: density === "cards" ? "desc" : sortDir,
+    sortBy, sortDir,
   };
 
   const { data, isLoading, isPlaceholderData } = useQuery({
-    queryKey: ["trades", page, limit, dateFrom, dateTo, search, density === "cards" ? "date" : sortBy, density === "cards" ? "desc" : sortDir, strategyId, direction, archived],
+    queryKey: ["trades", page, limit, dateFrom, dateTo, search, sortBy, sortDir, strategyId, direction, archived],
     queryFn: () => getTrades(params),
     placeholderData: (prev) => prev,
   });
@@ -250,19 +233,6 @@ export default function JournalPage() {
                   <Plus className="h-4 w-4" /> Log your first trade
                 </Button>
               )}
-            </div>
-          ) : density === "cards" ? (
-            <div className="p-4">
-              <TradeCards
-                trades={trades}
-                archived={archived}
-                archivePending={archiveMutation.isPending}
-                restorePending={restoreMutation.isPending}
-                onEdit={async (trade) => { const full = await getTrade(trade.id); setEditing(full); setDialogOpen(true); }}
-                onDelete={(trade) => setDeleting(trade)}
-                onArchive={(id) => archiveMutation.mutate(id)}
-                onRestore={(id) => restoreMutation.mutate(id)}
-              />
             </div>
           ) : (
             <div className={isPlaceholderData ? "opacity-60 transition-opacity" : "transition-opacity"}>

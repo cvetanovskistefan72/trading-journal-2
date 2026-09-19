@@ -26,14 +26,14 @@ export default function Home() {
     <main className="auth-green flex-1">
       <section className="mx-auto max-w-4xl px-6 py-24 text-center">
         <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight">
-          Your trades. <span style={{ color: "oklch(0.72 0.18 152)" }}>Reviewed.</span>
+          Your trades. <span className="text-primary">Reviewed.</span>
         </h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-xl mx-auto">
           A simple journal for tracking positions, spotting patterns, and
           getting better at trading.
         </p>
         <div className="mt-8 flex items-center justify-center gap-3">
-          <Button size="lg" style={{ backgroundColor: "oklch(0.72 0.18 152)", color: "white" }} asChild>
+          <Button size="lg" asChild>
             <Link href={routes.login}>
               Get started
               <ArrowRight className="h-4 w-4" />
